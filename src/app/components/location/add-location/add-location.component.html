@@ -1,0 +1,133 @@
+<div class="page-layout">
+    <app-sidebar></app-sidebar>
+    <div class="main-content">
+        <app-header></app-header>
+        <div class="content">
+
+            <!-- Breadcrumb -->
+            <div class="breadcrumb flex items-center space-x-2 text-gray-600">
+                <a class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Settings
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <a routerLink="/location" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Location
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <span class="breadcrumb-item text-gray-800 font-semibold active">
+                    Add Location
+                </span>
+            </div>
+
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Add Location</h1>
+
+            </div>
+
+            <div class="table-container">
+                <form [formGroup]="locationForm" class="user-form" (ngSubmit)="onSubmit()">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Customer Name</label>
+                            <input formControlName="customerName" type="text" placeholder="Enter Customer name" />
+                        </div>
+                        <div class="form-group">
+                            <label>Location Name</label>
+                            <input formControlName="locationName" type="text" placeholder="Enter Location Name" />
+                        </div>
+                    </div>
+
+                    <hr class="mb-3">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Address Line 1</label>
+                            <input formControlName="address1" type="text" placeholder="Enter Address Line 1" />
+                        </div>
+                        <div class="form-group">
+                            <label>Address Line 2</label>
+                            <input formControlName="address2" type="text" placeholder="Enter Address Line 2" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City</label>
+                            <input formControlName="city" type="text" placeholder="Enter city" />
+                        </div>
+                        <div class="form-group">
+                            <label>State</label>
+                            <input formControlName="state" type="text" placeholder="Enter state" />
+                        </div>
+                        <div class="form-group">
+                            <label>Zip Code</label>
+                            <input formControlName="zip" type="text" placeholder="Enter zip" />
+                        </div>
+                    </div>
+
+                    <hr class="mb-3">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Contact Person</label>
+                            <input formControlName="contactPerson" type="text" placeholder="Enter Contact Person" />
+                        </div>
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input formControlName="title" type="text" placeholder="Enter Title" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Location Phone</label>
+                            <input formControlName="locationPhone" type="text" placeholder="Enter Location Phone" />
+                        </div>
+                        <div class="form-group">
+                            <label>Mobile Phone</label>
+                            <input formControlName="mobilePhone" type="text" placeholder="Enter Mobile Phone" />
+                        </div>
+                        <div class="form-group">
+                            <label>Fax Number</label>
+                            <input formControlName="faxNumber" type="text" placeholder="Enter Fax Number" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input formControlName="email" type="text" placeholder="Enter Email" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>Comments</label>
+                            <input formControlName="comments" type="email" placeholder="Enter Comments" />
+                            <!-- <textarea formControlName="comments" placeholder="Enter Comments" rows="4">
+                            </textarea> -->
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-outline">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop" *ngIf="showSuccess">
+    <div class="modal-success">
+        <div class="modal-icon">
+            <mat-icon>check_circle</mat-icon>
+        </div>
+        <div class="modal-message">
+            <h2>Location has been successfully added.</h2>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" (click)="addAnotherLocation()">Add Another Location</button>
+            <button class="btn btn-outline" (click)="goToLocationsList()">Go to Locations List</button>
+        </div>
+    </div>
+</div>

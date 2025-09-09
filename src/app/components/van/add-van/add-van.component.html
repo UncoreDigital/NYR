@@ -1,0 +1,70 @@
+<div class="page-layout">
+    <app-sidebar></app-sidebar>
+    <div class="main-content">
+        <app-header></app-header>
+        <div class="content">
+
+            <!-- Breadcrumb -->
+            <div class="breadcrumb flex items-center space-x-2 text-gray-600">
+                <a class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Settings
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <a routerLink="/van" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Van
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <span class="breadcrumb-item text-gray-800 font-semibold active">
+                    Add Van
+                </span>
+            </div>
+
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Add Van</h1>
+
+            </div>
+
+            <div class="table-container">
+                <form [formGroup]="vanForm" class="user-form" (ngSubmit)="onSubmit()">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Default Driver Name</label>
+                            <input formControlName="driverName" type="text" placeholder="Enter Default Driver Name" />
+                        </div>
+                        <div class="form-group">
+                            <label>Van Name</label>
+                            <input formControlName="vanName" type="text" placeholder="Enter Van Name" />
+                        </div>
+                        <div class="form-group">
+                            <label>Van Number</label>
+                            <input formControlName="vanNumber" type="text" placeholder="Enter Van Number" />
+                        </div>
+                    </div>
+                   
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="reset" class="btn btn-outline">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop" *ngIf="showSuccess">
+    <div class="modal-success">
+        <div class="modal-icon">
+            <mat-icon>check_circle</mat-icon>
+        </div>
+        <div class="modal-message">
+            <h2>Van has been successfully added.</h2>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" (click)="addAnotherVan()">Add Another Van</button>
+            <button class="btn btn-outline" (click)="goToVansList()">Go to Vans List</button>
+        </div>
+    </div>
+</div>

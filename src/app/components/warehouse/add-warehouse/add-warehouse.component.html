@@ -1,0 +1,88 @@
+<div class="page-layout">
+    <app-sidebar></app-sidebar>
+    <div class="main-content">
+        <app-header></app-header>
+        <div class="content">
+
+            <!-- Breadcrumb -->
+            <div class="breadcrumb flex items-center space-x-2 text-gray-600">
+                <a class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Settings
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <a routerLink="/warehouse" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Warehouse
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <span class="breadcrumb-item text-gray-800 font-semibold active">
+                    Add Warehouse
+                </span>
+            </div>
+
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Add Warehouse</h1>
+
+            </div>
+
+            <div class="table-container">
+                <form [formGroup]="warehouseForm" class="user-form" (ngSubmit)="onSubmit()">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Warehouse Name</label>
+                            <input formControlName="warehouseName" type="text" placeholder="Enter Warehouse Name" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Address Line 1</label>
+                            <input formControlName="address1" type="text" placeholder="Enter Address Line 1" />
+                        </div>
+                        <div class="form-group">
+                            <label>Address Line 2</label>
+                            <input formControlName="address2" type="text" placeholder="Enter Address Line 2" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City</label>
+                            <input formControlName="city" type="text" placeholder="Enter City" />
+                        </div>
+                        <div class="form-group">
+                            <label>State</label>
+                            <input formControlName="state" type="text" placeholder="Enter State" />
+                        </div>
+                        <div class="form-group">
+                            <label>Zip Code</label>
+                            <input formControlName="zipcode" type="text" placeholder="Enter Zip Code" />
+                        </div>
+                    </div>
+                   
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="reset" class="btn btn-outline">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop" *ngIf="showSuccess">
+    <div class="modal-success">
+        <div class="modal-icon">
+            <mat-icon>check_circle</mat-icon>
+        </div>
+        <div class="modal-message">
+            <h2>Warehouse has been successfully added.</h2>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" (click)="addAnotherWarehouse()">Add Another Warehouse</button>
+            <button class="btn btn-outline" (click)="goToWarehousesList()">Go to Warehouses List</button>
+        </div>
+    </div>
+</div>

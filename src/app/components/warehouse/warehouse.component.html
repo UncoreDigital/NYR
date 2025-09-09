@@ -1,0 +1,95 @@
+<div class="page-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-header></app-header>
+    <div class="content">
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <span class="breadcrumb-item active">Settings</span>
+        <mat-icon class="breadcrumb-separator active">chevron_right</mat-icon>
+        <span class="breadcrumb-item active">Warehouse</span>
+      </div>
+      
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1>Warehouse</h1>
+        
+      </div>
+      
+      <!-- Search Bar -->
+      <div class="search-section">
+        <div class="search-container">
+          <mat-icon class="search-icon">search</mat-icon>
+          <input 
+            type="text" 
+            placeholder="Search..." 
+            class="search-input"
+            (keyup)="applyFilter($event)">
+        </div>
+        <button class="btn btn-primary" (click)="addWarehouse()">
+          Add Warehouse
+        </button>
+      </div>
+      
+      <!-- Warehouse Table -->
+      <div class="table-container">
+        <table mat-table [dataSource]="dataSource" matSort class="customer-table">
+          <!-- WAREHOUSE NAME Column -->
+          <ng-container matColumnDef="warehouseName">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>WAREHOUSE NAME</th>
+            <td mat-cell *matCellDef="let warehouse">{{warehouse.warehouseName}}</td>
+          </ng-container>
+
+          <!-- WAREHOUSE ADDRESS Column -->
+           <ng-container matColumnDef="warehouseAddress">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>WAREHOUSE ADDRESS</th>
+            <td mat-cell *matCellDef="let warehouse">{{warehouse.warehouseAddress}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="city">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>CITY</th>
+            <td mat-cell *matCellDef="let warehouse">{{warehouse.city}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="state">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>STATE</th>
+            <td mat-cell *matCellDef="let warehouse">{{warehouse.state}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="zipCode">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>ZIP CODE</th>
+            <td mat-cell *matCellDef="let warehouse">{{warehouse.zipCode}}</td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>ACTIONS</th>
+            <td mat-cell *matCellDef="let warehouse">
+              <div class="action-buttons">
+                <button class="action-btn view" (click)="viewWarehouse(warehouse)" title="View">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button class="action-btn edit" (click)="editWarehouse(warehouse)" title="Edit">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button class="action-btn delete" (click)="deleteWarehouse(warehouse)" title="Delete">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <!-- Paginator -->
+        <mat-paginator 
+          [pageSizeOptions]="[5, 10, 20]" 
+          showFirstLastButtons
+          class="table-paginator">
+        </mat-paginator>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,166 @@
+<div class="page-layout">
+    <app-sidebar></app-sidebar>
+    <div class="main-content">
+        <app-header></app-header>
+        <div class="content">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb flex items-center space-x-2 text-gray-600">
+                <a class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Settings
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <a routerLink="/van" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Product
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <span class="breadcrumb-item text-gray-800 font-semibold active">
+                    Add Product
+                </span>
+            </div>
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Add New Product</h1>
+            </div>
+
+            <div class="table-container">
+                <form [formGroup]="productForm" class="user-form" (ngSubmit)="onSubmit()">
+                    <div style="display:flex; gap:32px;">
+                        <!-- Left Column -->
+                        <div style="flex:2;">
+                            <div class="form-group">
+                                <label>Product Name</label>
+                                <input type="text" formControlName="productName" class="form-control"
+                                    placeholder="Enter product name" />
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea formControlName="description" class="form-control" rows="3"
+                                    placeholder="Description"></textarea>
+                            </div>
+                        </div>
+                        <!-- Right Column: Upload Image -->
+                        <div style="flex:1;">
+                            <label style="font-weight:500;">Upload Image</label>
+                            <div
+                                style="border:1.5px dashed #d1d5db; border-radius:12px; min-height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-top:8px;">
+                                <button type="button"
+                                    style="background:none; border:none; display:flex; flex-direction:column; align-items:center; color:#02C3B4; cursor:pointer;">
+                                    <mat-icon style="font-size:36px; width: auto; height: auto;">cloud_upload</mat-icon>
+                                    <span>Browse</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Barcode (SKU)</label>
+                            <div style="position:relative;">
+                                <input type="text" formControlName="sku1" class="form-control"
+                                    placeholder="Enter SKU" />
+                                <button type="button"
+                                    style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none;">
+                                    <mat-icon>photo_camera</mat-icon>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Barcode (SKU #2)</label>
+                            <div style="position:relative;">
+                                <input type="text" class="form-control" formControlName="sku2"
+                                    placeholder="Enter SKU" />
+                                <button type="button"
+                                    style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none;">
+                                    <mat-icon>photo_camera</mat-icon>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" style="flex:1;">
+                            <label>Barcode (SKU #3)</label>
+                            <div style="position:relative;">
+                                <input type="text" class="form-control" formControlName="sku3"
+                                    placeholder="Enter SKU" />
+                                <button type="button"
+                                    style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none;">
+                                    <mat-icon>photo_camera</mat-icon>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label>Barcode (SKU #4)</label>
+                            <div style="position:relative;">
+                                <input type="text" class="form-control" formControlName="sku4"
+                                    placeholder="Enter SKU" />
+                                <button type="button"
+                                    style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none;">
+                                    <mat-icon>photo_camera</mat-icon>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select class="form-control" formControlName="category">
+                                <option value="" disabled selected>Select a Category</option>
+                                <option>Select Category</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Brand</label>
+                            <select class="form-control" formControlName="brand">
+                                <option>Select Brand</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" style="flex:1;">
+                            <label>Supplier</label>
+                            <select class="form-control" formControlName="supplier">
+                                <option>John, Smith</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label>Price</label>
+                            <input type="text" formControlName="price" class="form-control" placeholder="Enter Price" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom: 20px;">
+                            <label style="font-weight:500;">Show in Catalogue</label>
+                            <mat-slide-toggle formControlName="showInCatalogue"></mat-slide-toggle>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom: 20px">
+                            <label style="font-weight:500;">Universal</label>
+                            <mat-slide-toggle></mat-slide-toggle>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex:1;">
+                            <label>Add Variation</label>
+                            <select class="form-control" formControlName="variation">
+                                <option>Select Variation</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-outline" style="height:40px; width:40px; padding:0;">
+                            <mat-icon>add</mat-icon>
+                        </button>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Add Product</button>
+                        <button type="button" class="btn btn-outline">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

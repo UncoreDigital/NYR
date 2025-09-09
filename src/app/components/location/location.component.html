@@ -1,0 +1,98 @@
+<div class="page-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-header></app-header>
+    <div class="content">
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <span class="breadcrumb-item active">Settings</span>
+        <mat-icon class="breadcrumb-separator active">chevron_right</mat-icon>
+        <span class="breadcrumb-item active">Location</span>
+      </div>
+      
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1>Location</h1>
+        
+      </div>
+      
+      <!-- Search Bar -->
+      <div class="search-section">
+        <div class="search-container">
+          <mat-icon class="search-icon">search</mat-icon>
+          <input 
+            type="text" 
+            placeholder="Search..." 
+            class="search-input"
+            (keyup)="applyFilter($event)">
+        </div>
+        <button class="btn btn-primary" (click)="addLocation()">
+          Add Location
+        </button>
+      </div>
+      
+      <!-- Location Table -->
+      <div class="table-container">
+        <table mat-table [dataSource]="dataSource" matSort class="customer-table">
+          <!-- Company Name Column -->
+          <ng-container matColumnDef="locationName">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>LOCATION NAME</th>
+            <td mat-cell *matCellDef="let location">{{location.locationName}}</td>
+          </ng-container>
+
+          <!-- Contact Name Column -->
+          <ng-container matColumnDef="customerName">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>CUSTOMER NAME</th>
+            <td mat-cell *matCellDef="let location">{{location.customerName}}</td>
+          </ng-container>
+
+          <!-- Address Column -->
+          <ng-container matColumnDef="contactPerson">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>CONTACT ADDRESS</th>
+            <td mat-cell *matCellDef="let location">{{location.contactPerson}}</td>
+          </ng-container>
+
+          <!-- Phone Number Column -->
+          <ng-container matColumnDef="phoneNumber">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>PHONE NUMBER</th>
+            <td mat-cell *matCellDef="let location">{{location.phoneNumber}}</td>
+          </ng-container>
+
+          <!-- Location Address Column -->
+          <ng-container matColumnDef="locationAddress">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>LOCATION ADDRESS</th>
+            <td mat-cell *matCellDef="let location">{{location.locationAddress}}</td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>ACTIONS</th>
+            <td mat-cell *matCellDef="let location">
+              <div class="action-buttons">
+                <button class="action-btn view" (click)="viewLocation(location)" title="View">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button class="action-btn edit" (click)="editLocation(location)" title="Edit">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button class="action-btn delete" (click)="deleteLocation(location)" title="Delete">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <!-- Paginator -->
+        <mat-paginator 
+          [pageSizeOptions]="[5, 10, 20]" 
+          showFirstLastButtons
+          class="table-paginator">
+        </mat-paginator>
+      </div>
+    </div>
+  </div>
+</div>

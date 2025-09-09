@@ -1,0 +1,61 @@
+<div class="auth-container">
+  <div class="auth-left">
+    <img src="../../assets/loginImg.png" 
+         alt="Medical professional" class="auth-image">
+  </div>
+  
+  <div class="auth-right">
+    <div class="auth-form">
+      <div class="logo">
+        <div class="logo-text">
+          <span class="logo-nyr">NYR</span>
+          <span class="logo-subtitle">New York<br>Recovery</span>
+        </div>
+      </div>
+      
+      <div class="form-content">
+        <h1>Create an Account</h1>
+        <p class="form-subtitle">Create an account to continue</p>
+        
+        <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+          <div class="form-group">
+            <label class="form-label">Email address</label>
+            <input 
+              type="email" 
+              class="form-input" 
+              placeholder="Enter your email address"
+              formControlName="email">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input 
+              type="password" 
+              class="form-input" 
+              placeholder="Enter your password"
+              formControlName="password">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Re-enter Password</label>
+            <input 
+              type="password" 
+              class="form-input" 
+              placeholder="Enter your password"
+              formControlName="confirmPassword">
+          </div>
+          
+          <p class="password-hint">Least 8 characters</p>
+          
+          <button type="submit" class="btn btn-primary btn-full" [disabled]="!signupForm.valid">
+            Sign Up
+          </button>
+        </form>
+        
+        <div class="auth-footer">
+          <p>Already have an account? <a href="#" class="link" (click)="goToLogin()">Sign in</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
