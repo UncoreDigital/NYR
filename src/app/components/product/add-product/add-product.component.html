@@ -141,19 +141,27 @@
                         </div>
                         <div style="display:flex; align-items:center; gap:8px; margin-bottom: 20px">
                             <label style="font-weight:500;">Universal</label>
-                            <mat-slide-toggle></mat-slide-toggle>
+                            <mat-slide-toggle (change)="onUniversalToggle($event)"></mat-slide-toggle>
                         </div>
                     </div>
-                    <div class="form-row">
+                    <div class="form-row" *ngIf="!universal">
                         <div class="form-group" style="flex:1;">
                             <label>Add Variation</label>
                             <select class="form-control" formControlName="variation">
                                 <option>Select Variation</option>
+                                <option>Size</option>
+                                <option>Color</option>
+                                <option>Test</option>
                             </select>
                         </div>
-                        <button type="button" class="btn btn-outline" style="height:40px; width:40px; padding:0;">
-                            <mat-icon>add</mat-icon>
-                        </button>
+                        <div class="form-group" style="flex:1;">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn btn-outline" style="height:40px; width:40px; padding:0;"
+                                (click)="addVariationClick()">
+                                <mat-icon>add</mat-icon>
+                            </button>
+                        </div>
+
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">Add Product</button>
@@ -161,6 +169,36 @@
                     </div>
                 </form>
             </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop" id="addVariation" *ngIf="addVariation">
+    <div class="modal-success">
+        <h2 style="text-align:left; font-size:1.2rem; font-weight:600; margin-bottom:24px;">Add Variation
+        </h2>
+        <div class="form-row">
+            <div class="form-group" style="flex:1;">
+                <label style="text-align: left;">Variation Name</label>
+                <input type="text" [(ngModel)]="variationNm" class="form-control" placeholder="Enter Variation Name" />
+            </div>
+        </div>
+        <div style="display:flex; gap:18px; justify-content:center;">
+            <button class="btn btn-primary" (click)="saveProductAvailability()">Done</button>
+            <button class="btn btn-outline" (click)="closeProductAvailability()">Cancel</button>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop" *ngIf="showSuccess">
+    <div class="modal-success">
+        <div class="modal-icon">
+            <mat-icon>check_circle</mat-icon>
+        </div>
+        <div class="modal-message">
+            <h2>Product has been successfully added.</h2>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" (click)="addAnotherProduct()">Add Another Product</button>
+            <button class="btn btn-outline" (click)="goToProductsList()">Go to Products List</button>
         </div>
     </div>
 </div>

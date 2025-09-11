@@ -23,8 +23,11 @@ export class AddProductComponent {
   showInCatalogue = false;
   universal = false;
   imageFile: File | null = null;
+  showSuccess = false;
+  addVariation = false;
+  variationNm: string = '';
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private router: Router) {
     this.productForm = this.fb.group({
       productName: [''],
       description: [''],
@@ -42,9 +45,10 @@ export class AddProductComponent {
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   onSubmit() {
+    this.showSuccess = true;
     if (this.productForm.valid) {
       const formData = { ...this.productForm.value, image: this.imageFile };
       // Handle form submission (e.g., send to API)
@@ -57,5 +61,31 @@ export class AddProductComponent {
     if (file) {
       this.imageFile = file;
     }
+  }
+
+  addVariationClick() {
+    this.addVariation = true;
+  }
+
+  addAnotherProduct() {
+    this.showSuccess = false;
+    this.productForm.reset();
+  }
+
+  goToProductsList() {
+    this.router.navigate(['/products']);
+  }
+
+  saveProductAvailability() {
+    // Save logic here
+    this.addVariation = false;
+  }
+
+  closeProductAvailability() {
+    this.addVariation = false;
+  }
+
+  onUniversalToggle(event: any) {
+    this.universal = !event.checked;
   }
 }

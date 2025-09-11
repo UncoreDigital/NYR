@@ -481,6 +481,36 @@ select.form-control,
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  /* Custom dropdown arrow that inherits current text color */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px 16px;
+  padding-right: 40px; /* room for the arrow */
+}
+
+/* Improve hover and focus feel */
+select.form-control:hover,
+.form-group select:hover {
+  border-color: #cbd5e1; /* slate-300 */
+}
+
+/* Hide legacy IE arrow */
+select.form-control::-ms-expand,
+.form-group select::-ms-expand {
+  display: none;
+}
+
+/* Options styling (limited by browser capabilities) */
+select.form-control option,
+.form-group select option {
+  color: #111827; /* gray-900 text for items */
+}
+
+/* Placeholder-like style when disabled option is selected (supported in modern Chromium) */
+.form-group select:has(option[disabled]:checked),
+select.form-control:has(option[disabled]:checked) {
+  color: #9ca3af; /* gray-400 */
 }
 
 select.form-control:focus, 
