@@ -1,0 +1,51 @@
+<div class="page-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-header></app-header>
+    <div class="content">
+      <div class="breadcrumb">
+        <span class="breadcrumb-item active">Settings</span>
+        <mat-icon class="breadcrumb-separator">chevron_right</mat-icon>
+        <span class="breadcrumb-item active">Profile</span>
+      </div>
+
+      <div class="profile-card">
+        <div class="profile-header">
+          <img class="avatar" src="assets/loginImg.png" alt="avatar" />
+          <span class="avatar-badge"><mat-icon class="breadcrumb-separator active">edit_square</mat-icon></span>
+        </div>
+
+        <div class="field">
+          <label>Name</label>
+          <div class="input-with-icon">
+            <input type="text" [value]="name" />
+            <button type="button" aria-label="edit"><mat-icon>edit_square</mat-icon></button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="flex:1;">
+            <label>Phone Number</label>
+            <div class="input-with-icon">
+              <input type="text" [value]="phone" />
+              <button type="button" aria-label="edit"><mat-icon>edit_square</mat-icon></button>
+            </div>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Email</label>
+            <div class="input-with-icon">
+              <input type="email" [value]="email" />
+              <button type="button" aria-label="edit"><mat-icon>edit_square</mat-icon></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p>profile works!</p>

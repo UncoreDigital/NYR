@@ -24,6 +24,7 @@ import { SupplierComponent } from './components/supplier/supplier.component';
 import { VanComponent } from './components/van/van.component';
 import { WarehouseComponent } from './components/warehouse/warehouse.component';
 import { ProductComponent } from './components/product/product.component';
+import { ProfileComponent } from './components/profile/profile.component';
 
 @NgModule({
   declarations: [
@@ -37,7 +38,8 @@ import { ProductComponent } from './components/product/product.component';
     SupplierComponent,
     VanComponent,
     WarehouseComponent,
-    ProductComponent
+    ProductComponent,
+    ProfileComponent
   ],
   imports: [
     BrowserModule,

@@ -17,6 +17,7 @@ import { WarehouseComponent } from './components/warehouse/warehouse.component';
 import { AddWarehouseComponent } from './components/warehouse/add-warehouse/add-warehouse.component';
 import { ProductComponent } from './components/product/product.component';
 import { AddProductComponent } from './components/product/add-product/add-product.component';
+import { ProfileComponent } from './components/profile/profile.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -37,6 +38,7 @@ const routes: Routes = [
   { path: 'warehouse/add', component: AddWarehouseComponent },
   { path: 'product', component: ProductComponent },
   { path: 'product/add', component: AddProductComponent },
+  { path: 'profile', component: ProfileComponent },
   { path: '**', redirectTo: '/login' }
 ];
 
