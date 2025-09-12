@@ -34,9 +34,11 @@ export class SuppliesComponent {
   fruitsControl = new FormControl([]);
 
   // Product variations data
-  productVariations = [
+  allProductVariations = [
+    // Pneumatic Walking Boot variations
     {
       id: 1,
+      productId: 'pneumatic-walking-boot',
       productName: 'Pneumatic Walking Boot',
       size: 'L',
       side: 'Universal',
@@ -46,6 +48,7 @@ export class SuppliesComponent {
     },
     {
       id: 2,
+      productId: 'pneumatic-walking-boot',
       productName: 'Pneumatic Walking Boot',
       size: 'M',
       side: 'Universal',
@@ -55,14 +58,71 @@ export class SuppliesComponent {
     },
     {
       id: 3,
+      productId: 'pneumatic-walking-boot',
       productName: 'Pneumatic Walking Boot',
       size: 'S',
       side: 'Universal',
       colour: 'Grey',
       inStock: 10,
       quantity: 0
+    },
+    // Other Product variations
+    {
+      id: 4,
+      productId: 'other-product',
+      productName: 'Other Product',
+      size: 'XL',
+      side: 'Left',
+      colour: 'Blue',
+      inStock: 25,
+      quantity: 0
+    },
+    {
+      id: 5,
+      productId: 'other-product',
+      productName: 'Other Product',
+      size: 'L',
+      side: 'Right',
+      colour: 'Red',
+      inStock: 15,
+      quantity: 0
+    },
+    // Product 3 variations
+    {
+      id: 6,
+      productId: 'product-3',
+      productName: 'Product 3',
+      size: 'M',
+      side: 'Universal',
+      colour: 'Green',
+      inStock: 40,
+      quantity: 0
+    },
+    {
+      id: 7,
+      productId: 'product-3',
+      productName: 'Product 3',
+      size: 'S',
+      side: 'Universal',
+      colour: 'Yellow',
+      inStock: 20,
+      quantity: 0
+    },
+    // Product 4 variations
+    {
+      id: 8,
+      productId: 'product-4',
+      productName: 'Product 4',
+      size: 'L',
+      side: 'Universal',
+      colour: 'Purple',
+      inStock: 35,
+      quantity: 0
     }
   ];
+
+  // Filtered variations based on selected products
+  productVariations: any[] = [];
 
   // Selected products data
   selectedProducts: any[] = [];
@@ -84,6 +144,9 @@ export class SuppliesComponent {
       email: [''],
       emailTemplate: [''],
     });
+    
+    // Initialize with all variations (no filter applied initially)
+    this.productVariations = [...this.allProductVariations];
   }
 
   onSubmit() {
@@ -213,6 +276,21 @@ export class SuppliesComponent {
     this.suppliesForm.patchValue({
       suppliesProduct: this.selectedProductsList
     });
+    
+    // Filter variations based on selected products
+    this.filterVariationsBySelectedProducts();
+  }
+
+  filterVariationsBySelectedProducts() {
+    if (this.selectedProductsList.length === 0) {
+      // If no products selected, show all variations
+      this.productVariations = [...this.allProductVariations];
+    } else {
+      // Filter variations to only show those for selected products
+      this.productVariations = this.allProductVariations.filter(variation => 
+        this.selectedProductsList.includes(variation.productId)
+      );
+    }
   }
 
   isProductSelected(productId: string): boolean {
