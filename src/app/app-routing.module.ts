@@ -19,6 +19,7 @@ import { ProductComponent } from './components/product/product.component';
 import { AddProductComponent } from './components/product/add-product/add-product.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { SuppliesComponent } from './components/supplies/supplies.component';
+import { TransfersComponent } from './components/transfers/transfers.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -41,6 +42,7 @@ const routes: Routes = [
   { path: 'product/add', component: AddProductComponent },
   { path: 'profile', component: ProfileComponent },
   { path: 'supplies', component: SuppliesComponent },
+  { path: 'transfers', component: TransfersComponent },
   { path: '**', redirectTo: '/login' }
 ];
 
