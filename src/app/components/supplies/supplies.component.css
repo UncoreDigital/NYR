@@ -117,3 +117,253 @@
 .multiselect-option:focus-within {
   background-color: #edf2f7;
 }
+
+/* Variation Table Styles */
+.variation-section {
+  margin: 24px 0;
+}
+
+.variation-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #2d3748;
+  margin-bottom: 16px;
+}
+
+.variation-table-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.variation-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.variation-table thead {
+  background-color: #f3f1fd;
+}
+
+.variation-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #4a5568;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.variation-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f7fafc;
+  color: #2d3748;
+  vertical-align: middle;
+}
+
+.variation-table tbody tr:hover {
+  background-color: #f7fafc;
+}
+
+.variation-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.quantity-input {
+  width: 80px;
+  padding: 6px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+  background-color: #ffffff;
+  transition: border-color 0.2s ease;
+}
+
+.quantity-input:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.quantity-input:disabled {
+  background-color: #f7fafc;
+  color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.btn-add {
+  background-color: #B4FFF9;
+  color: #000000;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 60px;
+  border: 1px solid #02C3B4;
+}
+
+.btn-add:hover:not(:disabled) {
+  background-color: #2c5aa0;
+  transform: translateY(-1px);
+}
+
+.btn-add:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-add:disabled {
+  background-color: #cbd5e0;
+  color: #a0aec0;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+  .variation-table-container {
+    overflow-x: auto;
+  }
+  
+  .variation-table {
+    min-width: 600px;
+  }
+  
+  .variation-table th,
+  .variation-table td {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .quantity-input {
+    width: 60px;
+    padding: 4px 6px;
+  }
+  
+  .btn-add {
+    padding: 6px 12px;
+    font-size: 12px;
+    min-width: 50px;
+  }
+}
+
+/* Selected Product Table Styles */
+.selected-section {
+  margin: 24px 0;
+}
+
+.selected-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #2d3748;
+  margin-bottom: 16px;
+}
+
+.selected-table-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.selected-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.selected-table thead {
+  background-color: #f3f1fd;
+}
+
+.selected-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #4a5568;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.selected-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f7fafc;
+  color: #2d3748;
+  vertical-align: middle;
+}
+
+.selected-table tbody tr:hover {
+  background-color: #f7fafc;
+}
+
+.selected-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.btn-remove {
+  background-color: #e53e3e;
+  color: #ffffff;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+}
+
+.btn-remove:hover {
+  background-color: #c53030;
+  transform: translateY(-1px);
+}
+
+.btn-remove:active {
+  transform: translateY(0);
+}
+
+.btn-remove mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* Responsive selected table */
+@media (max-width: 768px) {
+  .selected-table-container {
+    overflow-x: auto;
+  }
+  
+  .selected-table {
+    min-width: 500px;
+  }
+  
+  .selected-table th,
+  .selected-table td {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .btn-remove {
+    padding: 6px;
+    min-width: 32px;
+    height: 32px;
+  }
+  
+  .btn-remove mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
