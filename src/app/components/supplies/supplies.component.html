@@ -32,11 +32,22 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Select Product</label>
-                            <select formControlName="suppliesProduct" class="form-control">
-                                <option value="" disabled selected>Select Product</option>
-                                <option value="pneumatic-walking-boot">Pneumatic Walking Boot</option>
-                                <option value="other-product">Other Product</option>
-                            </select>
+                            <div class="product-multiselect-dropdown">
+                                <div class="product-multiselect-input" (click)="toggleProductDropdown()">
+                                    <span class="product-multiselect-text">{{ getSelectedProductsText() }}</span>
+                                    <mat-icon class="product-multiselect-arrow" [class.rotated]="isProductDropdownOpen">keyboard_arrow_down</mat-icon>
+                                </div>
+                                <div class="product-multiselect-options" *ngIf="isProductDropdownOpen">
+                                    <div class="product-multiselect-option" *ngFor="let product of products" 
+                                         (click)="toggleProduct(product.id)">
+                                        <input type="checkbox" 
+                                               [checked]="isProductSelected(product.id)"
+                                               (change)="toggleProduct(product.id)"
+                                               class="product-multiselect-checkbox">
+                                        <span class="product-multiselect-option-text">{{ product.name }}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Request Supplier</label>

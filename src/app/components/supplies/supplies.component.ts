@@ -67,6 +67,16 @@ export class SuppliesComponent {
   // Selected products data
   selectedProducts: any[] = [];
 
+  // Product multiselect dropdown properties
+  isProductDropdownOpen = false;
+  selectedProductsList: string[] = [];
+  products = [
+    { id: 'pneumatic-walking-boot', name: 'Pneumatic Walking Boot' },
+    { id: 'other-product', name: 'Other Product' },
+    { id: 'product-3', name: 'Product 3' },
+    { id: 'product-4', name: 'Product 4' }
+  ];
+
   constructor(private fb: FormBuilder, private router: Router) {
     this.suppliesForm = this.fb.group({
       suppliesProduct: ['', Validators.required],
@@ -142,5 +152,96 @@ export class SuppliesComponent {
 
   getSelectedProductsCount(): number {
     return this.selectedProducts.length;
+  }
+
+  // Variation multiselect dropdown methods
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  closeDropdown() {
+    this.isDropdownOpen = false;
+  }
+
+  toggleSupplier(supplierId: string) {
+    const index = this.selectedSupplies.indexOf(supplierId);
+    if (index > -1) {
+      this.selectedSupplies.splice(index, 1);
+    } else {
+      this.selectedSupplies.push(supplierId);
+    }
+    
+    // Update form control
+    this.suppliesForm.patchValue({
+      suppliesName: this.selectedSupplies
+    });
+  }
+
+  isSupplierSelected(supplierId: string): boolean {
+    return this.selectedSupplies.includes(supplierId);
+  }
+
+  getSelectedSuppliersText(): string {
+    if (this.selectedSupplies.length === 0) {
+      return 'Request Supplier';
+    }
+    if (this.selectedSupplies.length === 1) {
+      const supplier = this.supplies.find(s => s.id === this.selectedSupplies[0]);
+      return supplier ? supplier.name : 'Request Supplier';
+    }
+    return `${this.selectedSupplies.length} suppliers selected`;
+  }
+
+  // Product multiselect dropdown methods
+  toggleProductDropdown() {
+    this.isProductDropdownOpen = !this.isProductDropdownOpen;
+  }
+
+  closeProductDropdown() {
+    this.isProductDropdownOpen = false;
+  }
+
+  toggleProduct(productId: string) {
+    const index = this.selectedProductsList.indexOf(productId);
+    if (index > -1) {
+      this.selectedProductsList.splice(index, 1);
+    } else {
+      this.selectedProductsList.push(productId);
+    }
+    
+    // Update form control
+    this.suppliesForm.patchValue({
+      suppliesProduct: this.selectedProductsList
+    });
+  }
+
+  isProductSelected(productId: string): boolean {
+    return this.selectedProductsList.includes(productId);
+  }
+
+  getSelectedProductsText(): string {
+    if (this.selectedProductsList.length === 0) {
+      return 'Select Product';
+    }
+    if (this.selectedProductsList.length === 1) {
+      const product = this.products.find(p => p.id === this.selectedProductsList[0]);
+      return product ? product.name : 'Select Product';
+    }
+    return `${this.selectedProductsList.length} products selected`;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event) {
+    const target = event.target as HTMLElement;
+    const productDropdown = target.closest('.product-multiselect-dropdown');
+    const variationDropdown = target.closest('.multiselect-dropdown');
+    
+    if (!productDropdown && this.isProductDropdownOpen) {
+      this.closeProductDropdown();
+    }
+    
+    if (!variationDropdown && this.isDropdownOpen) {
+      this.closeDropdown();
+    }
   }
 }

@@ -118,6 +118,127 @@
   background-color: #edf2f7;
 }
 
+/* Product Multiselect Dropdown Styles */
+.product-multiselect-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.product-multiselect-input {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 38.4px;
+  height: 38.4px;
+}
+
+.product-multiselect-input:hover {
+  border-color: #cbd5e0;
+}
+
+.product-multiselect-input:focus-within {
+  border-color: #02C3B4;
+  box-shadow: 0 0 0 3px rgba(2, 195, 180, 0.1);
+}
+
+.product-multiselect-text {
+  color: #4a5568;
+  font-size: 14px;
+  flex: 1;
+  text-align: left;
+}
+
+.product-multiselect-arrow {
+  color: #000000;
+  transition: transform 0.2s ease;
+  font-size: 20px;
+}
+
+.product-multiselect-arrow.rotated {
+  transform: rotate(180deg);
+}
+
+.product-multiselect-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.product-multiselect-option {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid #f7fafc;
+}
+
+.product-multiselect-option:last-child {
+  border-bottom: none;
+}
+
+.product-multiselect-option:hover {
+  background-color: #f7fafc;
+}
+
+.product-multiselect-checkbox {
+  margin-right: 12px;
+  width: 16px;
+  height: 16px;
+  accent-color: #02C3B4;
+  cursor: pointer;
+}
+
+.product-multiselect-option-text {
+  color: #2d3748;
+  font-size: 14px;
+  flex: 1;
+}
+
+/* Custom scrollbar for product dropdown */
+.product-multiselect-options::-webkit-scrollbar {
+  width: 6px;
+}
+
+.product-multiselect-options::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.product-multiselect-options::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.product-multiselect-options::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Focus states for accessibility */
+.product-multiselect-checkbox:focus {
+  outline: 2px solid #02C3B4;
+  outline-offset: 2px;
+}
+
+.product-multiselect-option:focus-within {
+  background-color: #edf2f7;
+}
+
 /* Variation Table Styles */
 .variation-section {
   margin: 24px 0;
@@ -211,7 +332,7 @@
 }
 
 .btn-add:hover:not(:disabled) {
-  background-color: #2c5aa0;
+  background-color: #02C3B4;
   transform: translateY(-1px);
 }
 
