@@ -12,12 +12,12 @@ import { Router } from '@angular/router';
 })
 export class SidebarComponent implements OnInit {
   menuItems = [
-    { icon: 'dashboard', label: 'Dashboard', route: '/dashboard', active: false },
-    { icon: 'inventory_2', label: 'Inventory', route: '/inventory', active: false },
-    { icon: 'route', label: 'Routes', route: '/routes', active: false },
-    { icon: 'swap_horiz', label: 'Transfers', route: '/transfers', active: false },
-    { icon: 'analytics', label: 'Tracking & Analytics', route: '/analytics', active: false },
-    { icon: 'local_shipping', label: 'Supplies', route: '/supplies', active: false }
+    { icon: 'dashboard', label: 'Dashboard', route: '/dashboard', active: true },
+    { icon: 'inventory_2', label: 'Inventory', route: '/inventory' },
+    { icon: 'route', label: 'Routes', route: '/routes' },
+    { icon: 'swap_horiz', label: 'Transfers', route: '/transfers' },
+    { icon: 'analytics', label: 'Tracking & Analytics', route: '/analytics' },
+    { icon: 'local_shipping', label: 'Supplies', route: '/supplies' }
   ];
 
   settingsItems = [

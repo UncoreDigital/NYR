@@ -25,6 +25,7 @@ import { VanComponent } from './components/van/van.component';
 import { WarehouseComponent } from './components/warehouse/warehouse.component';
 import { ProductComponent } from './components/product/product.component';
 import { ProfileComponent } from './components/profile/profile.component';
+import { SuppliesComponent } from './components/supplies/supplies.component';
 
 @NgModule({
   declarations: [
