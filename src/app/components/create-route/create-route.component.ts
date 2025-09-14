@@ -41,6 +41,11 @@ export class CreateRouteComponent implements OnInit {
     { id: 11, locationName: 'Location K', locationAddress: '808 Chestnut St, Downtown', driverName: 'James Clark', status: 'in-transit' },
     { id: 12, locationName: 'Location L', locationAddress: '909 Walnut St, Riverside', driverName: 'Olivia Lewis', status: 'delivered' },
   ];
+  selectedDate: string = new Date().toISOString().split('T')[0];
+  selectedDriver: string = '';
+  drivers: string[] = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Emily Davis', 'David Wilson'];
+  selectedDriverOption: string = 'preAssigned';
+  showCreateModal: boolean = false;
 
   constructor(private router: Router) { }
 
@@ -59,7 +64,7 @@ export class CreateRouteComponent implements OnInit {
   }
 
   createRoute() {
-    this.router.navigate(['/crate-route']);
+    this.showCreateModal = true;
   }
 
   viewMap(route: CreateRoutes) {
@@ -122,5 +127,19 @@ export class CreateRouteComponent implements OnInit {
 
   getSelectedCount(): number {
     return this.selectedItems.length;
+  }
+
+  saveRoute() {
+    this.router.navigate(['/route-detail']);
+  }
+
+  closeModal() {
+    this.selectedItems = [];
+    this.isAllSelected = false;
+  }
+
+  onDriverOptionChange(event: any) {
+    this.selectedDriverOption = event.target.value;
+    this.selectedDriver = '';
   }
 }

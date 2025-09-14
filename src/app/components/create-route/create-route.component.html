@@ -23,7 +23,7 @@
                     <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)">
                 </div>
                 <button class="btn btn-primary" (click)="createRoute()">
-                    Create Routes
+                    Create
                 </button>
             </div>
 
@@ -32,16 +32,12 @@
                 <table mat-table [dataSource]="dataSource" matSort class="customer-table">
                     <ng-container matColumnDef="select">
                         <th mat-header-cell *matHeaderCellDef>
-                            <input type="checkbox" 
-                                   class="checkbox-select-all" 
-                                   [checked]="isAllSelectedCheckbox()"
-                                   (change)="masterToggle()">
+                            <input type="checkbox" class="checkbox-select-all" [checked]="isAllSelectedCheckbox()"
+                                (change)="masterToggle()">
                         </th>
                         <td mat-cell *matCellDef="let route">
-                            <input type="checkbox" 
-                                   class="checkbox-row" 
-                                   [checked]="isRowSelected(route)"
-                                   (change)="toggleRowSelection(route)">
+                            <input type="checkbox" class="checkbox-row" [checked]="isRowSelected(route)"
+                                (change)="toggleRowSelection(route)">
                         </td>
                     </ng-container>
 
@@ -76,6 +72,58 @@
                 <!-- Paginator -->
                 <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons class="table-paginator">
                 </mat-paginator>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Route Modal -->
+<div class="modal-backdrop" *ngIf="showCreateModal" (click)="closeModal()">
+    <div class="modal-success" (click)="$event.stopPropagation()" style="padding: 20px; width: 30%;">
+        <div class="modal-content">
+
+            <!-- Driver Assignment Options -->
+            <div class="driver-assignment-section">
+                <div class="radio-group" style="margin-bottom: 20px;">
+                    <label class="radio-option mr-15">
+                        <input type="radio" name="driverAssignment" value="preAssigned" (change)="onDriverOptionChange($event)"
+                            [(ngModel)]="selectedDriverOption" class="radio-input mr-2">
+                        <span class="radio-label">Pre Assigned Drivers</span>
+                    </label>
+
+                    <label class="radio-option">
+                        <input type="radio" name="driverAssignment" value="assign" [(ngModel)]="selectedDriverOption"
+                            (change)="onDriverOptionChange($event)" class="radio-input mr-2">
+                        <span class="radio-label">Assign Drivers</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Available Driver Input -->
+            <div class="form-group" *ngIf="selectedDriverOption === 'assign'">
+                <label class="form-label" style="text-align: left;">Available Driver</label>
+                <div class="input-container" style="text-align: left;">
+                    <select class="form-control" [(ngModel)]="selectedDriver" style="width: 100%;">
+                        <option value="" disabled selected>Select a Driver</option>
+                        <option value="admin">Driver 1</option>
+                        <option value="warehouse">Driver 2</option>
+                        <option value="driver">Driver 3</option>
+                        <option value="location">Driver 4</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Select Date Input -->
+            <div class="form-group">
+                <label class="form-label" style="text-align: left;">Select Date</label>
+                <div class="input-container" style="text-align: left;">
+                    <input type="text" placeholder="Date" class="form-input" [(ngModel)]="selectedDate">
+                </div>
+            </div>
+
+            <!-- Modal Actions -->
+            <div class="modal-actions">
+                <button class="btn btn-primary" (click)="saveRoute()">Save Route</button>
             </div>
         </div>
     </div>
