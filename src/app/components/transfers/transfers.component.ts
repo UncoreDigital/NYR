@@ -110,6 +110,7 @@ export class TransfersComponent implements OnInit {
 
   saveFollowUp() {
     this.showFollowUpModal = false;
+    this.router.navigate(['/routes']);
   }
 
   transferDetail(iconName: string) {
