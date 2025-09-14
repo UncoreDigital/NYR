@@ -21,6 +21,7 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { SuppliesComponent } from './components/supplies/supplies.component';
 import { TransfersComponent } from './components/transfers/transfers.component';
 import { TransferDetailComponent } from './components/transferDetail/transfer-detail.component';
+import { RoutesComponent } from './components/routes/routes.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -45,6 +46,7 @@ const routes: Routes = [
   { path: 'supplies', component: SuppliesComponent },
   { path: 'transfers', component: TransfersComponent },
   { path: 'transferDetail', component: TransferDetailComponent },
+  { path: 'routes', component: RoutesComponent },
   { path: '**', redirectTo: '/login' }
 ];
 
