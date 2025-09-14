@@ -556,3 +556,6 @@ input[type="time"]:disabled {
   accent-color: #02C3B4; /* Optional: matches your theme */
   cursor: pointer;
 }
+.mr-15 {
+  margin-right: 15px;
+}

@@ -17,25 +17,18 @@
       </div>
       
       <!-- Search Bar -->
-      <div class="search-section">
-        <div class="search-container">
-          <mat-icon class="search-icon">search</mat-icon>
-          <input 
-            type="text" 
-            placeholder="Search..." 
-            class="search-input"
-            (keyup)="applyFilter($event)">
-        </div>
-        <button class="btn btn-primary" (click)="addTransfer()">
-          Transfer to Van
-        </button>
-        <button class="btn btn-primary" (click)="addTransfer()">
-          Transfer to Location
-        </button>
-        <button class="btn btn-primary" (click)="addTransfer()">
-          Add Follow Up
-        </button>
-      </div>
+<div class="search-section">
+  <div class="search-container">
+    <mat-icon class="search-icon">search</mat-icon>
+    <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)">
+  </div>
+
+  <div class="button-group">
+    <button class="btn btn-primary mr-15">Transfer to Van</button>
+    <button class="btn btn-primary mr-15">Transfer to Location</button>
+    <button class="btn btn-primary">Add Follow Up</button>
+  </div>
+</div>
       
       <!-- User Table -->
       <div class="table-container">
