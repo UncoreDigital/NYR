@@ -27,6 +27,7 @@ import { ProductComponent } from './components/product/product.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { SuppliesComponent } from './components/supplies/supplies.component';
 import { TransfersComponent } from './components/transfers/transfers.component';
+import { TransferDetailComponent } from './components/transferDetail/transfer-detail.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +43,8 @@ import { TransfersComponent } from './components/transfers/transfers.component';
     WarehouseComponent,
     ProductComponent,
     ProfileComponent,
-    TransfersComponent
+    TransfersComponent,
+    TransferDetailComponent
   ],
   imports: [
     BrowserModule,

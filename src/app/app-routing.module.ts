@@ -20,6 +20,7 @@ import { AddProductComponent } from './components/product/add-product/add-produc
 import { ProfileComponent } from './components/profile/profile.component';
 import { SuppliesComponent } from './components/supplies/supplies.component';
 import { TransfersComponent } from './components/transfers/transfers.component';
+import { TransferDetailComponent } from './components/transferDetail/transfer-detail.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -43,6 +44,7 @@ const routes: Routes = [
   { path: 'profile', component: ProfileComponent },
   { path: 'supplies', component: SuppliesComponent },
   { path: 'transfers', component: TransfersComponent },
+  { path: 'transferDetail', component: TransferDetailComponent },
   { path: '**', redirectTo: '/login' }
 ];
 

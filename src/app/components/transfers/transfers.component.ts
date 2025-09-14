@@ -111,4 +111,10 @@ export class TransfersComponent implements OnInit {
   saveFollowUp() {
     this.showFollowUpModal = false;
   }
+
+  transferDetail(iconName: string) {
+    if (iconName === 'visibility') {
+      this.router.navigate(['/transferDetail']);
+    }
+  }
 }

@@ -59,7 +59,8 @@
               <span class="status-badge mr-8" [class]="getStatusClass(transfer.status)">
                 {{ getStatusDisplayText(transfer.status) }}
               </span>
-              <mat-icon *ngIf="getStatusIcon(transfer.status)" style="color: #02C3B4;" class="status-icon">
+              <mat-icon *ngIf="getStatusIcon(transfer.status)" style="color: #02C3B4;" class="status-icon"
+              (click)="transferDetail(getStatusIcon(transfer.status))">
                 {{ getStatusIcon(transfer.status) }}
               </mat-icon>
             </td>

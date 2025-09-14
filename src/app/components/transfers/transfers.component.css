@@ -18,6 +18,7 @@
   height: 14px !important;
   line-height: 1;
   vertical-align: middle;
+  cursor: pointer;
 }
 
 /* Status-specific styles matching the image */
