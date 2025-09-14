@@ -12,6 +12,16 @@ export interface routeDetail {
   shippingItem: string;
 }
 
+export interface ProductDetail {
+  productName: string;
+  skuCode: string;
+  size: string;
+  side: string;
+  colour: string;
+  quantity: number;
+  inStock: number;
+}
+
 @Component({
   selector: 'app-route-detail',
   templateUrl: './route-detail.component.html',
@@ -20,6 +30,12 @@ export interface routeDetail {
 export class RouteDetailComponent implements OnInit {
   displayedColumns: string[] = ['stop', 'deliveryDate', 'location', 'inventoryItem', 'shippingItem', 'actions'];
   dataSource = new MatTableDataSource<routeDetail>();
+  
+  // Modal properties
+  showModal = false;
+  modalTitle = 'Route Details';
+  productDetails: ProductDetail[] = [];
+  productDisplayedColumns: string[] = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -52,6 +68,64 @@ export class RouteDetailComponent implements OnInit {
   }
 
   viewMap(route: routeDetail) {
+  }
+
+  openInventoryModal(route: routeDetail) {
+    // Sample product data - in real app, this would come from API
+    this.productDetails = [
+      {
+        productName: 'Pneumatic Walking Boot',
+        skuCode: 'MD-001',
+        size: 'L',
+        side: 'Universal',
+        colour: 'Black',
+        quantity: 10,
+        inStock: 25
+      },
+      {
+        productName: 'Pneumatic Walking Boot',
+        skuCode: 'MD-001',
+        size: 'L',
+        side: 'Universal',
+        colour: 'Black',
+        quantity: 10,
+        inStock: 25
+      }
+    ];
+    this.modalTitle = 'Inventory Items';
+    this.showModal = true;
+    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity'];
+  }
+
+  openShippingModal(route: routeDetail) {
+    // Sample product data for shipping items - in real app, this would come from API
+    this.productDetails = [
+      {
+        productName: 'Pneumatic Walking Boot',
+        skuCode: 'MD-001',
+        size: 'L',
+        side: 'Universal',
+        colour: 'Black',
+        quantity: 10,
+        inStock: 25
+      },
+      {
+        productName: 'Pneumatic Walking Boot',
+        skuCode: 'MD-001',
+        size: 'L',
+        side: 'Universal',
+        colour: 'Black',
+        quantity: 10,
+        inStock: 25
+      }
+    ];
+    this.modalTitle = 'Shipping Items';
+    this.showModal = true;
+    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
+  }
+
+  closeModal() {
+    this.showModal = false;
   }
 }
 
