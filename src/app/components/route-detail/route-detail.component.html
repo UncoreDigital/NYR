@@ -10,16 +10,29 @@
                 </a>
                 <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
 
-                <a routerLink="/users" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                <a class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
                     Details
                 </a>
-                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
             </div>
 
             <!-- Page Header -->
             <div class="page-header">
                 <h1>Route Details</h1>
+            </div>
 
+            <!-- Search Bar -->
+            <div class="search-section">
+                <div class="search-container">
+
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-primary mr-15 viewIcon" title="View">
+                        <mat-icon>visibility</mat-icon>
+                    </button>
+                    <!-- <button class="btn btn-primary mr-15"><mat-icon class="breadcrumb-separator">eye</mat-icon></button> -->
+                    <button class="btn btn-primary mr-15">Approve Route</button>
+                    <button class="btn btn-primary">Add Location Address</button>
+                </div>
             </div>
 
             <div class="table-container">
@@ -80,7 +93,7 @@
 <!-- Modal Dialog -->
 <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
     <div class="modal-dialog" (click)="$event.stopPropagation()">
-        
+
         <div class="modal-content">
             <div class="modal-table-container">
                 <table mat-table [dataSource]="productDetails" class="product-table">

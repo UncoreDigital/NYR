@@ -63,13 +63,6 @@ export class RouteDetailComponent implements OnInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-  createRoute() {
-    this.router.navigate(['/crate-route']);
-  }
-
-  viewMap(route: routeDetail) {
-  }
-
   openInventoryModal(route: routeDetail) {
     // Sample product data - in real app, this would come from API
     this.productDetails = [

@@ -122,3 +122,21 @@
 .close-btn:active {
   transform: translateY(1px);
 }
+
+.viewIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;   /* same padding for all buttons */
+  min-height: 40px;    /* force consistent height */
+  border-radius: 6px;
+  background-color: #00c4b3;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+}
+
+.viewIcon mat-icon {
+  font-size: 18px;
+}
