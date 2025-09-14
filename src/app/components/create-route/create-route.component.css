@@ -74,3 +74,71 @@
 .modal-actions {
   justify-content: end;
 }
+
+/* Checkbox Styles */
+.checkbox-select-all,
+.checkbox-row {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #02C3B4;
+  border-radius: 3px;
+  background-color: #ffffff;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.checkbox-select-all:hover,
+.checkbox-row:hover {
+  border-color: #02C3B4;
+  box-shadow: 0 0 0 2px rgba(2, 195, 180, 0.1);
+}
+
+.checkbox-select-all:checked,
+.checkbox-row:checked {
+  background-color: #ffffff;
+  border-color: #02C3B4;
+}
+
+.checkbox-select-all:checked::after,
+.checkbox-row:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #02C3B4;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.checkbox-select-all:focus,
+.checkbox-row:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(2, 195, 180, 0.2);
+}
+
+/* Table cell alignment for checkboxes */
+th[mat-header-cell] .checkbox-select-all,
+td[mat-cell] .checkbox-row {
+  margin: 0 auto;
+  display: block;
+}
+
+/* Responsive checkbox styles */
+@media (max-width: 768px) {
+  .checkbox-select-all,
+  .checkbox-row {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .checkbox-select-all:checked::after,
+  .checkbox-row:checked::after {
+    font-size: 10px;
+  }
+}

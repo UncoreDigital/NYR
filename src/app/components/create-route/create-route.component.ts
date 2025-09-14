@@ -10,6 +10,7 @@ export interface CreateRoutes {
   locationAddress: string;
   driverName: string;
   status: string;
+  selected?: boolean;
 }
 
 @Component({
@@ -18,8 +19,10 @@ export interface CreateRoutes {
   styleUrl: './create-route.component.css'
 })
 export class CreateRouteComponent implements OnInit {
-  displayedColumns: string[] = ['locationName', 'locationAddress', 'driverName', 'status'];
+  displayedColumns: string[] = ['select', 'locationName', 'locationAddress', 'driverName', 'status'];
   dataSource = new MatTableDataSource<CreateRoutes>();
+  selectedItems: CreateRoutes[] = [];
+  isAllSelected = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -84,5 +87,40 @@ export class CreateRouteComponent implements OnInit {
       'driver-assigned': 'status-driver-assigned'
     };
     return classMap[status] || 'status-default';
+  }
+
+  // Checkbox methods
+  isAllSelectedCheckbox(): boolean {
+    const numSelected = this.selectedItems.length;
+    const numRows = this.dataSource.data.length;
+    return numSelected === numRows;
+  }
+
+  masterToggle() {
+    this.isAllSelected = this.isAllSelectedCheckbox();
+    
+    if (this.isAllSelected) {
+      this.selectedItems = [];
+    } else {
+      this.selectedItems = [...this.dataSource.data];
+    }
+  }
+
+  isRowSelected(row: CreateRoutes): boolean {
+    return this.selectedItems.some(item => item.id === row.id);
+  }
+
+  toggleRowSelection(row: CreateRoutes) {
+    const index = this.selectedItems.findIndex(item => item.id === row.id);
+    if (index > -1) {
+      this.selectedItems.splice(index, 1);
+    } else {
+      this.selectedItems.push(row);
+    }
+    this.isAllSelected = this.isAllSelectedCheckbox();
+  }
+
+  getSelectedCount(): number {
+    return this.selectedItems.length;
   }
 }
