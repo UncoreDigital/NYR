@@ -31,6 +31,7 @@ import { TransferDetailComponent } from './components/transferDetail/transfer-de
 import { RoutesComponent } from './components/routes/routes.component';
 import { CreateRouteComponent } from './components/create-route/create-route.component';
 import { RouteDetailComponent } from './components/route-detail/route-detail.component';
+import { InventoryWarehouseComponent } from './components/inventory-warehouse/inventory-warehouse.component';
 
 @NgModule({
   declarations: [
@@ -50,7 +51,8 @@ import { RouteDetailComponent } from './components/route-detail/route-detail.com
     TransferDetailComponent,
     RoutesComponent,
     CreateRouteComponent,
-    RouteDetailComponent
+    RouteDetailComponent,
+    InventoryWarehouseComponent
   ],
   imports: [
     BrowserModule,

@@ -24,6 +24,7 @@ import { TransferDetailComponent } from './components/transferDetail/transfer-de
 import { RoutesComponent } from './components/routes/routes.component';
 import { CreateRouteComponent } from './components/create-route/create-route.component';
 import { RouteDetailComponent } from './components/route-detail/route-detail.component';
+import { InventoryWarehouseComponent } from './components/inventory-warehouse/inventory-warehouse.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -51,6 +52,7 @@ const routes: Routes = [
   { path: 'routes', component: RoutesComponent },
   { path: 'crate-route', component: CreateRouteComponent },
   { path: 'route-detail', component: RouteDetailComponent },
+  { path: 'inwarehouse', component: InventoryWarehouseComponent },
   { path: '**', redirectTo: '/login' }
 ];
 
