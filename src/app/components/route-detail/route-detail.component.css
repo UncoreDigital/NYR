@@ -1,0 +1,5 @@
+.mat-mdc-cell a {
+  text-decoration: underline;
+  color: #000000; /* optional, for link color */
+  cursor: pointer;
+}

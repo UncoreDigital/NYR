@@ -23,6 +23,7 @@ import { TransfersComponent } from './components/transfers/transfers.component';
 import { TransferDetailComponent } from './components/transferDetail/transfer-detail.component';
 import { RoutesComponent } from './components/routes/routes.component';
 import { CreateRouteComponent } from './components/create-route/create-route.component';
+import { RouteDetailComponent } from './components/route-detail/route-detail.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -49,6 +50,7 @@ const routes: Routes = [
   { path: 'transferDetail', component: TransferDetailComponent },
   { path: 'routes', component: RoutesComponent },
   { path: 'crate-route', component: CreateRouteComponent },
+  { path: 'route-detail', component: RouteDetailComponent },
   { path: '**', redirectTo: '/login' }
 ];
 

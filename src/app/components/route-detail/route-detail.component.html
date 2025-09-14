@@ -1,0 +1,74 @@
+<div class="page-layout">
+    <app-sidebar></app-sidebar>
+    <div class="main-content">
+        <app-header></app-header>
+        <div class="content">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Routes
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <a routerLink="/users" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Details
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+            </div>
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Route Details</h1>
+
+            </div>
+
+            <div class="table-container">
+                <table mat-table [dataSource]="dataSource" matSort class="customer-table">
+                    <ng-container matColumnDef="stop">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>STOP</th>
+                        <td mat-cell *matCellDef="let route">{{route.stop}}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="deliveryDate">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>DELIVERY DATE</th>
+                        <td mat-cell *matCellDef="let route">{{route.deliveryDate}}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="location">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>LOCATION</th>
+                        <td mat-cell *matCellDef="let route">{{route.location}}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="inventoryItem">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>INVENTORY ITEM</th>
+                        <td mat-cell *matCellDef="let route"><a>{{route.inventoryItem}}</a></td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="shippingItem">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>SHIPPING ITEM</th>
+                        <td mat-cell *matCellDef="let route"><a>{{route.shippingItem}}</a></td>
+                    </ng-container>
+
+                    <!-- Actions Column -->
+                    <ng-container matColumnDef="actions">
+                        <th mat-header-cell *matHeaderCellDef>ACTIONS</th>
+                        <td mat-cell *matCellDef="let route">
+                            <div class="action-buttons">
+                                <button class="action-btn delete" title="Delete">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+
+                <!-- Paginator -->
+                <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons class="table-paginator">
+                </mat-paginator>
+            </div>
+        </div>
+    </div>
+</div>
