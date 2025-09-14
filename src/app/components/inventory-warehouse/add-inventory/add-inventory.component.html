@@ -1,0 +1,104 @@
+<div class="page-layout">
+    <app-sidebar></app-sidebar>
+    <div class="main-content">
+        <app-header></app-header>
+        <div class="content">
+
+            <!-- Breadcrumb -->
+            <div class="breadcrumb flex items-center space-x-2 text-gray-600">
+                <a class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Inventory
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <a routerLink="/warehouse" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Warehouse
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <span class="breadcrumb-item text-gray-800 font-semibold active">
+                    Add Inventory
+                </span>
+            </div>
+
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Add Inventory</h1>
+
+            </div>
+
+            <div class="table-container">
+                <form [formGroup]="inventoryForm" class="user-form" (ngSubmit)="onSubmit()">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Select Warehouse</label>
+                            <select formControlName="warehouseName" class="form-control">
+                                <option value="" disabled selected>Select Warehouse</option>
+                                <option value="admin">WareHouse 1</option>
+                                <option value="warehouse">Avetis</option>
+                                <option value="driver">Uncore</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Select Product</label>
+                            <select formControlName="prodcut" class="form-control">
+                                <option value="" disabled selected>Select Product</option>
+                                <option value="admin">Prodcut 1</option>
+                                <option value="warehouse">Prodcut 2</option>
+                                <option value="driver">Prodcut 3</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Quantity</label>
+                            <input formControlName="quantity" type="text" placeholder="Enter Quantity" />
+                        </div>
+                        <div class="form-group">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Select Variation Name</label>
+                            <select [(ngModel)]="currentVariationName" (ngModelChange)="onVariationNameChange($event)" [ngModelOptions]="{standalone: true}" class="form-control">
+                                <option value="" disabled selected>Variation</option>
+                                <option value="Size">Size</option>
+                                <option value="Color">Color</option>
+                                <option value="Material">Material</option>
+                                <option value="Weight">Weight</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Variation Value</label>
+                            <input [(ngModel)]="currentVariationValue" (ngModelChange)="onVariationValueChange($event)" [ngModelOptions]="{standalone: true}" type="text" placeholder="Variation" class="form-control" />
+                        </div>
+                        <div class="form-group add-variation-group">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn-add-variation" (click)="addVariation()">
+                                <mat-icon>add</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Variation Tags Display -->
+                    <div class="variation-tags-container" *ngIf="variations.length > 0">
+                        <div class="variation-tag" *ngFor="let variation of variations; let i = index">
+                            <span class="variation-text">{{variation.name}} - {{variation.value}}</span>
+                            <button type="button" class="remove-tag" (click)="removeVariation(i)">
+                                <mat-icon>close</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                   
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Add</button>
+                        <button type="reset" class="btn btn-outline">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

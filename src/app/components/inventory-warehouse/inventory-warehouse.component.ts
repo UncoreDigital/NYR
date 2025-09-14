@@ -53,7 +53,7 @@ export class InventoryWarehouseComponent implements OnInit {
 
   addInventory() {
     console.log('Add Warehouse clicked');
-    this.router.navigate(['/warehouse/add']);
+    this.router.navigate(['/inwarehouse/add']);
   }
 
   viewInventoryWarehouse(inventoryWarehouse: inventoryWarehouse) {
