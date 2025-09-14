@@ -44,7 +44,8 @@ export class SuppliesComponent {
       side: 'Universal',
       colour: 'Black',
       inStock: 50,
-      quantity: 12
+      quantity: 12,
+      status: 'delivered'
     },
     {
       id: 2,
@@ -54,7 +55,8 @@ export class SuppliesComponent {
       side: 'Universal',
       colour: 'White',
       inStock: 30,
-      quantity: 0
+      quantity: 0,
+      status: 'in-transit'
     },
     {
       id: 3,
@@ -64,7 +66,8 @@ export class SuppliesComponent {
       side: 'Universal',
       colour: 'Grey',
       inStock: 10,
-      quantity: 0
+      quantity: 0,
+      status: 'follow-up'
     },
     // Other Product variations
     {
@@ -75,7 +78,8 @@ export class SuppliesComponent {
       side: 'Left',
       colour: 'Blue',
       inStock: 25,
-      quantity: 0
+      quantity: 0,
+      status: 'follow-up-completed'
     },
     {
       id: 5,
@@ -85,7 +89,8 @@ export class SuppliesComponent {
       side: 'Right',
       colour: 'Red',
       inStock: 15,
-      quantity: 0
+      quantity: 0,
+      status: 'follow-up-completed'
     },
     // Product 3 variations
     {
@@ -96,7 +101,8 @@ export class SuppliesComponent {
       side: 'Universal',
       colour: 'Green',
       inStock: 40,
-      quantity: 0
+      quantity: 0,
+      status: 'driver-assigned'
     },
     {
       id: 7,
@@ -106,7 +112,8 @@ export class SuppliesComponent {
       side: 'Universal',
       colour: 'Yellow',
       inStock: 20,
-      quantity: 0
+      quantity: 0,
+      status: 'delivered'
     },
     // Product 4 variations
     {
@@ -117,7 +124,8 @@ export class SuppliesComponent {
       side: 'Universal',
       colour: 'Purple',
       inStock: 35,
-      quantity: 0
+      quantity: 0,
+      status: 'delivered'
     }
   ];
 
@@ -194,7 +202,8 @@ export class SuppliesComponent {
           size: variation.size,
           side: variation.side,
           colour: variation.colour,
-          quantity: variation.quantity
+          quantity: variation.quantity,
+          status: variation.status
         });
       }
       
@@ -320,6 +329,53 @@ export class SuppliesComponent {
     
     if (!variationDropdown && this.isDropdownOpen) {
       this.closeDropdown();
+    }
+  }
+
+  // Status methods
+  getStatusDisplayText(status: string): string {
+    const statusMap: { [key: string]: string } = {
+      'delivered': 'Delivered',
+      'in-transit': 'In transit',
+      'follow-up': 'Follow up',
+      'follow-up-completed': 'Follow up completed',
+      'driver-assigned': 'Driver Assigned'
+    };
+    return statusMap[status] || status;
+  }
+
+  getStatusClass(status: string): string {
+    const classMap: { [key: string]: string } = {
+      'delivered': 'status-delivered',
+      'in-transit': 'status-in-transit',
+      'follow-up': 'status-follow-up',
+      'follow-up-completed': 'status-follow-up-completed',
+      'driver-assigned': 'status-driver-assigned'
+    };
+    return classMap[status] || 'status-default';
+  }
+
+  getStatusIcon(status: string): string {
+    const iconMap: { [key: string]: string } = {
+      'delivered': 'visibility',
+      'in-transit': 'visibility',
+      'follow-up': '',
+      'follow-up-completed': 'chat_bubble',
+      'driver-assigned': 'visibility'
+    };
+    return iconMap[status] || '';
+  }
+
+  updateStatus(variationId: number, newStatus: string) {
+    const variation = this.productVariations.find(v => v.id === variationId);
+    if (variation) {
+      variation.status = newStatus;
+    }
+    
+    // Also update in selected products if it exists there
+    const selectedProduct = this.selectedProducts.find(sp => sp.id === variationId);
+    if (selectedProduct) {
+      selectedProduct.status = newStatus;
     }
   }
 }

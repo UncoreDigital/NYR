@@ -55,24 +55,13 @@
 
           <ng-container matColumnDef="status">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>STATUS</th>
-            <td mat-cell *matCellDef="let transfer">{{transfer.status}}</td>
-          </ng-container>s
-
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>ACTIONS</th>
-            <td mat-cell *matCellDef="let user">
-              <div class="action-buttons">
-                <button class="action-btn view" (click)="viewTransfer(user)" title="View">
-                  <mat-icon>visibility</mat-icon>
-                </button>
-                <button class="action-btn edit" (click)="editTransfer(user)" title="Edit">
-                  <mat-icon>edit</mat-icon>
-                </button>
-                <button class="action-btn delete" (click)="deleteTransfer(user)" title="Delete">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </div>
+            <td mat-cell *matCellDef="let transfer">
+              <span class="status-badge mr-8" [class]="getStatusClass(transfer.status)">
+                {{ getStatusDisplayText(transfer.status) }}
+              </span>
+              <mat-icon *ngIf="getStatusIcon(transfer.status)" style="color: #02C3B4;" class="status-icon">
+                  {{ getStatusIcon(transfer.status) }}
+              </mat-icon>
             </td>
           </ng-container>
 

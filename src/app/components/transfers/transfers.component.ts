@@ -25,15 +25,15 @@ export class TransfersComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   transfers: Transfers[] = [
-    { locationName: 'Warehouse A', customerName: 'Alice Smith', deliveryDate: '2024-06-01', driver: 'Bob Johnson', status: 'In Transit' },
-    { locationName: 'Warehouse B', customerName: 'Charlie Brown', deliveryDate: '2024-06-02', driver: 'David Wilson', status: 'Delivered' },
-    { locationName: 'Warehouse C', customerName: 'Eve Davis', deliveryDate: '2024-06-03', driver: 'Frank Miller', status: 'Pending' },
-    { locationName: 'Warehouse D', customerName: 'Grace Lee', deliveryDate: '2024-06-04', driver: 'Hank Garcia', status: 'In Transit' },
-    { locationName: 'Warehouse E', customerName: 'Ivy Martinez', deliveryDate: '2024-06-05', driver: 'Jack Rodriguez', status: 'Delivered' },
-    { locationName: 'Warehouse F', customerName: 'Kathy Hernandez', deliveryDate: '2024-06-06', driver: 'Larry Lopez', status: 'Pending' },
-    { locationName: 'Warehouse G', customerName: 'Mona Gonzalez', deliveryDate: '2024-06-07', driver: 'Nina Wilson', status: 'In Transit' },
-    { locationName: 'Warehouse H', customerName: 'Oscar Perez', deliveryDate: '2024-06-08', driver: 'Paul Clark', status: 'Delivered' },
-    { locationName: 'Warehouse I', customerName: 'Quinn Lewis', deliveryDate: '2024-06-09', driver: 'Rita Walker', status: 'Pending' },
+    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '17 Jun 2025', driver: 'Nick Danil', status: 'delivered' },
+    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '17 Jun 2025', driver: 'Nick Danil', status: 'delivered' },
+    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '17 Jun 2025', driver: 'Nick Danil', status: 'in-transit' },
+    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'follow-up' },
+    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'follow-up-completed' },
+    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'follow-up-completed' },
+    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'driver-assigned' },
+    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'delivered' },
+    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'in-transit' },
   ];
 
   constructor(private router: Router) { }
@@ -67,5 +67,39 @@ export class TransfersComponent implements OnInit {
 
   deleteTransfer(transfers: Transfers) {
     console.log('Delete Transfer:', transfers);
+  }
+
+  // Status methods
+  getStatusDisplayText(status: string): string {
+    const statusMap: { [key: string]: string } = {
+      'delivered': 'Delivered',
+      'in-transit': 'In transit',
+      'follow-up': 'Follow up',
+      'follow-up-completed': 'Follow up completed',
+      'driver-assigned': 'Driver Assigned'
+    };
+    return statusMap[status] || status;
+  }
+
+  getStatusClass(status: string): string {
+    const classMap: { [key: string]: string } = {
+      'delivered': 'status-delivered',
+      'in-transit': 'status-in-transit',
+      'follow-up': 'status-follow-up',
+      'follow-up-completed': 'status-follow-up-completed',
+      'driver-assigned': 'status-driver-assigned'
+    };
+    return classMap[status] || 'status-default';
+  }
+
+  getStatusIcon(status: string): string {
+    const iconMap: { [key: string]: string } = {
+      'delivered': 'visibility',
+      'in-transit': 'visibility',
+      'follow-up': '',
+      'follow-up-completed': 'chat_bubble',
+      'driver-assigned': 'visibility'
+    };
+    return iconMap[status] || '';
   }
 }
