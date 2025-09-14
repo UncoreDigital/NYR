@@ -32,6 +32,7 @@ import { RoutesComponent } from './components/routes/routes.component';
 import { CreateRouteComponent } from './components/create-route/create-route.component';
 import { RouteDetailComponent } from './components/route-detail/route-detail.component';
 import { InventoryWarehouseComponent } from './components/inventory-warehouse/inventory-warehouse.component';
+import { InventoryVanComponent } from './components/inventory-van/inventory-van.component';
 
 @NgModule({
   declarations: [
@@ -52,7 +53,8 @@ import { InventoryWarehouseComponent } from './components/inventory-warehouse/in
     RoutesComponent,
     CreateRouteComponent,
     RouteDetailComponent,
-    InventoryWarehouseComponent
+    InventoryWarehouseComponent,
+    InventoryVanComponent
   ],
   imports: [
     BrowserModule,
