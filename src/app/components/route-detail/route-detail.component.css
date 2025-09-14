@@ -140,3 +140,249 @@
 .viewIcon mat-icon {
   font-size: 18px;
 }
+
+/* Location Address Modal Styles */
+.location-modal-dialog {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 90%;
+  max-height: 90%;
+  width: 600px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.location-modal-header {
+  background-color: #f8f9fa;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 12px;
+}
+
+.header-column {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-column:first-child {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.header-column:first-child:hover {
+  background-color: #e9ecef;
+}
+
+.header-text {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.checkbox-icon {
+  font-size: 18px;
+  color: #666;
+}
+
+.location-modal-content {
+  flex: 1;
+  padding: 0;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.customer-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.customer-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.customer-item:hover {
+  background-color: #f8f9fa;
+}
+
+.customer-name-column {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.customer-name {
+  font-size: 14px;
+  color: #333;
+}
+
+.customer-status-column {
+  display: flex;
+  align-items: center;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.ready-to-ship {
+  background-color: #fcead8;
+  color: #FF8C00;
+  border-color: #fcead8;
+}
+
+.status-badge.follow-up {
+  background-color: #e5efff;
+  color: #7CB0FD;
+  border-color: #e5efff;
+}
+
+.checkbox-icon.checked {
+  color: #20c997;
+}
+
+.location-modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.create-btn {
+  background-color: #20c997;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.create-btn:hover {
+  background-color: #1aa085;
+}
+
+.create-btn:active {
+  transform: translateY(1px);
+}
+
+/* Approval Modal Styles */
+.approval-modal-dialog {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 90%;
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.approval-modal-content {
+  padding: 40px 30px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.approval-icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.approval-icon {
+  width: 80px;
+  height: 80px;
+  background-color: #02C3B4;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(32, 201, 151, 0.3);
+}
+
+.checkmark-icon {
+  /* font-size: 40px; */
+  color: white;
+  font-weight: bold;
+}
+
+.approval-question h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.4;
+}
+
+.approval-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  width: 100%;
+}
+
+.approve-btn {
+  background-color: #02C3B4;
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  min-width: 80px;
+}
+
+.approve-btn:hover {
+  background-color: #1aa085;
+}
+
+.approve-btn:active {
+  transform: translateY(1px);
+}
+
+.reject-btn {
+  background-color: white;
+  color: #02C3B4;
+  border: 2px solid #02C3B4;
+  padding: 10px 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.reject-btn:hover {
+  background-color: #20c997;
+  color: white;
+}
+
+.reject-btn:active {
+  transform: translateY(1px);
+}

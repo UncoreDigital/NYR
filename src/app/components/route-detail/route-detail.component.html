@@ -30,8 +30,8 @@
                         <mat-icon>visibility</mat-icon>
                     </button>
                     <!-- <button class="btn btn-primary mr-15"><mat-icon class="breadcrumb-separator">eye</mat-icon></button> -->
-                    <button class="btn btn-primary mr-15">Approve Route</button>
-                    <button class="btn btn-primary">Add Location Address</button>
+                     <button class="btn btn-primary mr-15" (click)="openApprovalModal()">Approve Route</button>
+                     <button class="btn btn-primary" (click)="openLocationModal()">Add Location Address</button>
                 </div>
             </div>
 
@@ -140,6 +140,68 @@
 
         <div class="modal-footer">
             <button class="close-btn" (click)="closeModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Location Address Modal Dialog -->
+<div class="modal-overlay" *ngIf="showLocationModal" (click)="closeLocationModal()">
+    <div class="location-modal-dialog" (click)="$event.stopPropagation()">
+        <div class="location-modal-header">
+            <div class="header-column" (click)="toggleSelectAll()">
+                <mat-icon class="checkbox-icon" [class.checked]="allSelected">
+                    {{allSelected ? 'check_box' : 'check_box_outline_blank'}}
+                </mat-icon>
+                <span class="header-text">CUSTOMER NAME</span>
+            </div>
+            <div class="header-column">
+                <span class="header-text">STATUS</span>
+            </div>
+        </div>
+        
+        <div class="location-modal-content">
+            <div class="customer-list">
+                <div class="customer-item" *ngFor="let customer of customers" (click)="toggleCustomerSelection(customer)">
+                    <div class="customer-name-column">
+                        <mat-icon class="checkbox-icon" [class.checked]="customer.selected">
+                            {{customer.selected ? 'check_box' : 'check_box_outline_blank'}}
+                        </mat-icon>
+                        <span class="customer-name">{{customer.name}}</span>
+                    </div>
+                    <div class="customer-status-column">
+                        <span class="status-badge" [class.ready-to-ship]="customer.status === 'Ready To Ship'" 
+                              [class.follow-up]="customer.status === 'Follow up'">
+                            {{customer.status}}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="location-modal-footer">
+            <button class="create-btn" (click)="createLocation()">Create</button>
+        </div>
+    </div>
+</div>
+
+<!-- Approval Confirmation Modal Dialog -->
+<div class="modal-overlay" *ngIf="showApprovalModal" (click)="closeApprovalModal()">
+    <div class="approval-modal-dialog" (click)="$event.stopPropagation()">
+        <div class="approval-modal-content">
+            <div class="approval-icon-container">
+                <div class="approval-icon">
+                    <mat-icon class="checkmark-icon">check</mat-icon>
+                </div>
+            </div>
+            
+            <div class="approval-question">
+                <h3>Do You Want to Approve This Route ?</h3>
+            </div>
+            
+            <div class="approval-buttons">
+                <button class="approve-btn" (click)="approveRoute()">Yes</button>
+                <button class="reject-btn" (click)="rejectApproval()">No</button>
+            </div>
         </div>
     </div>
 </div>

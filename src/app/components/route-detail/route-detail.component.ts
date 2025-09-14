@@ -22,6 +22,13 @@ export interface ProductDetail {
   inStock: number;
 }
 
+export interface Customer {
+  id: number;
+  name: string;
+  status: string;
+  selected: boolean;
+}
+
 @Component({
   selector: 'app-route-detail',
   templateUrl: './route-detail.component.html',
@@ -36,6 +43,15 @@ export class RouteDetailComponent implements OnInit {
   modalTitle = 'Route Details';
   productDetails: ProductDetail[] = [];
   productDisplayedColumns: string[] = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
+  
+  // Location Address Modal properties
+  showLocationModal = false;
+  customers: Customer[] = [];
+  selectedCustomers: Customer[] = [];
+  allSelected = false;
+  
+  // Approval Modal properties
+  showApprovalModal = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -119,6 +135,80 @@ export class RouteDetailComponent implements OnInit {
 
   closeModal() {
     this.showModal = false;
+  }
+
+  openLocationModal() {
+    // Sample customer data - in real app, this would come from API
+    this.customers = [
+      { id: 1, name: 'Cervical Collar', status: 'Ready To Ship', selected: true },
+      { id: 2, name: 'Cervical Collar', status: 'Ready To Ship', selected: true },
+      { id: 3, name: 'Cervical Collar', status: 'Ready To Ship', selected: true },
+      { id: 4, name: 'Cervical Collar', status: 'Ready To Ship', selected: true },
+      { id: 5, name: 'Cervical Collar', status: 'Ready To Ship', selected: true },
+      { id: 6, name: 'Cervical Collar', status: 'Ready To Ship', selected: true },
+      { id: 7, name: 'Cervical Collar', status: 'Ready To Ship', selected: true },
+      { id: 8, name: '-', status: 'Follow up', selected: false }
+    ];
+    this.updateAllSelectedState();
+    this.showLocationModal = true;
+  }
+
+  closeLocationModal() {
+    this.showLocationModal = false;
+  }
+
+  toggleCustomerSelection(customer: Customer) {
+    customer.selected = !customer.selected;
+    if (customer.selected) {
+      this.selectedCustomers.push(customer);
+    } else {
+      this.selectedCustomers = this.selectedCustomers.filter(c => c.id !== customer.id);
+    }
+    this.updateAllSelectedState();
+  }
+
+  toggleSelectAll() {
+    this.allSelected = !this.allSelected;
+    this.customers.forEach(customer => {
+      customer.selected = this.allSelected;
+    });
+    
+    if (this.allSelected) {
+      this.selectedCustomers = [...this.customers];
+    } else {
+      this.selectedCustomers = [];
+    }
+  }
+
+  updateAllSelectedState() {
+    this.allSelected = this.customers.length > 0 && this.customers.every(customer => customer.selected);
+  }
+
+  createLocation() {
+    // Handle create location logic here
+    console.log('Selected customers:', this.selectedCustomers);
+    this.closeLocationModal();
+  }
+
+  openApprovalModal() {
+    this.showApprovalModal = true;
+  }
+
+  closeApprovalModal() {
+    this.showApprovalModal = false;
+  }
+
+  approveRoute() {
+    // Handle route approval logic here
+    console.log('Route approved!');
+    this.closeApprovalModal();
+    // You can add additional logic like showing a success message or updating the route status
+  }
+
+  rejectApproval() {
+    // Handle rejection logic here
+    console.log('Route approval rejected');
+    this.closeApprovalModal();
   }
 }
 
