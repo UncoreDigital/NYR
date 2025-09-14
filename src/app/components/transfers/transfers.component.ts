@@ -35,6 +35,7 @@ export class TransfersComponent implements OnInit {
     { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'delivered' },
     { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'in-transit' },
   ];
+  showFollowUpModal: boolean = false;
 
   constructor(private router: Router) { }
 
@@ -101,5 +102,13 @@ export class TransfersComponent implements OnInit {
       'driver-assigned': 'visibility'
     };
     return iconMap[status] || '';
+  }
+
+  addFollowUp() {
+    this.showFollowUpModal = true;
+  }
+
+  saveFollowUp() {
+    this.showFollowUpModal = false;
   }
 }

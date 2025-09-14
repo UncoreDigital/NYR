@@ -9,27 +9,27 @@
         <mat-icon class="breadcrumb-separator active">chevron_right</mat-icon>
         <span class="breadcrumb-item active">User</span>
       </div>
-      
+
       <!-- Page Header -->
       <div class="page-header">
         <h1>User</h1>
-        
-      </div>
-      
-      <!-- Search Bar -->
-<div class="search-section">
-  <div class="search-container">
-    <mat-icon class="search-icon">search</mat-icon>
-    <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)">
-  </div>
 
-  <div class="button-group">
-    <button class="btn btn-primary mr-15">Transfer to Van</button>
-    <button class="btn btn-primary mr-15">Transfer to Location</button>
-    <button class="btn btn-primary">Add Follow Up</button>
-  </div>
-</div>
-      
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-section">
+        <div class="search-container">
+          <mat-icon class="search-icon">search</mat-icon>
+          <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)">
+        </div>
+
+        <div class="button-group">
+          <button class="btn btn-primary mr-15">Transfer to Van</button>
+          <button class="btn btn-primary mr-15">Transfer to Location</button>
+          <button class="btn btn-primary" (click)="addFollowUp()">Add Follow Up</button>
+        </div>
+      </div>
+
       <!-- User Table -->
       <div class="table-container">
         <table mat-table [dataSource]="dataSource" matSort class="customer-table">
@@ -60,7 +60,7 @@
                 {{ getStatusDisplayText(transfer.status) }}
               </span>
               <mat-icon *ngIf="getStatusIcon(transfer.status)" style="color: #02C3B4;" class="status-icon">
-                  {{ getStatusIcon(transfer.status) }}
+                {{ getStatusIcon(transfer.status) }}
               </mat-icon>
             </td>
           </ng-container>
@@ -70,12 +70,42 @@
         </table>
 
         <!-- Paginator -->
-        <mat-paginator 
-          [pageSizeOptions]="[5, 10, 20]" 
-          showFirstLastButtons
-          class="table-paginator">
+        <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons class="table-paginator">
         </mat-paginator>
       </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop" *ngIf="showFollowUpModal">
+  <div class="modal-success" style="padding: 25px 30px;">
+    <div class="availability-times" style="margin-bottom:32px; text-align: left;">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Select Customer</label>
+          <select formControlName="role" class="form-control">
+            <option value="" disabled selected>Select a role</option>
+            <option value="admin">Admin</option>
+            <option value="warehouse">Warehouse and Inventory</option>
+            <option value="driver">Drivers</option>
+            <option value="location">Location Staff</option>
+          </select>
+        </div>        
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Select Location</label>
+          <select formControlName="role" class="form-control">
+            <option value="" disabled selected>Select a Location</option>
+            <option value="admin">US</option>
+            <option value="warehouse">Test 1</option>
+            <option value="driver">Test 2</option>
+            <option value="location">Test 3</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" (click)="saveFollowUp()">Save Follow Up</button>
     </div>
   </div>
 </div>
