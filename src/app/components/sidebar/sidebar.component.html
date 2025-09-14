@@ -3,12 +3,37 @@
     <!-- Main Menu -->
     <nav class="nav-section">
       <ul class="nav-list">
-        <li *ngFor="let item of menuItems" class="nav-item" [class.active]="item.active" (click)="navigate(item.route)">
-          <mat-icon class="nav-icon">{{item.icon}}</mat-icon>
-          <span class="nav-label">{{item.label}}</span>
-        </li>
+        <ng-container *ngFor="let item of menuItems">
+          <li *ngIf="item.label != 'Inventory'" class="nav-item" [class.active]="item.active"
+            (click)="navigate(item.route)">
+            <mat-icon class="nav-icon">{{item.icon}}</mat-icon>
+            <span class="nav-label">{{item.label}}</span>
+          </li>
+
+          <!-- Inventory Section -->
+          <div *ngIf="item.label == 'Inventory'" class="inventory-section">
+            <div class="inventory-header" (click)="toggleInventory()">
+              <mat-icon class="inventory-icon">inventory_2</mat-icon>
+              <span class="inventory-label">Inventory</span>
+              <mat-icon class="expand-icon">
+                {{ isInventoryOpen ? 'expand_less' : 'expand_more' }}
+              </mat-icon>
+            </div>
+
+            <ul class="inventory-list" *ngIf="isInventoryOpen">
+              <li *ngFor="let item of inventoryItems" class="inventory-item" [class.active]="item.active"
+                (click)="navigate(item.route)">
+                <!-- <mat-icon class="inventory-item-icon">{{item.icon}}</mat-icon> -->
+                <span class="inventory-item-label">{{item.label}}</span>
+              </li>
+            </ul>
+          </div>
+        </ng-container>
+
       </ul>
     </nav>
+
+
 
     <!-- Settings Section -->
     <div class="settings-section">

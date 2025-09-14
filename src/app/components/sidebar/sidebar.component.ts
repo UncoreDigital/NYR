@@ -20,6 +20,12 @@ export class SidebarComponent implements OnInit {
     { icon: 'local_shipping', label: 'Supplies', route: '/supplies' }
   ];
 
+  inventoryItems = [
+    { icon: 'warehouse', label: 'Warehouse', route: '/inwarehouse', active: true },
+    { icon: 'vans', label: 'Vans', route: '/invans' },
+    { icon: 'locations', label: 'Locations', route: '/inlocation' },
+  ];
+
   settingsItems = [
     { icon: 'person', label: 'Profile', route: '/profile' },
     { icon: 'people', label: 'Customer', route: '/customer', active: true },
@@ -31,6 +37,7 @@ export class SidebarComponent implements OnInit {
     { icon: 'warehouse', label: 'Warehouse', route: '/warehouse' }
   ];
   isSettingsOpen = false;
+  isInventoryOpen = false;
 
   constructor(private router: Router) { }
 
@@ -48,6 +55,9 @@ export class SidebarComponent implements OnInit {
     this.menuItems.forEach(item => {
       item.active = item.route === currentRoute;
     });
+    this.inventoryItems.forEach((item: any) => {
+      item.active = item.route === currentRoute;
+    });
     this.settingsItems.forEach(item => {
       item.active = item.route === currentRoute;
     });
@@ -55,5 +65,9 @@ export class SidebarComponent implements OnInit {
 
   toggleSettings() {
     this.isSettingsOpen = !this.isSettingsOpen;
+  }
+
+  toggleInventory() {
+    this.isInventoryOpen = !this.isInventoryOpen;
   }
 }
