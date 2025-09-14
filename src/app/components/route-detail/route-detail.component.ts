@@ -201,7 +201,7 @@ export class RouteDetailComponent implements OnInit {
 
   approveRoute() {
     // Handle route approval logic here
-    console.log('Route approved!');
+    this.router.navigate(['/routes']);
     this.closeApprovalModal();
     // You can add additional logic like showing a success message or updating the route status
   }
