@@ -37,19 +37,19 @@ export interface Customer {
 export class RouteDetailComponent implements OnInit {
   displayedColumns: string[] = ['stop', 'deliveryDate', 'location', 'inventoryItem', 'shippingItem', 'actions'];
   dataSource = new MatTableDataSource<routeDetail>();
-  
+
   // Modal properties
   showModal = false;
   modalTitle = 'Route Details';
   productDetails: ProductDetail[] = [];
   productDisplayedColumns: string[] = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
-  
+
   // Location Address Modal properties
   showLocationModal = false;
   customers: Customer[] = [];
   selectedCustomers: Customer[] = [];
   allSelected = false;
-  
+
   // Approval Modal properties
   showApprovalModal = false;
 
@@ -62,6 +62,7 @@ export class RouteDetailComponent implements OnInit {
     { stop: 'Stop 3', deliveryDate: '2023-10-03', location: 'Chicago, IL', inventoryItem: '4 Items', shippingItem: '3 Items' },
     { stop: 'Stop 12', deliveryDate: '2023-10-12', location: 'Jacksonville, FL', inventoryItem: '5 Items', shippingItem: '2 Items' },
   ];
+  showRouteDetail = false;
 
   constructor(private router: Router) { }
 
@@ -172,7 +173,7 @@ export class RouteDetailComponent implements OnInit {
     this.customers.forEach(customer => {
       customer.selected = this.allSelected;
     });
-    
+
     if (this.allSelected) {
       this.selectedCustomers = [...this.customers];
     } else {
@@ -210,5 +211,15 @@ export class RouteDetailComponent implements OnInit {
     console.log('Route approval rejected');
     this.closeApprovalModal();
   }
+
+
+  openRouteDetail() {
+    this.showRouteDetail = true;
+  }
+
+  closeRouteDetail() {
+    this.showRouteDetail = false;
+  }
+
 }
 
