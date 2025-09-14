@@ -22,6 +22,7 @@ import { SuppliesComponent } from './components/supplies/supplies.component';
 import { TransfersComponent } from './components/transfers/transfers.component';
 import { TransferDetailComponent } from './components/transferDetail/transfer-detail.component';
 import { RoutesComponent } from './components/routes/routes.component';
+import { CreateRouteComponent } from './components/create-route/create-route.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -47,6 +48,7 @@ const routes: Routes = [
   { path: 'transfers', component: TransfersComponent },
   { path: 'transferDetail', component: TransferDetailComponent },
   { path: 'routes', component: RoutesComponent },
+  { path: 'crate-route', component: CreateRouteComponent },
   { path: '**', redirectTo: '/login' }
 ];
 

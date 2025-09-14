@@ -1,0 +1,67 @@
+<div class="page-layout">
+    <app-sidebar></app-sidebar>
+    <div class="main-content">
+        <app-header></app-header>
+        <div class="content">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <span class="breadcrumb-item active">Routes</span>
+                <mat-icon class="breadcrumb-separator active">chevron_right</mat-icon>
+                <span class="breadcrumb-item active">Create Route</span>
+            </div>
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Routes</h1>
+
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-section">
+                <div class="search-container">
+                    <mat-icon class="search-icon">search</mat-icon>
+                    <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)">
+                </div>
+                <button class="btn btn-primary" (click)="createRoute()">
+                    Create Routes
+                </button>
+            </div>
+
+            <!-- Van Table -->
+            <div class="table-container">
+                <table mat-table [dataSource]="dataSource" matSort class="customer-table">
+                    <ng-container matColumnDef="locationName">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>DRIVER NAME</th>
+                        <td mat-cell *matCellDef="let route">{{route.locationName}}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="locationAddress">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>TOTAL STOPS</th>
+                        <td mat-cell *matCellDef="let route">{{route.locationAddress}}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="driverName">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>SHIPPING DATE</th>
+                        <td mat-cell *matCellDef="let route">{{route.driverName}}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="status">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>STATUS</th>
+                        <td mat-cell *matCellDef="let transfer">
+                            <span class="status-badge mr-8" [class]="getStatusClass(transfer.status)">
+                                {{ getStatusDisplayText(transfer.status) }}
+                            </span>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+
+                <!-- Paginator -->
+                <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons class="table-paginator">
+                </mat-paginator>
+            </div>
+        </div>
+    </div>
+</div>

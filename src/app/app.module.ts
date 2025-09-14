@@ -29,6 +29,7 @@ import { SuppliesComponent } from './components/supplies/supplies.component';
 import { TransfersComponent } from './components/transfers/transfers.component';
 import { TransferDetailComponent } from './components/transferDetail/transfer-detail.component';
 import { RoutesComponent } from './components/routes/routes.component';
+import { CreateRouteComponent } from './components/create-route/create-route.component';
 
 @NgModule({
   declarations: [
@@ -46,7 +47,8 @@ import { RoutesComponent } from './components/routes/routes.component';
     ProfileComponent,
     TransfersComponent,
     TransferDetailComponent,
-    RoutesComponent
+    RoutesComponent,
+    CreateRouteComponent
   ],
   imports: [
     BrowserModule,

@@ -55,7 +55,7 @@ export class RoutesComponent implements OnInit {
   }
 
   createRoute() {
-
+    this.router.navigate(['/crate-route']);
   }
 
   viewMap(route: Routes) {
