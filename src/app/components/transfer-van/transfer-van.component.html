@@ -76,7 +76,7 @@
                                 <label>Upload Image</label>
                                 <div
                                     style="border:1.5px dashed #d1d5db; border-radius:12px; min-height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-top:8px;">
-                                    <button type="button"
+                                    <button type="button" (click)="openScanPopup()"
                                         style="background:none; border:none; display:flex; flex-direction:column; align-items:center; color:#02C3B4; cursor:pointer;">
                                         <mat-icon
                                             style="font-size:36px; width: auto; height: auto;">cloud_upload</mat-icon>
@@ -93,6 +93,49 @@
                     </div>
                 </form>
             </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop" *ngIf="showScanPopup">
+    <div class="modal-success" style="max-width:900px; width:90%;">
+        <div style="overflow:auto;">
+            <table style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr style="background:#f3f4f6; text-align:left;">
+                        <th style="padding:12px; width:60px;">#</th>
+                        <th style="padding:12px;">Product Name</th>
+                        <th style="padding:12px;">SKU/CODE</th>
+                        <th style="padding:12px; width:80px; text-align:center;">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of scannedItems; let i = index" style="border-top:1px solid #e5e7eb; text-align: left;">
+                        <td style="padding:16px;">{{ (i + 1) < 10 ? '0' + (i + 1) : (i + 1) }}</td>
+                        <td style="padding:16px;">{{ item.productName }}</td>
+                        <td style="padding:16px;">{{ item.sku }}</td>
+                        <td style="padding:16px; text-align:center;">
+                            <button type="button" (click)="removeScannedItem(i)" class="btn" style="padding:6px 10px;">
+                                <mat-icon style="color:#ef4444;">delete</mat-icon>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px; padding:16px 0; border-top:1px solid #e5e7eb; text-align: left;">
+            <label>Manual adjustment</label>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <button type="button" class="btn btn-outline adjustmentBtn" (click)="decrementAdjustment()">-</button>
+                <span>{{ manualAdjustmentCount }}</span>
+                <button type="button" class="btn btn-outline adjustmentPlusBtn" (click)="incrementAdjustment()">+</button>
+            </div>
+        </div>
+        <div style="padding-bottom:16px; text-align: left;" class="form-group">
+            <label style="display:block; margin-bottom:8px;">Reason</label>
+            <input type="text" class="form-control" placeholder="Write Reason" [(ngModel)]="scanReason" [ngModelOptions]="{standalone: true}" />
+        </div>
+        <div class="form-actions" style="justify-content:flex-end;">
+            <button type="button" class="btn btn-primary" (click)="closeScanPopup()">Done Scanning</button>
         </div>
     </div>
 </div>
