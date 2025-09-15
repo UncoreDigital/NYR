@@ -67,7 +67,7 @@ export class InventoryVanComponent implements OnInit {
 
   transferToVan() {
     console.log('Transfer To Van clicked');
-    // Add navigation or modal logic here
+    this.router.navigate(['/tovan']);
   }
 
   viewVan(van: Van) {

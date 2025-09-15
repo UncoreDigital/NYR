@@ -1,0 +1,112 @@
+<div class="page-layout">
+    <app-sidebar></app-sidebar>
+    <div class="main-content">
+        <app-header></app-header>
+        <div class="content">
+
+            <!-- Breadcrumb -->
+            <div class="breadcrumb flex items-center space-x-2 text-gray-600">
+                <a class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Inventory
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <a class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Vans
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <span class="breadcrumb-item text-gray-800 font-semibold active">
+                    Transfer To Van
+                </span>
+            </div>
+
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Transfer To Van</h1>
+
+            </div>
+
+            <div class="table-container">
+                <form [formGroup]="vanForm" class="user-form" (ngSubmit)="onSubmit()">
+                    <div class="form-row">
+                        <div class="radio-group" style="margin-bottom: 20px;">
+                            <label class="radio-option mr-15">
+                                <input type="radio" name="transferType" value="manual"
+                                    (change)="onTransferChange($event)" [(ngModel)]="selectedTransferOption" [ngModelOptions]="{standalone: true}"
+                                    class="radio-input mr-2">
+                                <span class="radio-label">Manual</span>
+                            </label>
+
+                            <label class="radio-option">
+                                <input type="radio" name="transferType" value="scan"
+                                    [(ngModel)]="selectedTransferOption" [ngModelOptions]="{standalone: true}" (change)="onTransferChange($event)"
+                                    class="radio-input mr-2">
+                                <span class="radio-label">Scan</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Select Van</label>
+                            <select class="form-control" formControlName="van" style="width: 100%;">
+                                <option value="" disabled selected>Select Van</option>
+                                <option value="admin">Van 1</option>
+                                <option value="warehouse">Van 2</option>
+                                <option value="driver">Van 3</option>
+                                <option value="location">Van 4</option>
+                            </select>
+                        </div>
+
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" *ngIf="selectedTransferOption == 'manual'">
+                            <label>Select Product</label>
+                            <select class="form-control" formControlName="product" style="width: 100%;">
+                                <option value="" disabled selected>Select Product</option>
+                                <option value="admin">Product 1</option>
+                                <option value="warehouse">Product 2</option>
+                                <option value="driver">Product 3</option>
+                                <option value="location">Product 4</option>
+                            </select>
+                        </div>
+                        <div class="form-group" *ngIf="selectedTransferOption == 'scan'">
+                            <div style="flex:1;">
+                                <label>Upload Image</label>
+                                <div
+                                    style="border:1.5px dashed #d1d5db; border-radius:12px; min-height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-top:8px;">
+                                    <button type="button"
+                                        style="background:none; border:none; display:flex; flex-direction:column; align-items:center; color:#02C3B4; cursor:pointer;">
+                                        <mat-icon
+                                            style="font-size:36px; width: auto; height: auto;">cloud_upload</mat-icon>
+                                        <span>Browse</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions" style="justify-content: flex-end;" *ngIf="selectedTransferOption == 'manual'">
+                        <button type="reset" class="btn btn-outline">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop" *ngIf="showSuccess">
+    <div class="modal-success">
+        <div class="modal-icon">
+            <mat-icon>check_circle</mat-icon>
+        </div>
+        <div class="modal-message">
+            <h2>Van has been successfully added.</h2>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" (click)="addAnotherVan()">Add Another Van</button>
+            <button class="btn btn-outline" (click)="goToVansList()">Go to Vans List</button>
+        </div>
+    </div>
+</div>
