@@ -1,0 +1,75 @@
+<div class="page-layout">
+    <app-sidebar></app-sidebar>
+    <div class="main-content">
+        <app-header></app-header>
+        <div class="content">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <span class="breadcrumb-item active">Inventory</span>
+                <mat-icon class="breadcrumb-separator active">chevron_right</mat-icon>
+                <span class="breadcrumb-item active">Locations</span>
+            </div>
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Locations</h1>
+
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-section">
+                <div class="search-container">
+                    <mat-icon class="search-icon">search</mat-icon>
+                    <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)">
+                </div>
+                <button class="btn btn-primary" (click)="transferToVan()">
+                    Transfer Inventory
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table mat-table [dataSource]="dataSource" matSort class="customer-table">
+                    <ng-container matColumnDef="location">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>LOCATION</th>
+                        <td mat-cell *matCellDef="let location">{{location.location}}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="customer">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>CUSTOMER</th>
+                        <td mat-cell *matCellDef="let location">{{location.customer}}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="contactPerson">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>CONTACT PERSON NAME</th>
+                        <td mat-cell *matCellDef="let location">{{location.contactPerson}}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="locationNumber">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>LOCATION NUMBER</th>
+                        <td mat-cell *matCellDef="let location">{{location.locationNumber}}</td>
+                    </ng-container>
+
+                    <!-- Actions Column -->
+                    <ng-container matColumnDef="actions">
+                        <th mat-header-cell *matHeaderCellDef>ACTIONS</th>
+                        <td mat-cell *matCellDef="let warehouse">
+                            <div class="action-buttons">
+                                <button class="action-btn view" (click)="viewVan(warehouse)"
+                                    title="View">
+                                    <mat-icon>visibility</mat-icon>
+                                </button>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+
+                <!-- Paginator -->
+                <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons class="table-paginator">
+                </mat-paginator>
+            </div>
+        </div>
+    </div>
+</div>

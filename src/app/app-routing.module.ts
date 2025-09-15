@@ -28,6 +28,7 @@ import { InventoryWarehouseComponent } from './components/inventory-warehouse/in
 import { AddInventoryComponent } from './components/inventory-warehouse/add-inventory/add-inventory.component';
 import { InventoryVanComponent } from './components/inventory-van/inventory-van.component';
 import { TransferVanComponent } from './components/transfer-van/transfer-van.component';
+import { InventoryLocationComponent } from './components/inventory-location/inventory-location.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -59,6 +60,7 @@ const routes: Routes = [
   { path: 'inwarehouse/add', component: AddInventoryComponent },
   { path: 'invans', component: InventoryVanComponent },
   { path: 'tovan', component: TransferVanComponent },
+  { path: 'inlocation', component: InventoryLocationComponent },
 
   { path: '**', redirectTo: '/login' }
 ];
