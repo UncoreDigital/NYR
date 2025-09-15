@@ -61,7 +61,7 @@
                                         <th>Colour</th>
                                         <th>In stock</th>
                                         <th>Quantity</th>
-                                        <th>Status</th>
+                                        <!-- <th>Status</th> -->
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -83,14 +83,14 @@
                                             />
 
                                         </td>
-                                        <td>
+                                        <!-- <td>
                                             <span class="status-badge" [class]="getStatusClass(variation.status)">
                                                 {{ getStatusDisplayText(variation.status) }}
                                                 <mat-icon *ngIf="getStatusIcon(variation.status)" class="status-icon">
                                                     {{ getStatusIcon(variation.status) }}
                                                 </mat-icon>
                                             </span>
-                                        </td>
+                                        </td> -->
                                         <td>
                                             <button 
                                                 type="button"
@@ -119,7 +119,7 @@
                                         <th>Side</th>
                                         <th>Colour</th>
                                         <th>Quantity</th>
-                                        <th>Status</th>
+                                        <!-- <th>Status</th> -->
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -130,14 +130,14 @@
                                         <td>{{ selectedProduct.side }}</td>
                                         <td>{{ selectedProduct.colour }}</td>
                                         <td>{{ selectedProduct.quantity }}</td>
-                                        <td>
+                                        <!-- <td>
                                             <span class="status-badge" [class]="getStatusClass(selectedProduct.status)">
                                                 {{ getStatusDisplayText(selectedProduct.status) }}
                                                 <mat-icon *ngIf="getStatusIcon(selectedProduct.status)" class="status-icon">
                                                     {{ getStatusIcon(selectedProduct.status) }}
                                                 </mat-icon>
                                             </span>
-                                        </td>
+                                        </td> -->
                                         <td>
                                             <button 
                                                 type="button"
