@@ -3,11 +3,11 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-transfer-van',
-  templateUrl: './transfer-van.component.html',
-  styleUrl: './transfer-van.component.css'
+  selector: 'app-transfer-location',
+  templateUrl: './transfer-location.component.html',
+  styleUrl: './transfer-location.component.css'
 })
-export class TransferVanComponent {
+export class TransferLocationComponent  {
   vanForm: FormGroup;
   startTime: string = '';
   endTime: string = '';
@@ -20,9 +20,9 @@ export class TransferVanComponent {
   constructor(private fb: FormBuilder, private router: Router) {
     this.selectedTransferOption = 'manual';
     this.vanForm = this.fb.group({
-      van: ['', Validators.required],
+      customer: ['', Validators.required],
+      location: [''],
       product: [''],
-      // image: [''],
     });
 
     // Seed example scanned items; replace with real scan results later
@@ -34,7 +34,7 @@ export class TransferVanComponent {
   }
 
   onSubmit() {
-    this.router.navigate(['/invans']);
+    this.router.navigate(['/inlocation']);
     if (this.vanForm.valid) {
       // Handle form submission (e.g., send to API)
       console.log('Customer Data:', this.vanForm.value);
@@ -57,7 +57,7 @@ export class TransferVanComponent {
 
   closeScanPopup(): void {
     this.showScanPopup = false;
-    this.router.navigate(['/invans']);
+    this.router.navigate(['/inlocation']);
   }
 
   removeScannedItem(index: number): void {
@@ -74,4 +74,3 @@ export class TransferVanComponent {
     }
   }
 }
-

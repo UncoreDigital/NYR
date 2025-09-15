@@ -35,6 +35,7 @@ import { InventoryWarehouseComponent } from './components/inventory-warehouse/in
 import { InventoryVanComponent } from './components/inventory-van/inventory-van.component';
 import { TransferVanComponent } from './components/transfer-van/transfer-van.component';
 import { InventoryLocationComponent } from './components/inventory-location/inventory-location.component';
+import { TransferLocationComponent } from './components/transfer-location/transfer-location.component';
 
 @NgModule({
   declarations: [
@@ -58,7 +59,8 @@ import { InventoryLocationComponent } from './components/inventory-location/inve
     InventoryWarehouseComponent,
     InventoryVanComponent,
     TransferVanComponent,
-    InventoryLocationComponent
+    InventoryLocationComponent,
+    TransferLocationComponent
   ],
   imports: [
     BrowserModule,

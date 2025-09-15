@@ -81,7 +81,7 @@ export class InventoryLocationComponent implements OnInit {
 
   transferToVan() {
     console.log('Transfer To Van clicked');
-    this.router.navigate(['/tovan']);
+    this.router.navigate(['/tolocation']);
   }
 
   viewVan(inventoryLocation: inventoryLocation) {

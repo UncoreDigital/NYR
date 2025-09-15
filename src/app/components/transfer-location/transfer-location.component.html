@@ -12,19 +12,19 @@
                 <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
 
                 <a class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
-                    Vans
+                    Locations
                 </a>
                 <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
 
                 <span class="breadcrumb-item text-gray-800 font-semibold active">
-                    Transfer To Van
+                    Transfer To Location
                 </span>
             </div>
 
 
             <!-- Page Header -->
             <div class="page-header">
-                <h1>Transfer To Van</h1>
+                <h1>Transfer To Location</h1>
 
             </div>
 
@@ -47,15 +47,26 @@
                             </label>
                         </div>
                     </div>
-                    <div class="form-row">
+                   <div class="form-row">
                         <div class="form-group">
                             <label>Select Van</label>
-                            <select class="form-control" formControlName="van" style="width: 100%;">
+                            <select class="form-control" formControlName="customer" style="width: 100%;">
+                                <option value="" disabled selected>Select Customer</option>
+                                <option value="admin">Customer 1</option>
+                                <option value="warehouse">Customer 2</option>
+                                <option value="driver">Customer 3</option>
+                                <option value="location">Customer 4</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Select Location</label>
+                            <select class="form-control" formControlName="location" style="width: 100%;">
                                 <option value="" disabled selected>Select Van</option>
-                                <option value="admin">Van 1</option>
-                                <option value="warehouse">Van 2</option>
-                                <option value="driver">Van 3</option>
-                                <option value="location">Van 4</option>
+                                <option value="admin">Location 1</option>
+                                <option value="warehouse">Location 2</option>
+                                <option value="driver">Location 3</option>
+                                <option value="location">Location 4</option>
                             </select>
                         </div>
 
@@ -87,7 +98,7 @@
                         </div>
                     </div>
 
-                    <div class="form-actions" style="justify-content: flex-end;" *ngIf="selectedTransferOption == 'manual'">
+                    <div class="form-actions" style="justify-content: flex-end;">
                         <button type="reset" class="btn btn-outline">Cancel</button>
                         <button type="submit" class="btn btn-primary">Save</button>
                     </div>
