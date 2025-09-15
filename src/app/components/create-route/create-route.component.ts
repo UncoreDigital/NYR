@@ -28,18 +28,18 @@ export class CreateRouteComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   createRoutes: CreateRoutes[] = [
-    { id: 1, locationName: 'Location A', locationAddress: '123 Main St, Cityville', driverName: 'John Doe', status: 'pending' },
-    { id: 2, locationName: 'Location B', locationAddress: '456 Oak St, Townsville', driverName: 'Jane Smith', status: 'in-transit' },
-    { id: 3, locationName: 'Location C', locationAddress: '789 Pine St, Villageville', driverName: 'Mike Johnson', status: 'delivered' },
-    { id: 4, locationName: 'Location D', locationAddress: '101 Maple St, Hamletville', driverName: 'Emily Davis', status: 'pending' },
-    { id: 5, locationName: 'Location E', locationAddress: '202 Birch St, Boroughville', driverName: 'David Wilson', status: 'in-transit' },
-    { id: 6, locationName: 'Location F', locationAddress: '303 Cedar St, Metropolis', driverName: 'Sarah Brown', status: 'delivered' },
-    { id: 7, locationName: 'Location G', locationAddress: '404 Spruce St, Capital City', driverName: 'Chris Lee', status: 'pending' },
-    { id: 8, locationName: 'Location H', locationAddress: '505 Elm St, Smalltown', driverName: 'Anna White', status: 'in-transit' },
-    { id: 9, locationName: 'Location I', locationAddress: '606 Willow St, Bigcity', driverName: 'Tom Harris', status: 'delivered' },
-    { id: 10, locationName: 'Location J', locationAddress: '707 Ash St, Uptown', driverName: 'Laura Martin', status: 'pending' },
-    { id: 11, locationName: 'Location K', locationAddress: '808 Chestnut St, Downtown', driverName: 'James Clark', status: 'in-transit' },
-    { id: 12, locationName: 'Location L', locationAddress: '909 Walnut St, Riverside', driverName: 'Olivia Lewis', status: 'delivered' },
+    { id: 1, locationName: 'Location A', locationAddress: '123 Main St, Cityville', driverName: 'John Doe', status: 'Ready to Ship' },
+    { id: 2, locationName: 'Location B', locationAddress: '456 Oak St, Townsville', driverName: 'Jane Smith', status: 'Ready to Ship' },
+    { id: 3, locationName: 'Location C', locationAddress: '789 Pine St, Villageville', driverName: 'Mike Johnson', status: 'Ready to Ship' },
+    { id: 4, locationName: 'Location D', locationAddress: '101 Maple St, Hamletville', driverName: 'Emily Davis', status: 'Ready to Ship' },
+    { id: 5, locationName: 'Location E', locationAddress: '202 Birch St, Boroughville', driverName: 'David Wilson', status: 'Ready to Ship' },
+    { id: 6, locationName: 'Location F', locationAddress: '303 Cedar St, Metropolis', driverName: 'Sarah Brown', status: 'Ready to Ship' },
+    { id: 7, locationName: 'Location G', locationAddress: '404 Spruce St, Capital City', driverName: 'Chris Lee', status: 'Ready to Ship' },
+    { id: 8, locationName: 'Location H', locationAddress: '505 Elm St, Smalltown', driverName: 'Anna White', status: 'Ready to Ship' },
+    { id: 9, locationName: 'Location I', locationAddress: '606 Willow St, Bigcity', driverName: 'Tom Harris', status: 'Ready to Ship' },
+    { id: 10, locationName: 'Location J', locationAddress: '707 Ash St, Uptown', driverName: 'Laura Martin', status: 'Ready to Ship' },
+    { id: 11, locationName: 'Location K', locationAddress: '808 Chestnut St, Downtown', driverName: 'James Clark', status: 'follow-up' },
+    { id: 12, locationName: 'Location L', locationAddress: '909 Walnut St, Riverside', driverName: 'Olivia Lewis', status: 'follow-up' },
   ];
   selectedDate: string = new Date().toISOString().split('T')[0];
   selectedDriver: string = '';
@@ -75,6 +75,7 @@ export class CreateRouteComponent implements OnInit {
     const statusMap: { [key: string]: string } = {
       'delivered': 'Delivered',
       'in-transit': 'In transit',
+      'Ready to Ship': 'Ready to Ship',
       'follow-up': 'Follow up',
       'follow-up-completed': 'Follow up completed',
       'driver-assigned': 'Driver Assigned'
@@ -89,7 +90,8 @@ export class CreateRouteComponent implements OnInit {
       'follow-up': 'status-follow-up',
       'pending': 'status-follow-up',
       'follow-up-completed': 'status-follow-up-completed',
-      'driver-assigned': 'status-driver-assigned'
+      'driver-assigned': 'status-driver-assigned',
+      'Ready to Ship': 'status-in-transit',
     };
     return classMap[status] || 'status-default';
   }
