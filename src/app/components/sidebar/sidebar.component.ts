@@ -16,7 +16,7 @@ export class SidebarComponent implements OnInit {
     { icon: 'inventory_2', label: 'Inventory', route: '/inventory' },
     { icon: 'route', label: 'Routes', route: '/routes' },
     { icon: 'swap_horiz', label: 'Transfers', route: '/transfers' },
-    { icon: 'analytics', label: 'Tracking & Analytics', route: '/analytics' },
+    // { icon: 'analytics', label: 'Tracking & Analytics', route: '/analytics' },
     { icon: 'local_shipping', label: 'Supplies', route: '/supplies' }
   ];
 
