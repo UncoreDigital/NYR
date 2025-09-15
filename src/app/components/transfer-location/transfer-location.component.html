@@ -32,18 +32,19 @@
                 <form [formGroup]="vanForm" class="user-form" (ngSubmit)="onSubmit()">
                     <div class="form-row">
                         <div class="radio-group" style="margin-bottom: 20px;">
+                        
                             <label class="radio-option mr-15">
-                                <input type="radio" name="transferType" value="manual"
-                                    (change)="onTransferChange($event)" [(ngModel)]="selectedTransferOption" [ngModelOptions]="{standalone: true}"
-                                    class="radio-input mr-2">
-                                <span class="radio-label">Manual</span>
-                            </label>
-
-                            <label class="radio-option">
                                 <input type="radio" name="transferType" value="scan"
                                     [(ngModel)]="selectedTransferOption" [ngModelOptions]="{standalone: true}" (change)="onTransferChange($event)"
                                     class="radio-input mr-2">
                                 <span class="radio-label">Scan</span>
+                            </label>
+
+                             <label class="radio-option mr-15">
+                                <input type="radio" name="transferType" value="manual"
+                                    (change)="onTransferChange($event)" [(ngModel)]="selectedTransferOption" [ngModelOptions]="{standalone: true}"
+                                    class="radio-input mr-2">
+                                <span class="radio-label">Manual</span>
                             </label>
                         </div>
                     </div>

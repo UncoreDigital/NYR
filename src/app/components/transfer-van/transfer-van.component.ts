@@ -11,14 +11,14 @@ export class TransferVanComponent {
   vanForm: FormGroup;
   startTime: string = '';
   endTime: string = '';
-  selectedTransferOption: string = 'manual';
+  selectedTransferOption: string = 'scan';
   showScanPopup: boolean = false;
   scannedItems: Array<{ index: number; productName: string; sku: string } > = [];
   manualAdjustmentCount: number = 1;
   scanReason: string = '';
 
   constructor(private fb: FormBuilder, private router: Router) {
-    this.selectedTransferOption = 'manual';
+    this.selectedTransferOption = 'scan';
     this.vanForm = this.fb.group({
       van: ['', Validators.required],
       product: [''],
