@@ -118,4 +118,12 @@ export class TransfersComponent implements OnInit {
       this.router.navigate(['/transferDetail']);
     }
   }
+
+  transferToVan() {
+    this.router.navigate(['/tovan']);
+  }
+
+  transferToLocation() {
+    this.router.navigate(['/tolocation']);
+  }
 }
