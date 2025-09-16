@@ -17,6 +17,11 @@
   height: 100%;
 }
 
+.nyr-logo {
+  height: 28px;
+  width: auto;
+}
+
 .logo-text {
   display: flex;
   align-items: center;
