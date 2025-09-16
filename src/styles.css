@@ -528,7 +528,7 @@ select.form-control:disabled,
 /* Add to styles.css or your component's CSS */
 input[type="time"] {
   width: 100%;
-  padding: 10px 36px 10px 12px; /* right padding for icon */
+  padding: 10px 12px 10px 12px; /* right padding for icon */
   border: 1px solid #e5e7eb;
   border-radius: 6px;
   font-size: 15px;
