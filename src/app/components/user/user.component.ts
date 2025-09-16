@@ -17,7 +17,7 @@ export interface User {
   styleUrl: './user.component.css'
 })
 export class UserComponent implements OnInit {
-  displayedColumns: string[] = ['role', 'name', 'email', 'phoneNumber'];
+  displayedColumns: string[] = ['role', 'name', 'email', 'phoneNumber', 'actions'];
   dataSource = new MatTableDataSource<User>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;

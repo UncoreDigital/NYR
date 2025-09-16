@@ -59,13 +59,15 @@
 
                     <!-- Actions Column -->
                     <ng-container matColumnDef="actions">
-                        <th mat-header-cell *matHeaderCellDef>ACTIONS</th>
+                        <th mat-header-cell *matHeaderCellDef>ACTION</th>
                         <td mat-cell *matCellDef="let warehouse">
-                            <div class="action-buttons">
-                                <button class="action-btn edit" (click)="editInventoryWarehouse(warehouse)" title="Edit">
+                            <div class="action-group">
+                                <button class="group-btn edit" (click)="editInventoryWarehouse(warehouse)" title="View">
                                     <mat-icon>edit</mat-icon>
                                 </button>
-                                <button class="action-btn view" (click)="viewInventoryWarehouse(warehouse)" title="View">
+                                <span class="group-divider"></span>
+                                <button class="group-btn edit" (click)="viewInventoryWarehouse(warehouse)"
+                                    title="Edit">
                                     <mat-icon>visibility</mat-icon>
                                 </button>
                             </div>

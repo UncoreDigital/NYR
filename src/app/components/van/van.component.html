@@ -48,16 +48,14 @@
 
           <!-- Actions Column -->
           <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>ACTIONS</th>
+            <th mat-header-cell *matHeaderCellDef>ACTION</th>
             <td mat-cell *matCellDef="let van">
-              <div class="action-buttons">
-                <button class="action-btn view" (click)="viewVan(van)" title="View">
-                  <mat-icon>visibility</mat-icon>
-                </button>
-                <button class="action-btn edit" (click)="editVan(van)" title="Edit">
+              <div class="action-group">
+                <button class="group-btn edit" (click)="viewVan(van)" title="View">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button class="action-btn delete" (click)="deleteVan(van)" title="Delete">
+                <span class="group-divider"></span>
+                <button class="group-btn delete" (click)="deleteVan(van)" title="Delete">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
