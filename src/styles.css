@@ -617,3 +617,51 @@ input[type="time"]:disabled {
   color: #333;
   line-height: 1.2;
 }
+
+/* Edit, delete button css */
+.action-group {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.group-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.group-btn mat-icon {
+  font-size: 20px;
+}
+
+.group-btn.edit {
+  color: #02C3B4; /* teal */
+}
+
+.group-btn.edit:hover {
+  background: #ecfeff;
+}
+
+.group-btn.delete {
+  color: #E53E3E; /* red */
+}
+
+.group-btn.delete:hover {
+  background: #fef2f2;
+}
+
+.group-divider {
+  width: 1px;
+  height: 36px;
+  background: #e5e7eb;
+}

@@ -18,7 +18,7 @@ export interface Location {
 })
 
 export class LocationComponent implements OnInit{
-  displayedColumns: string[] = ['locationName', 'customerName', 'contactPerson', 'phoneNumber', 'locationAddress'];
+  displayedColumns: string[] = ['locationName', 'customerName', 'contactPerson', 'phoneNumber', 'locationAddress', 'actions'];
   dataSource = new MatTableDataSource<Location>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
