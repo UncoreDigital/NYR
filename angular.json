@@ -31,7 +31,19 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "budgets": [
+              {
+                "type": "initial",
+                "maximumWarning": "8mb",
+                "maximumError": "10mb"
+              },
+              {
+                "type": "anyComponentStyle",
+                "maximumWarning": "8mb",
+                "maximumError": "10mb"
+              }
+            ]
           },
           "configurations": {
             "production": {
