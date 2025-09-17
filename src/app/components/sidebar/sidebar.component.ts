@@ -12,30 +12,29 @@ import { Router } from '@angular/router';
 })
 export class SidebarComponent implements OnInit {
   menuItems = [
-    { icon: 'dashboard', label: 'Dashboard', route: '/dashboard', active: true },
+    { icon: 'home', label: 'Dashboard', route: '/dashboard', active: true },
     { icon: 'inventory_2', label: 'Inventory', route: '/inventory' },
     { icon: 'route', label: 'Routes', route: '/routes' },
     { icon: 'swap_horiz', label: 'Transfers', route: '/transfers' },
-    // { icon: 'analytics', label: 'Tracking & Analytics', route: '/analytics' },
-    { icon: 'local_shipping', label: 'Supplies', route: '/supplies' }
+    { icon: 'analytics', label: 'Tracking & Analytics', route: '/analytics' },
+    { icon: 'inventory', label: 'Supplies', route: '/supplies' }
   ];
 
   inventoryItems = [
-    { icon: 'warehouse', label: 'Warehouse', route: '/inwarehouse', active: true },
-    { icon: 'vans', label: 'Vans', route: '/invans' },
-    { icon: 'locations', label: 'Locations', route: '/inlocation' },
+    { icon: 'warehouse', label: 'Warehouse', route: '/inwarehouse', active: false },
+    { icon: 'local_shipping', label: 'Vans', route: '/invans' },
+    { icon: 'location_on', label: 'Locations', route: '/inlocation' },
   ];
 
   settingsItems = [
     { icon: 'person', label: 'Profile', route: '/profile' },
-    { icon: 'people', label: 'Customer', route: '/customer', active: true },
+    { icon: 'people', label: 'Customer', route: '/customer', active: false },
     { icon: 'location_on', label: 'Location', route: '/location' },
     { icon: 'category', label: 'Product', route: '/product' },
     { icon: 'group', label: 'Users', route: '/users' },
-    { icon: 'business', label: 'Supplier', route: '/supplier' },
-    { icon: 'local_shipping', label: 'Van', route: '/van' },
-    { icon: 'warehouse', label: 'Warehouse', route: '/warehouse' }
+    { icon: 'business', label: 'Supplier', route: '/supplier' }
   ];
+  
   isSettingsOpen = false;
   isInventoryOpen = false;
 
@@ -65,9 +64,23 @@ export class SidebarComponent implements OnInit {
 
   toggleSettings() {
     this.isSettingsOpen = !this.isSettingsOpen;
+    // Add expanded class for animation
+    const settingsSection = document.querySelector('.settings-section');
+    if (this.isSettingsOpen) {
+      settingsSection?.classList.add('expanded');
+    } else {
+      settingsSection?.classList.remove('expanded');
+    }
   }
 
   toggleInventory() {
     this.isInventoryOpen = !this.isInventoryOpen;
+    // Add expanded class for animation
+    const inventoryItem = document.querySelector('.inventory-item');
+    if (this.isInventoryOpen) {
+      inventoryItem?.classList.add('expanded');
+    } else {
+      inventoryItem?.classList.remove('expanded');
+    }
   }
 }
