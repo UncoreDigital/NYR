@@ -30,39 +30,155 @@ import { InventoryVanComponent } from './components/inventory-van/inventory-van.
 import { TransferVanComponent } from './components/transfer-van/transfer-van.component';
 import { InventoryLocationComponent } from './components/inventory-location/inventory-location.component';
 import { TransferLocationComponent } from './components/transfer-location/transfer-location.component';
+import { AuthGuard } from './guards/auth.guard';
+import { RoleGuard } from './guards/role.guard';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: SignupComponent },
-  { path: 'dashboard', component: DashboardComponent },
-  { path: 'customer', component: CustomerComponent },
-  { path: 'customer/add', component: AddCustomerComponent },
-  { path: 'location', component: LocationComponent },
-  { path: 'location/add', component: AddLocationComponent },
-  { path: 'users', component: UserComponent },
-  { path: 'users/add', component: AddUserComponent },
-  { path: 'supplier', component: SupplierComponent },
-  { path: 'supplier/add', component: AddSupplierComponent },
-  { path: 'van', component: VanComponent },
-  { path: 'van/add', component: AddVanComponent },
-  { path: 'warehouse', component: WarehouseComponent },
-  { path: 'warehouse/add', component: AddWarehouseComponent },
-  { path: 'product', component: ProductComponent },
-  { path: 'product/add', component: AddProductComponent },
-  { path: 'profile', component: ProfileComponent },
-  { path: 'supplies', component: SuppliesComponent },
-  { path: 'transfers', component: TransfersComponent },
-  { path: 'transferDetail', component: TransferDetailComponent },
-  { path: 'routes', component: RoutesComponent },
-  { path: 'crate-route', component: CreateRouteComponent },
-  { path: 'route-detail', component: RouteDetailComponent },
-  { path: 'inwarehouse', component: InventoryWarehouseComponent },
-  { path: 'inwarehouse/add', component: AddInventoryComponent },
-  { path: 'invans', component: InventoryVanComponent },
-  { path: 'tovan', component: TransferVanComponent },
-  { path: 'inlocation', component: InventoryLocationComponent },
-  { path: 'tolocation', component: TransferLocationComponent },
+  { 
+    path: 'dashboard', 
+    component: DashboardComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'customer', 
+    component: CustomerComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'customer/add', 
+    component: AddCustomerComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'location', 
+    component: LocationComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'location/add', 
+    component: AddLocationComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'users', 
+    component: UserComponent, 
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['Admin'] }
+  },
+  { 
+    path: 'users/add', 
+    component: AddUserComponent, 
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['Admin'] }
+  },
+  { 
+    path: 'supplier', 
+    component: SupplierComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'supplier/add', 
+    component: AddSupplierComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'van', 
+    component: VanComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'van/add', 
+    component: AddVanComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'warehouse', 
+    component: WarehouseComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'warehouse/add', 
+    component: AddWarehouseComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'product', 
+    component: ProductComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'product/add', 
+    component: AddProductComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'profile', 
+    component: ProfileComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'supplies', 
+    component: SuppliesComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'transfers', 
+    component: TransfersComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'transferDetail', 
+    component: TransferDetailComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'routes', 
+    component: RoutesComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'crate-route', 
+    component: CreateRouteComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'route-detail', 
+    component: RouteDetailComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'inwarehouse', 
+    component: InventoryWarehouseComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'inwarehouse/add', 
+    component: AddInventoryComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'invans', 
+    component: InventoryVanComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'tovan', 
+    component: TransferVanComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'inlocation', 
+    component: InventoryLocationComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'tolocation', 
+    component: TransferLocationComponent, 
+    canActivate: [AuthGuard] 
+  },
 
   { path: '**', redirectTo: '/login' }
 ];

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -9,10 +11,13 @@ import { Router } from '@angular/router';
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
+  isLoading = false;
 
   constructor(
     private formBuilder: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService,
+    private toastService: ToastService
   ) {
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
@@ -22,14 +27,32 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    
+    // Redirect if already authenticated
+    if (this.authService.isAuthenticated()) {
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   onSubmit(): void {
-    if (this.loginForm.valid) {
-      // Simulate login - in real app, call authentication service
-      console.log('Login form submitted:', this.loginForm.value);
-      this.router.navigate(['/dashboard']);
+    if (this.loginForm.valid && !this.isLoading) {
+      this.isLoading = true;
+      const credentials = {
+        email: this.loginForm.value.email,
+        password: this.loginForm.value.password
+      };
+
+      this.authService.login(credentials).subscribe({
+        next: (response) => {
+          this.isLoading = false;
+          this.toastService.success('Login Successful', 'Welcome back!');
+          this.router.navigate(['/dashboard']);
+        },
+        error: (error) => {
+          this.isLoading = false;
+          const errorMessage = error.error?.message || error.message || 'Login failed. Please try again.';
+          this.toastService.error('Login Failed', errorMessage);
+        }
+      });
     }
   }
 

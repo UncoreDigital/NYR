@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
@@ -36,6 +37,8 @@ import { InventoryVanComponent } from './components/inventory-van/inventory-van.
 import { TransferVanComponent } from './components/transfer-van/transfer-van.component';
 import { InventoryLocationComponent } from './components/inventory-location/inventory-location.component';
 import { TransferLocationComponent } from './components/transfer-location/transfer-location.component';
+import { ToastComponent } from './components/toast/toast.component';
+import { JwtInterceptor } from './interceptors/jwt.interceptor';
 
 @NgModule({
   declarations: [
@@ -60,13 +63,15 @@ import { TransferLocationComponent } from './components/transfer-location/transf
     InventoryVanComponent,
     TransferVanComponent,
     InventoryLocationComponent,
-    TransferLocationComponent
+    TransferLocationComponent,
+    ToastComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     ReactiveFormsModule,
+    HttpClientModule,
     MatIconModule,
     MatButtonModule,
     MatInputModule,
@@ -79,7 +84,13 @@ import { TransferLocationComponent } from './components/transfer-location/transf
     HeaderComponent,
     FormsModule
   ],
-  providers: [],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: JwtInterceptor,
+      multi: true
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
