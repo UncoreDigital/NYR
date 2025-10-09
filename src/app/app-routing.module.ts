@@ -53,6 +53,11 @@ const routes: Routes = [
     canActivate: [AuthGuard] 
   },
   { 
+    path: 'customer/edit/:id', 
+    component: AddCustomerComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
     path: 'location', 
     component: LocationComponent, 
     canActivate: [AuthGuard] 

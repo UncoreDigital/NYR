@@ -3,8 +3,11 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { Router } from '@angular/router';
+import { CustomerService, CustomerApiModel } from '../../services/customer.service';
+import { ToastService } from '../../services/toast.service';
 
 export interface Customer {
+  id: number;
   companyName: string;
   contactName: string;
   address: string;
@@ -23,26 +26,58 @@ export class CustomerComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  customers: Customer[] = [
-    { companyName: 'Greenway Medical', contactName: 'Allan', address: '230 Hilltop Blvd, New York', phoneNumber: '123456789' },
-    { companyName: 'Greenway Medical', contactName: 'Allan', address: '230 Hilltop Blvd, New York', phoneNumber: '123456789' },
-    { companyName: 'Greenway Medical', contactName: 'Allan', address: '230 Hilltop Blvd, New York', phoneNumber: '123456789' },
-    { companyName: 'Greenway Medical', contactName: 'Allan', address: '230 Hilltop Blvd, New York', phoneNumber: '123456789' },
-    { companyName: 'Greenway Medical', contactName: 'Allan', address: '230 Hilltop Blvd, New York', phoneNumber: '123456789' },
-    { companyName: 'Greenway Medical', contactName: 'Allan', address: '230 Hilltop Blvd, New York', phoneNumber: '123456789' },
-    { companyName: 'Greenway Medical', contactName: 'Allan', address: '230 Hilltop Blvd, New York', phoneNumber: '123456789' },
-    { companyName: 'Greenway Medical', contactName: 'Allan', address: '230 Hilltop Blvd, New York', phoneNumber: '123456789' }
-  ];
+  isLoading = false;
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private customerService: CustomerService,
+    private toastService: ToastService
+  ) { }
 
   ngOnInit(): void {
-    this.dataSource.data = this.customers;
+    this.fetchCustomers();
   }
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+  }
+
+  fetchCustomers(): void {
+    this.isLoading = true;
+    this.customerService.getCustomers().subscribe({
+      next: (customers: CustomerApiModel[]) => {
+        const mapped: Customer[] = customers.map(c => ({
+          id: c.id,
+          companyName: c.companyName,
+          contactName: c.contactName,
+          address: this.composeAddress(c),
+          phoneNumber: this.composePhone(c)
+        }));
+        this.dataSource.data = mapped;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Failed to load customers', error);
+        this.toastService.error('Error', 'Failed to load customers');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  composeAddress(c: CustomerApiModel): string {
+    const parts = [c.addressLine1, c.addressLine2, c.city, c.state, c.zipCode]
+      .filter(Boolean);
+    return parts.join(', ');
+  }
+
+  composePhone(c: CustomerApiModel): string {
+    const business = (c.businessPhone || '').trim();
+    const mobile = (c.mobilePhone || '').trim();
+    if (business && mobile) {
+      return business === mobile ? business : `${business} / ${mobile}`;
+    }
+    return business || mobile || '';
   }
 
   applyFilter(event: Event) {
@@ -51,19 +86,31 @@ export class CustomerComponent implements OnInit {
   }
 
   addCustomer() {
-    console.log('Add customer clicked');
     this.router.navigate(['/customer/add']);
   }
 
   viewCustomer(customer: Customer) {
-    console.log('View customer:', customer);
+    // placeholder for view action
   }
 
   editCustomer(customer: Customer) {
-    console.log('Edit customer:', customer);
+    this.router.navigate(['/customer/edit', customer.id]);
   }
 
   deleteCustomer(customer: Customer) {
-    console.log('Delete customer:', customer);
+    const confirmed = confirm(`Are you sure you want to delete "${customer.companyName}"? This action cannot be undone.`);
+    if (!confirmed) return;
+
+    this.customerService.deleteCustomer(customer.id).subscribe({
+      next: () => {
+        this.toastService.success('Success', 'Customer deleted successfully');
+        this.fetchCustomers(); // Refresh the list
+      },
+      error: (error) => {
+        console.error('Failed to delete customer', error);
+        const message = error?.error?.message || 'Failed to delete customer';
+        this.toastService.error('Error', message);
+      }
+    });
   }
 }
