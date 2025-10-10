@@ -28,12 +28,30 @@
 
             </div>
 
-            <div class="table-container">
+            <!-- Error Message -->
+            <div *ngIf="errorMessage" class="error-message">
+                <mat-icon>error</mat-icon>
+                <span>{{ errorMessage }}</span>
+                <button class="btn btn-secondary" (click)="loadCustomers()" *ngIf="customers.length === 0">Retry</button>
+            </div>
+
+            <!-- Loading Spinner for Customers -->
+            <div *ngIf="isLoading" class="loading-container">
+                <mat-spinner diameter="50"></mat-spinner>
+                <p>Loading customers...</p>
+            </div>
+
+            <div class="table-container" *ngIf="!isLoading">
                 <form [formGroup]="locationForm" class="user-form" (ngSubmit)="onSubmit()">
                     <div class="form-row">
                         <div class="form-group">
                             <label>Customer Name</label>
-                            <input formControlName="customerName" type="text" placeholder="Enter Customer name" />
+                            <select formControlName="customerId" class="form-select">
+                                <option value="">Select Customer</option>
+                                <option *ngFor="let customer of customers" [value]="customer.id">
+                                    {{ customer.companyName }}
+                                </option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>Location Name</label>
@@ -109,8 +127,12 @@
                         </div>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Save</button>
-                        <button type="button" class="btn btn-outline">Cancel</button>
+                        <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+                            <mat-spinner *ngIf="isSaving" diameter="20" class="inline-spinner"></mat-spinner>
+                            <span *ngIf="!isSaving">Save</span>
+                            <span *ngIf="isSaving">Saving...</span>
+                        </button>
+                        <button type="button" class="btn btn-outline" [disabled]="isSaving">Cancel</button>
                     </div>
                 </form>
             </div>

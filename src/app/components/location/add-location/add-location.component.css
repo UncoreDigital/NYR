@@ -1,0 +1,63 @@
+/* Loading Container */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.loading-container p {
+  margin-top: 1rem;
+  color: #666;
+  font-size: 1rem;
+}
+
+/* Error Message */
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  color: #c33;
+}
+
+.error-message mat-icon {
+  color: #c33;
+}
+
+.error-message button {
+  margin-left: auto;
+}
+
+/* Form Select */
+.form-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: white;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* Inline Spinner */
+.inline-spinner {
+  margin-right: 0.5rem;
+}
+
+/* Disabled Button */
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { LocationResponse } from '../models/location.model';
+import { LocationResponse, CreateLocationRequest } from '../models/location.model';
 
 @Injectable({ providedIn: 'root' })
 export class LocationService {
@@ -15,5 +15,9 @@ export class LocationService {
 
   getLocationById(id: number): Observable<LocationResponse> {
     return this.http.get<LocationResponse>(`${this.API_URL}/Locations/${id}`);
+  }
+
+  createLocation(payload: CreateLocationRequest): Observable<LocationResponse> {
+    return this.http.post<LocationResponse>(`${this.API_URL}/Locations`, payload);
   }
 }
