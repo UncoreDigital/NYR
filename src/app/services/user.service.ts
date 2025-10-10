@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User } from '../models/user.model';
+import { UserResponse, User, CreateUserRequest, UpdateUserRequest } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -9,13 +9,25 @@ import { User } from '../models/user.model';
 export class UserService {
   private readonly API_URL = 'https://localhost:53255/api';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  getUserById(id: number): Observable<User> {
-    return this.http.get<User>(`${this.API_URL}/Users/${id}`);
+  getUsers(): Observable<UserResponse[]> {
+    return this.http.get<UserResponse[]>(`${this.API_URL}/Users`);
   }
 
-  updateUser(id: number, userData: Partial<User>): Observable<User> {
-    return this.http.put<User>(`${this.API_URL}/Users/${id}`, userData);
+  getUserById(id: number): Observable<UserResponse> {
+    return this.http.get<UserResponse>(`${this.API_URL}/Users/${id}`);
+  }
+
+  updateUser(id: number, userData: UpdateUserRequest): Observable<UserResponse> {
+    return this.http.put<UserResponse>(`${this.API_URL}/Users/${id}`, userData);
+  }
+
+  createUser(payload: CreateUserRequest): Observable<UserResponse> {
+    return this.http.post<UserResponse>(`${this.API_URL}/Users`, payload);
+  }
+
+  deleteUser(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/Users/${id}`);
   }
 }

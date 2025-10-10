@@ -27,8 +27,21 @@
         </button>
       </div>
 
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="error-message">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage }}</span>
+        <button class="btn btn-secondary" (click)="loadUsers()">Retry</button>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading users...</p>
+      </div>
+
       <!-- User Table -->
-      <div class="table-container">
+      <div class="table-container" *ngIf="!isLoading">
         <table mat-table [dataSource]="dataSource" matSort class="customer-table">
           <!-- Company Name Column -->
           <ng-container matColumnDef="role">
@@ -59,7 +72,7 @@
             <th mat-header-cell *matHeaderCellDef>ACTION</th>
             <td mat-cell *matCellDef="let user">
               <div class="action-group">
-                <button class="group-btn edit" (click)="viewUser(user)" title="View">
+                <button class="group-btn edit" (click)="editUser(user)" title="Edit">
                   <mat-icon>edit</mat-icon>
                 </button>
                 <span class="group-divider"></span>

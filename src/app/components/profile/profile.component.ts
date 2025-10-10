@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
-import { User } from '../../models/user.model';
+import { User, UpdateUserRequest, UserResponse } from '../../models/user.model';
 
 @Component({
   selector: 'app-profile',
@@ -38,12 +38,20 @@ export class ProfileComponent implements OnInit {
     if (currentUser) {
       this.isLoading = true;
       this.userService.getUserById(currentUser.id).subscribe({
-        next: (user) => {
-          this.user = user;
+        next: (userResponse) => {
+          // Map UserResponse to User
+          this.user = {
+            id: userResponse.id,
+            name: userResponse.name,
+            email: userResponse.email,
+            phoneNumber: userResponse.phoneNumber,
+            role: userResponse.roleName,
+            roleName: userResponse.roleName
+          };
           this.profileForm.patchValue({
-            name: user.name,
-            email: user.email,
-            phoneNumber: user.phoneNumber
+            name: userResponse.name,
+            email: userResponse.email,
+            phoneNumber: userResponse.phoneNumber
           });
           this.isLoading = false;
         },
@@ -73,16 +81,31 @@ export class ProfileComponent implements OnInit {
       this.isLoading = true;
       
       // Create updated user object with all existing fields plus the edited ones
-      const updatedData: User = {
-        ...this.user, // Keep all existing user data
+      const updatedData: UpdateUserRequest = {
         name: this.profileForm.value.name,
         email: this.profileForm.value.email,
-        phoneNumber: this.profileForm.value.phoneNumber
+        phoneNumber: this.profileForm.value.phoneNumber,
+        roleId: this.user.roleId || 0,
+        customerId: this.user.customerId || 0,
+        locationId: this.user.locationId || 0,
+        isActive: this.user.isActive ?? true
       };
 
       this.userService.updateUser(this.user.id, updatedData).subscribe({
-        next: (updatedUser) => {
-          this.user = updatedUser;
+        next: (updatedUser: UserResponse) => {
+          // Map UserResponse back to User interface
+          this.user = {
+            id: updatedUser.id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            phoneNumber: updatedUser.phoneNumber,
+            role: updatedUser.roleName,
+            roleName: updatedUser.roleName,
+            roleId: updatedUser.roleId,
+            customerId: updatedUser.customerId,
+            locationId: updatedUser.locationId,
+            isActive: updatedUser.isActive
+          };
           this.isEditing = false;
           this.isLoading = false;
           this.toastService.success('Success', 'Profile updated successfully');
@@ -90,7 +113,7 @@ export class ProfileComponent implements OnInit {
           // Update the user in auth service if needed
           // You might want to refresh the auth state here
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error updating profile:', error);
           this.toastService.error('Error', 'Failed to update profile');
           this.isLoading = false;

@@ -1,22 +1,29 @@
-export interface User {
+export interface UserResponse {
   id: number;
   name: string;
   email: string;
   phoneNumber: string;
   roleId: number;
   roleName: string;
-  customerId: number | null;
-  customerName: string | null;
-  locationId: number | null;
-  locationName: string | null;
+  customerId: number;
+  customerName: string;
+  locationId: number;
+  locationName: string;
   createdAt: string;
   isActive: boolean;
 }
 
-export interface Role {
+export interface User {
   id: number;
   name: string;
-  description?: string;
+  email: string;
+  phoneNumber: string;
+  role: string;
+  roleName?: string; // Optional for backward compatibility
+  roleId?: number;
+  customerId?: number;
+  locationId?: number;
+  isActive?: boolean;
 }
 
 export interface LoginRequest {
@@ -26,12 +33,32 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
-  expiration: string;
   user: User;
+  expiresIn: number;
 }
 
 export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   token: string | null;
+}
+
+export interface CreateUserRequest {
+  name: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  roleId: number;
+  customerId: number;
+  locationId: number;
+}
+
+export interface UpdateUserRequest {
+  name: string;
+  email: string;
+  phoneNumber: string;
+  roleId: number;
+  customerId: number;
+  locationId: number;
+  isActive: boolean;
 }

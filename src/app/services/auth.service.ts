@@ -91,12 +91,12 @@ export class AuthService {
 
   hasRole(roleName: string): boolean {
     const user = this.getCurrentUser();
-    return user?.roleName === roleName;
+    return user?.role === roleName || user?.roleName === roleName;
   }
 
   hasAnyRole(roles: string[]): boolean {
     const user = this.getCurrentUser();
-    return user ? roles.includes(user.roleName) : false;
+    return user ? roles.includes(user.role) || roles.includes(user.roleName || '') : false;
   }
 
   private setAuthData(authData: LoginResponse): void {
