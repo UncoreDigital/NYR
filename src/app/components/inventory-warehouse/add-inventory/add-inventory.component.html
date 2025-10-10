@@ -21,11 +21,9 @@
                 </span>
             </div>
 
-
             <!-- Page Header -->
             <div class="page-header">
                 <h1>Add Inventory</h1>
-
             </div>
 
             <div class="table-container">
@@ -44,33 +42,10 @@
                             <label>Select Product</label>
                             <select formControlName="prodcut" class="form-control">
                                 <option value="" disabled selected>Select Product</option>
-                                <option value="admin">Prodcut 1</option>
-                                <option value="warehouse">Prodcut 2</option>
-                                <option value="driver">Prodcut 3</option>
+                                <option value="admin">Product 1</option>
+                                <option value="warehouse">Product 2</option>
+                                <option value="driver">Product 3</option>
                             </select>
-                        </div>
-                    </div>                    
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Select Variation Name</label>
-                            <select [(ngModel)]="currentVariationName" (ngModelChange)="onVariationNameChange($event)" [ngModelOptions]="{standalone: true}" class="form-control">
-                                <option value="" disabled selected>Variation</option>
-                                <option value="Size">Size</option>
-                                <option value="Color">Color</option>
-                                <option value="Material">Material</option>
-                                <option value="Weight">Weight</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Variation Value</label>
-                            <input [(ngModel)]="currentVariationValue" (ngModelChange)="onVariationValueChange($event)" [ngModelOptions]="{standalone: true}" type="text" placeholder="Variation" class="form-control" />
-                        </div>
-                        <div class="form-group add-variation-group">
-                            <label>&nbsp;</label>
-                            <button type="button" class="btn-add-variation" (click)="addVariation()">
-                                <mat-icon>add</mat-icon>
-                            </button>
                         </div>
                     </div>
 
@@ -83,18 +58,75 @@
                         </div>
                     </div>
 
-                    <!-- Variation Tags Display -->
-                    <div class="variation-tags-container" *ngIf="variations.length > 0">
-                        <div class="variation-tag" *ngFor="let variation of variations; let i = index">
-                            <span class="variation-text">{{variation.name}} - {{variation.value}}</span>
-                            <button type="button" class="remove-tag" (click)="removeVariation(i)">
-                                <mat-icon>close</mat-icon>
-                            </button>
+                    <!-- Variation Selection Section -->
+                    <div class="variation-section">
+                        <h3>All Variation List</h3>
+                        
+                        <!-- Search Bar -->
+                        <div class="search-container">
+                            <mat-icon class="search-icon">search</mat-icon>
+                            <input type="text" placeholder="Search variations..." class="search-input" 
+                                   [(ngModel)]="searchTerm" [ngModelOptions]="{standalone: true}" 
+                                   (keyup)="applyFilter($event)">
+                        </div>
+
+                        <!-- Variation Table -->
+                        <div class="variation-table-container">
+                            <table class="variation-table">
+                                <thead>
+                                    <tr>
+                                        <th>VARIATION NAME</th>
+                                        <th>VARIATION VALUE</th>
+                                        <th>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let variation of filteredVariations; let i = index">
+                                        <td>{{variation.name}}</td>
+                                        <td>
+                                            <input type="text" 
+                                                   class="variation-value-input" 
+                                                   [(ngModel)]="variation.value" 
+                                                   [ngModelOptions]="{standalone: true}"
+                                                   placeholder="Enter value"
+                                                   (blur)="updateVariationValue(i, variation.value)">
+                                        </td>
+                                        <td>
+                                            <button type="button" 
+                                                    class="btn-add-variation" 
+                                                    [class.btn-added]="isVariationSelected(variation)"
+                                                    [disabled]="isVariationSelected(variation) || !variation.value?.trim()"
+                                                    (click)="addVariationToSelected(variation)">
+                                                {{isVariationSelected(variation) ? 'Added' : 'Add'}}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr *ngIf="filteredVariations.length === 0" class="empty-row">
+                                        <td colspan="3">
+                                            <mat-icon>search_off</mat-icon>
+                                            <div>No variations found</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                   
+
+                    <!-- Selected Variations Display -->
+                    <div class="selected-variations-section" *ngIf="selectedVariations.length > 0">
+                        <h4>Selected Variations</h4>
+                        <div class="variation-tags-container">
+                            <div class="variation-tag" *ngFor="let variation of selectedVariations; let i = index">
+                                <span class="variation-text">{{variation.name}} - {{variation.value}}</span>
+                                <button type="button" class="remove-tag" (click)="removeSelectedVariation(i)">
+                                    <mat-icon>close</mat-icon>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Add</button>
+                        <button type="submit" class="btn btn-primary" [disabled]="selectedVariations.length === 0">Add</button>
                         <button type="reset" class="btn btn-outline">Cancel</button>
                     </div>
                 </form>
