@@ -70,6 +70,7 @@ export class InventoryWarehouseComponent implements OnInit {
 
   editInventoryWarehouse(inventoryWarehouse: inventoryWarehouse) {
     console.log('Edit Warehouse:', inventoryWarehouse);
+    this.router.navigate(['/inwarehouse/add']);
   }
 }
 
