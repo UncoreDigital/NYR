@@ -145,7 +145,7 @@
                                             <button type="button" 
                                                     class="btn-add-variation" 
                                                     [class.btn-added]="isVariationSelected(variation)"
-                                                    [disabled]="isVariationSelected(variation) || !variation.value?.trim()"
+                                                    [disabled]="isVariationSelected(variation) || !variation.value.trim()"
                                                     (click)="addVariationToSelected(variation)">
                                                 {{isVariationSelected(variation) ? 'Added' : 'Add'}}
                                             </button>
