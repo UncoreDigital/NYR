@@ -3,6 +3,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { Router } from '@angular/router';
+import { LocationService } from '../../services/location.service';
+import { LocationResponse } from '../../models/location.model';
 
 export interface Location {
   locationName: string;
@@ -20,26 +22,49 @@ export interface Location {
 export class LocationComponent implements OnInit{
   displayedColumns: string[] = ['locationName', 'customerName', 'contactPerson', 'phoneNumber', 'locationAddress', 'actions'];
   dataSource = new MatTableDataSource<Location>();
+  
+  isLoading = false;
+  errorMessage = '';
+  locations: Location[] = [];
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  locations: Location[] = [
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-  ];
-
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private locationService: LocationService
+  ) { }
 
   ngOnInit(): void {
-    this.dataSource.data = this.locations;
+    this.loadLocations();
+  }
+
+  loadLocations(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+    
+    this.locationService.getLocations().subscribe({
+      next: (apiLocations: LocationResponse[]) => {
+        this.locations = this.mapApiResponseToLocation(apiLocations);
+        this.dataSource.data = this.locations;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading locations:', error);
+        this.errorMessage = 'Failed to load locations. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private mapApiResponseToLocation(apiLocations: LocationResponse[]): Location[] {
+    return apiLocations.map(apiLocation => ({
+      locationName: apiLocation.locationName,
+      customerName: apiLocation.customerName,
+      contactPerson: apiLocation.contactPerson,
+      phoneNumber: apiLocation.locationPhone,
+      locationAddress: `${apiLocation.addressLine1}${apiLocation.addressLine2 ? ', ' + apiLocation.addressLine2 : ''}, ${apiLocation.city}, ${apiLocation.state} ${apiLocation.zipCode}`
+    }));
   }
 
   ngAfterViewInit() {

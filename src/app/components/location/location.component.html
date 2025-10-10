@@ -27,8 +27,21 @@
         </button>
       </div>
 
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="error-message">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage }}</span>
+        <button class="btn btn-secondary" (click)="loadLocations()">Retry</button>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading locations...</p>
+      </div>
+
       <!-- Location Table -->
-      <div class="table-container">
+      <div class="table-container" *ngIf="!isLoading">
         <table mat-table [dataSource]="dataSource" matSort class="customer-table">
           <!-- Company Name Column -->
           <ng-container matColumnDef="locationName">
