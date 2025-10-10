@@ -33,6 +33,20 @@ export class SuppliesComponent {
   fruits: string[] = ['Apple', 'Banana', 'Mango', 'Orange', 'Grapes'];
   fruitsControl = new FormControl([]);
 
+  // Searchable supplier dropdown properties
+  supplierSearchTerm: string = '';
+  showSupplierDropdown: boolean = false;
+  selectedSupplier: any = null;
+  
+  // Supplier data array
+  suppliers = [
+    { value: 'supplier1', name: 'Supplier 1' },
+    { value: 'supplier2', name: 'Supplier 2' },
+    { value: 'supplier3', name: 'Supplier 3' },
+    { value: 'supplier4', name: 'Supplier 4' },
+    { value: 'supplier5', name: 'Supplier 5' }
+  ];
+
   // Product variations data
   allProductVariations = [
     // Pneumatic Walking Boot variations
@@ -377,5 +391,39 @@ export class SuppliesComponent {
     if (selectedProduct) {
       selectedProduct.status = newStatus;
     }
+  }
+
+  // Supplier dropdown methods
+  getFilteredSuppliers() {
+    if (!this.supplierSearchTerm) {
+      return this.suppliers;
+    }
+    return this.suppliers.filter(supplier => 
+      supplier.name.toLowerCase().includes(this.supplierSearchTerm.toLowerCase())
+    );
+  }
+  
+  filterSuppliers() {
+    // Trigger filtering when user types
+  }
+  
+  selectSupplier(supplier: any) {
+    this.selectedSupplier = supplier;
+    this.supplierSearchTerm = supplier.name;
+    this.suppliesForm.patchValue({ suppliesName: supplier.value });
+    this.showSupplierDropdown = false;
+  }
+  
+  hideSupplierDropdown() {
+    setTimeout(() => {
+      this.showSupplierDropdown = false;
+    }, 200);
+  }
+  
+  clearSupplier() {
+    this.selectedSupplier = null;
+    this.supplierSearchTerm = '';
+    this.suppliesForm.patchValue({ suppliesName: '' });
+    this.showSupplierDropdown = false;
   }
 }

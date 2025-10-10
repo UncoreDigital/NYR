@@ -31,21 +31,71 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Select Warehouse</label>
-                            <select formControlName="warehouseName" class="form-control">
-                                <option value="" disabled selected>Select Warehouse</option>
-                                <option value="admin">WareHouse 1</option>
-                                <option value="warehouse">Avetis</option>
-                                <option value="driver">Uncore</option>
-                            </select>
+                            <div class="custom-select-container">
+                                <div class="search-wrapper">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input type="text" 
+                                           class="search-input" 
+                                           [(ngModel)]="warehouseSearchTerm" 
+                                           [ngModelOptions]="{standalone: true}"
+                                           placeholder="Search and select warehouse..."
+                                           (focus)="showWarehouseDropdown = true"
+                                           (blur)="hideWarehouseDropdown()"
+                                           (input)="filterWarehouses()">
+                                    <button type="button" 
+                                            class="clear-button" 
+                                            *ngIf="selectedWarehouse"
+                                            (click)="clearWarehouse()"
+                                            title="Clear selection">
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showWarehouseDropdown && getFilteredWarehouses().length > 0">
+                                    <div class="dropdown-item" 
+                                         *ngFor="let warehouse of getFilteredWarehouses()"
+                                         (mousedown)="selectWarehouse(warehouse)"
+                                         [class.selected]="selectedWarehouse?.value === warehouse.value">
+                                        {{warehouse.name}}
+                                    </div>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showWarehouseDropdown && getFilteredWarehouses().length === 0">
+                                    <div class="dropdown-item no-results">No warehouses found</div>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Select Product</label>
-                            <select formControlName="prodcut" class="form-control">
-                                <option value="" disabled selected>Select Product</option>
-                                <option value="admin">Product 1</option>
-                                <option value="warehouse">Product 2</option>
-                                <option value="driver">Product 3</option>
-                            </select>
+                            <div class="custom-select-container">
+                                <div class="search-wrapper">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input type="text" 
+                                           class="search-input" 
+                                           [(ngModel)]="productSearchTerm" 
+                                           [ngModelOptions]="{standalone: true}"
+                                           placeholder="Search and select product..."
+                                           (focus)="showProductDropdown = true"
+                                           (blur)="hideProductDropdown()"
+                                           (input)="filterProducts()">
+                                    <button type="button" 
+                                            class="clear-button" 
+                                            *ngIf="selectedProduct"
+                                            (click)="clearProduct()"
+                                            title="Clear selection">
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showProductDropdown && getFilteredProducts().length > 0">
+                                    <div class="dropdown-item" 
+                                         *ngFor="let product of getFilteredProducts()"
+                                         (mousedown)="selectProduct(product)"
+                                         [class.selected]="selectedProduct?.value === product.value">
+                                        {{product.name}}
+                                    </div>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showProductDropdown && getFilteredProducts().length === 0">
+                                    <div class="dropdown-item no-results">No products found</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

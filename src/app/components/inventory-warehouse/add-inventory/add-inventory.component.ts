@@ -36,6 +36,35 @@ export class AddInventoryComponent implements OnInit {
   filteredVariations: Variation[] = [];
   selectedVariations: Variation[] = [];
   searchTerm: string = '';
+  
+  // Search terms for dropdowns
+  warehouseSearchTerm: string = '';
+  productSearchTerm: string = '';
+  
+  // Dropdown visibility states
+  showWarehouseDropdown: boolean = false;
+  showProductDropdown: boolean = false;
+  
+  // Selected items
+  selectedWarehouse: any = null;
+  selectedProduct: any = null;
+  
+  // Data arrays for dropdowns
+  warehouses = [
+    { value: 'warehouse1', name: 'WareHouse 1' },
+    { value: 'avetis', name: 'Avetis' },
+    { value: 'uncore', name: 'Uncore' },
+    { value: 'warehouse2', name: 'WareHouse 2' },
+    { value: 'warehouse3', name: 'WareHouse 3' }
+  ];
+  
+  products = [
+    { value: 'product1', name: 'Product 1' },
+    { value: 'product2', name: 'Product 2' },
+    { value: 'product3', name: 'Product 3' },
+    { value: 'product4', name: 'Product 4' },
+    { value: 'product5', name: 'Product 5' }
+  ];
 
   constructor(private fb: FormBuilder, private router: Router) {
     this.inventoryForm = this.fb.group({
@@ -82,6 +111,72 @@ export class AddInventoryComponent implements OnInit {
     return this.selectedVariations.some(selected => 
       selected.name === variation.name && selected.value === variation.value
     );
+  }
+
+  getFilteredWarehouses() {
+    if (!this.warehouseSearchTerm) {
+      return this.warehouses;
+    }
+    return this.warehouses.filter(warehouse => 
+      warehouse.name.toLowerCase().includes(this.warehouseSearchTerm.toLowerCase())
+    );
+  }
+  
+  getFilteredProducts() {
+    if (!this.productSearchTerm) {
+      return this.products;
+    }
+    return this.products.filter(product => 
+      product.name.toLowerCase().includes(this.productSearchTerm.toLowerCase())
+    );
+  }
+  
+  filterWarehouses() {
+    // Trigger filtering when user types
+  }
+  
+  filterProducts() {
+    // Trigger filtering when user types
+  }
+  
+  selectWarehouse(warehouse: any) {
+    this.selectedWarehouse = warehouse;
+    this.warehouseSearchTerm = warehouse.name;
+    this.inventoryForm.patchValue({ warehouseName: warehouse.value });
+    this.showWarehouseDropdown = false;
+  }
+  
+  selectProduct(product: any) {
+    this.selectedProduct = product;
+    this.productSearchTerm = product.name;
+    this.inventoryForm.patchValue({ prodcut: product.value });
+    this.showProductDropdown = false;
+  }
+  
+  hideWarehouseDropdown() {
+    setTimeout(() => {
+      this.showWarehouseDropdown = false;
+    }, 200);
+  }
+  
+  hideProductDropdown() {
+    setTimeout(() => {
+      this.showProductDropdown = false;
+    }, 200);
+  }
+  
+  clearWarehouse() {
+    this.selectedWarehouse = null;
+    this.warehouseSearchTerm = '';
+    this.inventoryForm.patchValue({ warehouseName: '' });
+    this.showWarehouseDropdown = false;
+  }
+  
+  clearProduct() {
+    this.selectedProduct = null;
+    this.productSearchTerm = '';
+    this.inventoryForm.patchValue({ prodcut: '' });
+    this.showProductDropdown = false;
   }
 
   onSubmit(): void {
