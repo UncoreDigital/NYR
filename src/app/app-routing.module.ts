@@ -64,7 +64,12 @@ const routes: Routes = [
   },
   { 
     path: 'location/add', 
-    component: AddLocationComponent, 
+    component: AddLocationComponent,
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'location/edit/:id', 
+    component: AddLocationComponent,
     canActivate: [AuthGuard] 
   },
   { 

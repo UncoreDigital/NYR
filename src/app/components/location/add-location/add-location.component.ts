@@ -5,15 +5,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { HeaderComponent } from '../../header/header.component';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { LocationService } from '../../../services/location.service';
 import { CustomerService, CustomerApiModel } from '../../../services/customer.service';
-import { CreateLocationRequest } from '../../../models/location.model';
+import { CreateLocationRequest, LocationResponse } from '../../../models/location.model';
 
 @Component({
   selector: 'app-add-location',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatIconModule, MatProgressSpinnerModule, SidebarComponent, HeaderComponent],
   templateUrl: './add-location.component.html',
   styleUrl: './add-location.component.css'
 })
@@ -24,10 +22,14 @@ export class AddLocationComponent implements OnInit {
   isSaving = false;
   errorMessage = '';
   customers: CustomerApiModel[] = [];
+  isEditMode = false;
+  locationId: number | null = null;
+  currentLocation: LocationResponse | null = null;
 
   constructor(
     private fb: FormBuilder, 
     private router: Router,
+    private route: ActivatedRoute,
     private locationService: LocationService,
     private customerService: CustomerService
   ) {
@@ -51,6 +53,15 @@ export class AddLocationComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCustomers();
+    
+    // Check if we're in edit mode
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.isEditMode = true;
+        this.locationId = +params['id'];
+        this.loadLocationForEdit();
+      }
+    });
   }
 
   loadCustomers(): void {
@@ -67,6 +78,45 @@ export class AddLocationComponent implements OnInit {
         this.errorMessage = 'Failed to load customers. Please try again.';
         this.isLoading = false;
       }
+    });
+  }
+
+  loadLocationForEdit(): void {
+    if (!this.locationId) return;
+    
+    this.isLoading = true;
+    this.errorMessage = '';
+    
+    this.locationService.getLocationById(this.locationId).subscribe({
+      next: (location) => {
+        this.currentLocation = location;
+        this.populateForm(location);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading location:', error);
+        this.errorMessage = 'Failed to load location. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  populateForm(location: LocationResponse): void {
+    this.locationForm.patchValue({
+      customerId: location.customerId,
+      locationName: location.locationName,
+      address1: location.addressLine1,
+      address2: location.addressLine2,
+      city: location.city,
+      state: location.state,
+      zip: location.zipCode,
+      contactPerson: location.contactPerson,
+      title: location.title,
+      locationPhone: location.locationPhone,
+      mobilePhone: location.mobilePhone,
+      faxNumber: location.faxNumber,
+      email: location.email,
+      comments: location.comments
     });
   }
 
@@ -93,18 +143,36 @@ export class AddLocationComponent implements OnInit {
         comments: formValue.comments
       };
 
-      this.locationService.createLocation(locationData).subscribe({
-        next: (response) => {
-          console.log('Location created successfully:', response);
-          this.isSaving = false;
-          this.showSuccess = true;
-        },
-        error: (error) => {
-          console.error('Error creating location:', error);
-          this.errorMessage = 'Failed to create location. Please try again.';
-          this.isSaving = false;
-        }
-      });
+      if (this.isEditMode && this.locationId) {
+        // Update existing location
+        const updateData = { ...locationData, isActive: this.currentLocation?.isActive ?? true };
+        this.locationService.updateLocation(this.locationId, updateData).subscribe({
+          next: (response) => {
+            console.log('Location updated successfully:', response);
+            this.isSaving = false;
+            this.showSuccess = true;
+          },
+          error: (error) => {
+            console.error('Error updating location:', error);
+            this.errorMessage = 'Failed to update location. Please try again.';
+            this.isSaving = false;
+          }
+        });
+      } else {
+        // Create new location
+        this.locationService.createLocation(locationData).subscribe({
+          next: (response) => {
+            console.log('Location created successfully:', response);
+            this.isSaving = false;
+            this.showSuccess = true;
+          },
+          error: (error) => {
+            console.error('Error creating location:', error);
+            this.errorMessage = 'Failed to create location. Please try again.';
+            this.isSaving = false;
+          }
+        });
+      }
     } else {
       this.locationForm.markAllAsTouched();
     }

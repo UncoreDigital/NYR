@@ -17,15 +17,14 @@
                 <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
 
                 <span class="breadcrumb-item text-gray-800 font-semibold active">
-                    Add Location
+                    {{ isEditMode ? 'Edit Location' : 'Add Location' }}
                 </span>
             </div>
 
 
             <!-- Page Header -->
             <div class="page-header">
-                <h1>Add Location</h1>
-
+                <h1>{{ isEditMode ? 'Edit Location' : 'Add Location' }}</h1>
             </div>
 
             <!-- Error Message -->
@@ -145,10 +144,10 @@
             <mat-icon>check_circle</mat-icon>
         </div>
         <div class="modal-message">
-            <h2>Location has been successfully added.</h2>
+            <h2>Location has been successfully {{ isEditMode ? 'updated' : 'added' }}.</h2>
         </div>
         <div class="modal-actions">
-            <button class="btn btn-primary" (click)="addAnotherLocation()">Add Another Location</button>
+            <button class="btn btn-primary" (click)="addAnotherLocation()" *ngIf="!isEditMode">Add Another Location</button>
             <button class="btn btn-outline" (click)="goToLocationsList()">Go to Locations List</button>
         </div>
     </div>

@@ -12,6 +12,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialogModule } from '@angular/material/dialog';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './components/login/login.component';
@@ -21,6 +22,8 @@ import { CustomerComponent } from './components/customer/customer.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { HeaderComponent } from './components/header/header.component';
 import { LocationComponent } from './components/location/location.component';
+import { AddLocationComponent } from './components/location/add-location/add-location.component';
+import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 import { UserComponent } from './components/user/user.component';
 import { SupplierComponent } from './components/supplier/supplier.component';
 import { VanComponent } from './components/van/van.component';
@@ -49,6 +52,8 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
     DashboardComponent,
     CustomerComponent,
     LocationComponent,
+    AddLocationComponent,
+    ConfirmDialogComponent,
     UserComponent,
     SupplierComponent,
     VanComponent,
@@ -82,6 +87,7 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
     MatPaginatorModule,
     MatSortModule,
     MatProgressSpinnerModule,
+    MatDialogModule,
     SidebarComponent,
     HeaderComponent,
     FormsModule
