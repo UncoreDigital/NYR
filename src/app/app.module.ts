@@ -10,6 +10,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './components/login/login.component';
@@ -77,6 +78,7 @@ import { InventoryDetailComponent } from './components/inventory-detail/inventor
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
+    MatTooltipModule,
     SidebarComponent,
     HeaderComponent,
     FormsModule

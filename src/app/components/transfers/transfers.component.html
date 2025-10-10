@@ -57,8 +57,15 @@
               <span class="status-badge mr-8" [class]="getStatusClass(transfer.status)">
                 {{ getStatusDisplayText(transfer.status) }}
               </span>
-              <mat-icon *ngIf="getStatusIcon(transfer.status)" style="color: #02C3B4;" class="status-icon"
-              (click)="transferDetail(getStatusIcon(transfer.status))">
+              <mat-icon *ngIf="getStatusIcon(transfer.status)" 
+                        style="color: #02C3B4;" 
+                        class="status-icon"
+                        [matTooltip]="transfer.status === 'follow-up-completed' ? getTooltipText() : ''"
+                        [matTooltipClass]="transfer.status === 'follow-up-completed' ? 'custom-tooltip' : ''"
+                        matTooltipPosition="above"
+                        [matTooltipShowDelay]="300"
+                        [matTooltipHideDelay]="300"
+                        (click)="transferDetail(getStatusIcon(transfer.status))">
                 {{ getStatusIcon(transfer.status) }}
               </mat-icon>
             </td>
