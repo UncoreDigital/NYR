@@ -34,8 +34,8 @@ export class AddSupplierComponent {
       supplierName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', Validators.required],
-      address: ['', Validators.required],
-      contactPerson: ['', Validators.required]
+      address: [''],
+      contactPerson: ['']
     });
 
     const idParam = this.route.snapshot.paramMap.get('id');

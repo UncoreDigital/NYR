@@ -55,22 +55,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Address*</label>
-                            <input formControlName="address" type="text" placeholder="Enter Address" />
-                            <div *ngIf="supplierForm.get('address')?.invalid && supplierForm.get('address')?.touched" class="error-message">
-                                Address is required
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Contact Person*</label>
-                            <input formControlName="contactPerson" type="text" placeholder="Enter Contact Person" />
-                            <div *ngIf="supplierForm.get('contactPerson')?.invalid && supplierForm.get('contactPerson')?.touched" class="error-message">
-                                Contact person is required
-                            </div>
-                        </div>
-                    </div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary" [disabled]="!supplierForm.valid || isSaving">
                             <span *ngIf="!isSaving">Save</span>
