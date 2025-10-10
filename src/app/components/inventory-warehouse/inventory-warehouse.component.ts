@@ -11,6 +11,7 @@ export interface inventoryWarehouse {
   state: string;
   zipCode: string;
   country: string;
+  id: number;
 }
 
 @Component({
@@ -26,13 +27,13 @@ export class InventoryWarehouseComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   inventoryWarehouse: inventoryWarehouse[] = [
-    { warehouseName: 'Warehouse 1', warehouseAddress: '123 Main St', city: 'New York', state: 'NY', zipCode: '10001', country: 'USA' },
-    { warehouseName: 'Warehouse 2', warehouseAddress: '456 Elm St', city: 'Los Angeles', state: 'CA', zipCode: '90001', country: 'USA' },
-    { warehouseName: 'Warehouse 3', warehouseAddress: '789 Oak St', city: 'Chicago', state: 'IL', zipCode: '60601', country: 'USA' },
-    { warehouseName: 'Warehouse 4', warehouseAddress: '101 Pine St', city: 'Houston', state: 'TX', zipCode: '77001', country: 'USA' },
-    { warehouseName: 'Warehouse 5', warehouseAddress: '202 Maple St', city: 'Phoenix', state: 'AZ', zipCode: '85001', country: 'USA' },
-    { warehouseName: 'Warehouse 6', warehouseAddress: '303 Cedar St', city: 'Philadelphia', state: 'PA', zipCode: '19019', country: 'USA' },
-    { warehouseName: 'Warehouse 7', warehouseAddress: '404 Birch St', city: 'San Antonio', state: 'TX', zipCode: '78201', country: 'USA' },  
+    { warehouseName: 'Warehouse 1', warehouseAddress: '123 Main St', city: 'New York', state: 'NY', zipCode: '10001', country: 'USA', id: 1 },
+    { warehouseName: 'Warehouse 2', warehouseAddress: '456 Elm St', city: 'Los Angeles', state: 'CA', zipCode: '90001', country: 'USA', id: 2 },
+    { warehouseName: 'Warehouse 3', warehouseAddress: '789 Oak St', city: 'Chicago', state: 'IL', zipCode: '60601', country: 'USA', id: 3 },
+    { warehouseName: 'Warehouse 4', warehouseAddress: '101 Pine St', city: 'Houston', state: 'TX', zipCode: '77001', country: 'USA', id: 4 },
+    { warehouseName: 'Warehouse 5', warehouseAddress: '202 Maple St', city: 'Phoenix', state: 'AZ', zipCode: '85001', country: 'USA', id: 5 },
+    { warehouseName: 'Warehouse 6', warehouseAddress: '303 Cedar St', city: 'Philadelphia', state: 'PA', zipCode: '19019', country: 'USA', id: 6 },
+    { warehouseName: 'Warehouse 7', warehouseAddress: '404 Birch St', city: 'San Antonio', state: 'TX', zipCode: '78201', country: 'USA', id: 7 },  
   ];
 
   constructor(private router: Router) { }
@@ -58,6 +59,13 @@ export class InventoryWarehouseComponent implements OnInit {
 
   viewInventoryWarehouse(inventoryWarehouse: inventoryWarehouse) {
     console.log('View Warehouse:', inventoryWarehouse);
+    this.router.navigate(['/inventory-detail'], {
+      queryParams: {
+        context: 'warehouse',
+        title: inventoryWarehouse.warehouseName || 'Warehouse Details',
+        id: inventoryWarehouse.id
+      }
+    });
   }
 
   editInventoryWarehouse(inventoryWarehouse: inventoryWarehouse) {

@@ -84,9 +84,14 @@ export class InventoryLocationComponent implements OnInit {
     this.router.navigate(['/tolocation']);
   }
 
-  viewVan(inventoryLocation: inventoryLocation) {
-    console.log('View Van:', inventoryLocation);
-    // Add navigation logic here
+  viewLocation(location: any): void {
+    this.router.navigate(['/inventory-detail'], {
+      queryParams: {
+        context: 'location',
+        title: location.location || 'Location Details',
+        id: location.id
+      }
+    });
   }
 }
 

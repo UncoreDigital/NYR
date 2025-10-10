@@ -8,6 +8,7 @@ export interface Van {
   vanName: string;
   vanNumber: string;
   driverName: string;
+  id: number;
 }
 
 @Component({
@@ -23,11 +24,11 @@ export class InventoryVanComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   vans: Van[] = [
-    { vanName: 'Van 1', vanNumber: 'FN-CL-256', driverName: 'John Deo' },
-    { vanName: 'Van 2', vanNumber: 'CK-CL-1111', driverName: 'Mark Wains' },
-    { vanName: 'Van 3', vanNumber: 'AB-CL-789', driverName: 'Sarah Smith' },
-    { vanName: 'Van 4', vanNumber: 'XY-CL-456', driverName: 'Mike Johnson' },
-    { vanName: 'Van 5', vanNumber: 'CD-CL-321', driverName: 'Lisa Brown' },
+    { vanName: 'Van 1', vanNumber: 'FN-CL-256', driverName: 'John Deo', id: 1 },
+    { vanName: 'Van 2', vanNumber: 'CK-CL-1111', driverName: 'Mark Wains', id: 2 },
+    { vanName: 'Van 3', vanNumber: 'AB-CL-789', driverName: 'Sarah Smith', id: 3 },
+    { vanName: 'Van 4', vanNumber: 'XY-CL-456', driverName: 'Mike Johnson', id: 4 },
+    { vanName: 'Van 5', vanNumber: 'CD-CL-321', driverName: 'Lisa Brown', id: 5 },
   ];
 
   selectedVan: string = '';
@@ -73,5 +74,12 @@ export class InventoryVanComponent implements OnInit {
   viewVan(van: Van) {
     console.log('View Van:', van);
     // Add navigation logic here
+     this.router.navigate(['/inventory-detail'], {
+      queryParams: {
+        context: 'van',
+        title: van.vanName || 'Van Details',
+        id: van.id
+      }
+    });
   }
 }
