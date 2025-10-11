@@ -8,6 +8,7 @@ import { HeaderComponent } from '../../header/header.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { LocationService } from '../../../services/location.service';
 import { CustomerService, CustomerApiModel } from '../../../services/customer.service';
+import { ToastService } from '../../../services/toast.service';
 import { CreateLocationRequest, LocationResponse } from '../../../models/location.model';
 
 @Component({
@@ -31,7 +32,8 @@ export class AddLocationComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private locationService: LocationService,
-    private customerService: CustomerService
+    private customerService: CustomerService,
+    private toastService: ToastService
   ) {
     this.locationForm = this.fb.group({
       customerId: ['', Validators.required],
@@ -76,6 +78,7 @@ export class AddLocationComponent implements OnInit {
       error: (error) => {
         console.error('Error loading customers:', error);
         this.errorMessage = 'Failed to load customers. Please try again.';
+        this.toastService.error('Error', 'Failed to load customers');
         this.isLoading = false;
       }
     });
@@ -96,6 +99,7 @@ export class AddLocationComponent implements OnInit {
       error: (error) => {
         console.error('Error loading location:', error);
         this.errorMessage = 'Failed to load location. Please try again.';
+        this.toastService.error('Error', 'Failed to load location');
         this.isLoading = false;
       }
     });
@@ -151,10 +155,12 @@ export class AddLocationComponent implements OnInit {
             console.log('Location updated successfully:', response);
             this.isSaving = false;
             this.showSuccess = true;
+            this.toastService.success('Success', 'Location updated successfully');
           },
           error: (error) => {
             console.error('Error updating location:', error);
             this.errorMessage = 'Failed to update location. Please try again.';
+            this.toastService.error('Error', 'Failed to update location');
             this.isSaving = false;
           }
         });
@@ -165,10 +171,12 @@ export class AddLocationComponent implements OnInit {
             console.log('Location created successfully:', response);
             this.isSaving = false;
             this.showSuccess = true;
+            this.toastService.success('Success', 'Location created successfully');
           },
           error: (error) => {
             console.error('Error creating location:', error);
             this.errorMessage = 'Failed to create location. Please try again.';
+            this.toastService.error('Error', 'Failed to create location');
             this.isSaving = false;
           }
         });

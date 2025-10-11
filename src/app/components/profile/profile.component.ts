@@ -25,7 +25,13 @@ export class ProfileComponent implements OnInit {
     this.profileForm = this.formBuilder.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9+\-\s()]+$/)]]
+      phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9+\-\s()]+$/)]],
+      // Default fields from storage - read-only
+      roleName: [''],
+      customerName: [''],
+      locationName: [''],
+      createdAt: [''],
+      isActive: ['']
     });
   }
 
@@ -46,12 +52,24 @@ export class ProfileComponent implements OnInit {
             email: userResponse.email,
             phoneNumber: userResponse.phoneNumber,
             role: userResponse.roleName,
-            roleName: userResponse.roleName
+            roleName: userResponse.roleName,
+            roleId: userResponse.roleId,
+            customerId: userResponse.customerId && userResponse.customerId > 0 ? userResponse.customerId : null,
+            customerName: userResponse.customerName,
+            locationId: userResponse.locationId && userResponse.locationId > 0 ? userResponse.locationId : null,
+            locationName: userResponse.locationName,
+            createdAt: userResponse.createdAt,
+            isActive: userResponse.isActive
           };
           this.profileForm.patchValue({
             name: userResponse.name,
             email: userResponse.email,
-            phoneNumber: userResponse.phoneNumber
+            phoneNumber: userResponse.phoneNumber,
+            roleName: userResponse.roleName,
+            customerName: userResponse.customerName,
+            locationName: userResponse.locationName,
+            createdAt: userResponse.createdAt,
+            isActive: userResponse.isActive
           });
           this.isLoading = false;
         },
@@ -71,7 +89,12 @@ export class ProfileComponent implements OnInit {
       this.profileForm.patchValue({
         name: this.user?.name,
         email: this.user?.email,
-        phoneNumber: this.user?.phoneNumber
+        phoneNumber: this.user?.phoneNumber,
+        roleName: this.user?.roleName,
+        customerName: this.user?.customerName,
+        locationName: this.user?.locationName,
+        createdAt: this.user?.createdAt,
+        isActive: this.user?.isActive
       });
     }
   }
@@ -86,8 +109,8 @@ export class ProfileComponent implements OnInit {
         email: this.profileForm.value.email,
         phoneNumber: this.profileForm.value.phoneNumber,
         roleId: this.user.roleId || 0,
-        customerId: this.user.customerId || 0,
-        locationId: this.user.locationId || 0,
+        customerId: this.user.customerId && this.user.customerId > 0 ? this.user.customerId : null,
+        locationId: this.user.locationId && this.user.locationId > 0 ? this.user.locationId : null,
         isActive: this.user.isActive ?? true
       };
 
@@ -102,8 +125,11 @@ export class ProfileComponent implements OnInit {
             role: updatedUser.roleName,
             roleName: updatedUser.roleName,
             roleId: updatedUser.roleId,
-            customerId: updatedUser.customerId,
-            locationId: updatedUser.locationId,
+            customerId: updatedUser.customerId && updatedUser.customerId > 0 ? updatedUser.customerId : null,
+            customerName: updatedUser.customerName,
+            locationId: updatedUser.locationId && updatedUser.locationId > 0 ? updatedUser.locationId : null,
+            locationName: updatedUser.locationName,
+            createdAt: updatedUser.createdAt,
             isActive: updatedUser.isActive
           };
           this.isEditing = false;
@@ -129,7 +155,12 @@ export class ProfileComponent implements OnInit {
     this.profileForm.patchValue({
       name: this.user?.name,
       email: this.user?.email,
-      phoneNumber: this.user?.phoneNumber
+      phoneNumber: this.user?.phoneNumber,
+      roleName: this.user?.roleName,
+      customerName: this.user?.customerName,
+      locationName: this.user?.locationName,
+      createdAt: this.user?.createdAt,
+      isActive: this.user?.isActive
     });
   }
 }

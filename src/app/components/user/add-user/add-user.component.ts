@@ -153,8 +153,8 @@ export class AddUserComponent implements OnInit {
   populateForm(user: UserResponse): void {
     this.userForm.patchValue({
       roleId: user.roleId,
-      customerId: user.customerId,
-      locationId: user.locationId,
+      customerId: user.customerId || 0,
+      locationId: user.locationId || 0,
       name: user.name,
       email: user.email,
       phoneNumber: user.phoneNumber,
@@ -164,8 +164,8 @@ export class AddUserComponent implements OnInit {
     });
     
     // Load locations if customer is selected
-    if (user.customerId) {
-      this.loadLocationsForEdit(user.customerId, user.locationId);
+    if (user.customerId && user.customerId > 0) {
+      this.loadLocationsForEdit(user.customerId, user.locationId || 0);
     }
   }
 

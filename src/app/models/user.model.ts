@@ -5,10 +5,10 @@ export interface UserResponse {
   phoneNumber: string;
   roleId: number;
   roleName: string;
-  customerId: number;
-  customerName: string;
-  locationId: number;
-  locationName: string;
+  customerId: number | null;
+  customerName: string | null;
+  locationId: number | null;
+  locationName: string | null;
   createdAt: string;
   isActive: boolean;
 }
@@ -21,8 +21,11 @@ export interface User {
   role: string;
   roleName?: string; // Optional for backward compatibility
   roleId?: number;
-  customerId?: number;
-  locationId?: number;
+  customerId: number | null;
+  customerName: string | null;
+  locationId: number | null;
+  locationName: string | null;
+  createdAt?: string;
   isActive?: boolean;
 }
 
@@ -58,7 +61,7 @@ export interface UpdateUserRequest {
   email: string;
   phoneNumber: string;
   roleId: number;
-  customerId: number;
-  locationId: number;
+  customerId: number | null;
+  locationId: number | null;
   isActive: boolean;
 }
