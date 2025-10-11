@@ -13,6 +13,8 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSelectModule } from '@angular/material/select';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './components/login/login.component';
@@ -44,6 +46,7 @@ import { InventoryLocationComponent } from './components/inventory-location/inve
 import { TransferLocationComponent } from './components/transfer-location/transfer-location.component';
 import { ToastComponent } from './components/toast/toast.component';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
+import { InventoryDetailComponent } from './components/inventory-detail/inventory-detail.component';
 
 @NgModule({
   declarations: [
@@ -73,6 +76,7 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
     InventoryLocationComponent,
     TransferLocationComponent,
     ToastComponent
+    InventoryDetailComponent
   ],
   imports: [
     BrowserModule,
@@ -90,6 +94,8 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
     MatSortModule,
     MatProgressSpinnerModule,
     MatDialogModule,
+    MatTooltipModule,
+    MatSelectModule,
     SidebarComponent,
     HeaderComponent,
     FormsModule

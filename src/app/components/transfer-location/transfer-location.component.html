@@ -50,38 +50,110 @@
                     </div>
                    <div class="form-row">
                         <div class="form-group">
-                            <label>Select Van</label>
-                            <select class="form-control" formControlName="customer" style="width: 100%;">
-                                <option value="" disabled selected>Select Customer</option>
-                                <option value="admin">Customer 1</option>
-                                <option value="warehouse">Customer 2</option>
-                                <option value="driver">Customer 3</option>
-                                <option value="location">Customer 4</option>
-                            </select>
+                            <label>Select Customer</label>
+                            <div class="custom-select-container">
+                                <div class="search-wrapper">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input type="text" 
+                                           class="search-input" 
+                                           [(ngModel)]="customerSearchTerm" 
+                                           [ngModelOptions]="{standalone: true}"
+                                           placeholder="Search and select customer..."
+                                           (focus)="showCustomerDropdown = true"
+                                           (blur)="hideCustomerDropdown()"
+                                           (input)="filterCustomers()">
+                                    <button type="button" 
+                                            class="clear-button" 
+                                            *ngIf="selectedCustomer"
+                                            (click)="clearCustomer()"
+                                            title="Clear selection">
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showCustomerDropdown && getFilteredCustomers().length > 0">
+                                    <div class="dropdown-item" 
+                                         *ngFor="let customer of getFilteredCustomers()"
+                                         (mousedown)="selectCustomer(customer)"
+                                         [class.selected]="selectedCustomer?.value === customer.value">
+                                        {{customer.name}}
+                                    </div>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showCustomerDropdown && getFilteredCustomers().length === 0">
+                                    <div class="dropdown-item no-results">No customers found</div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="form-group">
                             <label>Select Location</label>
-                            <select class="form-control" formControlName="location" style="width: 100%;">
-                                <option value="" disabled selected>Select Van</option>
-                                <option value="admin">Location 1</option>
-                                <option value="warehouse">Location 2</option>
-                                <option value="driver">Location 3</option>
-                                <option value="location">Location 4</option>
-                            </select>
+                            <div class="custom-select-container">
+                                <div class="search-wrapper">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input type="text" 
+                                           class="search-input" 
+                                           [(ngModel)]="locationSearchTerm" 
+                                           [ngModelOptions]="{standalone: true}"
+                                           placeholder="Search and select location..."
+                                           (focus)="showLocationDropdown = true"
+                                           (blur)="hideLocationDropdown()"
+                                           (input)="filterLocations()">
+                                    <button type="button" 
+                                            class="clear-button" 
+                                            *ngIf="selectedLocation"
+                                            (click)="clearLocation()"
+                                            title="Clear selection">
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showLocationDropdown && getFilteredLocations().length > 0">
+                                    <div class="dropdown-item" 
+                                         *ngFor="let location of getFilteredLocations()"
+                                         (mousedown)="selectLocation(location)"
+                                         [class.selected]="selectedLocation?.value === location.value">
+                                        {{location.name}}
+                                    </div>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showLocationDropdown && getFilteredLocations().length === 0">
+                                    <div class="dropdown-item no-results">No locations found</div>
+                                </div>
+                            </div>
                         </div>
 
                     </div>
                     <div class="form-row">
                         <div class="form-group" *ngIf="selectedTransferOption == 'manual'">
                             <label>Select Product</label>
-                            <select class="form-control" formControlName="product" style="width: 100%;">
-                                <option value="" disabled selected>Select Product</option>
-                                <option value="admin">Product 1</option>
-                                <option value="warehouse">Product 2</option>
-                                <option value="driver">Product 3</option>
-                                <option value="location">Product 4</option>
-                            </select>
+                            <div class="custom-select-container">
+                                <div class="search-wrapper">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input type="text" 
+                                           class="search-input" 
+                                           [(ngModel)]="productSearchTerm" 
+                                           [ngModelOptions]="{standalone: true}"
+                                           placeholder="Search and select product..."
+                                           (focus)="showProductDropdown = true"
+                                           (blur)="hideProductDropdown()"
+                                           (input)="filterProducts()">
+                                    <button type="button" 
+                                            class="clear-button" 
+                                            *ngIf="selectedProduct"
+                                            (click)="clearProduct()"
+                                            title="Clear selection">
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showProductDropdown && getFilteredProducts().length > 0">
+                                    <div class="dropdown-item" 
+                                         *ngFor="let product of getFilteredProducts()"
+                                         (mousedown)="selectProduct(product)"
+                                         [class.selected]="selectedProduct?.value === product.value">
+                                        {{product.name}}
+                                    </div>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showProductDropdown && getFilteredProducts().length === 0">
+                                    <div class="dropdown-item no-results">No products found</div>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group" *ngIf="selectedTransferOption == 'scan'">
                             <div style="flex:1;">

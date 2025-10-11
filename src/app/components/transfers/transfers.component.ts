@@ -126,4 +126,8 @@ export class TransfersComponent implements OnInit {
   transferToLocation() {
     this.router.navigate(['/tolocation']);
   }
+
+  getTooltipText(): string {
+    return 'Title\n\nSupporting line text lorem ipsum dolor sit amet, consectetur\n\nLabel    Label';
+  }
 }

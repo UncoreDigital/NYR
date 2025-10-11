@@ -32,6 +32,7 @@ import { InventoryLocationComponent } from './components/inventory-location/inve
 import { TransferLocationComponent } from './components/transfer-location/transfer-location.component';
 import { AuthGuard } from './guards/auth.guard';
 import { RoleGuard } from './guards/role.guard';
+import { InventoryDetailComponent } from './components/inventory-detail/inventory-detail.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -198,6 +199,10 @@ const routes: Routes = [
   { 
     path: 'tolocation', 
     component: TransferLocationComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { path: 'inventory-detail', 
+    component: InventoryDetailComponent,
     canActivate: [AuthGuard] 
   },
 

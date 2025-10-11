@@ -1,0 +1,87 @@
+<div class="page-layout">
+    <app-sidebar></app-sidebar>
+    <div class="main-content">
+        <app-header></app-header>
+        <div class="content">
+
+            <!-- Breadcrumb -->
+            <!-- <div class="breadcrumb">
+                <span class="breadcrumb-item active">Inventory</span>
+                <mat-icon class="breadcrumb-separator active">chevron_right</mat-icon>
+                <span class="breadcrumb-item active">Locations</span>
+            </div> -->
+
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <ng-container *ngFor="let item of breadcrumbItems; let last = last">
+                    <a *ngIf="item.route" 
+                       [routerLink]="item.route" 
+                       class="breadcrumb-item active hover:text-blue-600 cursor-pointer">
+                        {{item.label}}
+                    </a>
+                    <span *ngIf="!item.route" class="breadcrumb-item active">
+                        {{item.label}}
+                    </span>
+                    <mat-icon *ngIf="!last" class="breadcrumb-separator active">chevron_right</mat-icon>
+                </ng-container>
+            </div>
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>{{sourceTitle}}</h1>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-section">
+                <div class="search-container">
+                    <mat-icon class="search-icon">search</mat-icon>
+                    <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)">
+                </div>
+                <button class="btn btn-primary" (click)="transferToVan()">
+                    Transfer Inventory
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table mat-table [dataSource]="dataSource" matSort class="customer-table">
+                    <ng-container matColumnDef="productName">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>PRODUCT NAME</th>
+                        <td mat-cell *matCellDef="let detail">{{detail.productName}}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="skucode">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>SKU/CODE</th>
+                        <td mat-cell *matCellDef="let detail">{{detail.skucode}}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="size">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>SIZE</th>
+                        <td mat-cell *matCellDef="let detail">{{detail.size}}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="side">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>SIDE</th>
+                        <td mat-cell *matCellDef="let detail">{{detail.side}}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="colour">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>COLOUR</th>
+                        <td mat-cell *matCellDef="let detail">{{detail.colour}}</td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="quantity">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>QUANTITY</th>
+                        <td mat-cell *matCellDef="let detail">{{detail.quantity}}</td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+
+                <!-- Paginator -->
+                <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons class="table-paginator">
+                </mat-paginator>
+            </div>
+        </div>
+    </div>
+</div>

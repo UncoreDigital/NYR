@@ -49,26 +49,74 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Select Van</label>
-                            <select class="form-control" formControlName="van" style="width: 100%;">
-                                <option value="" disabled selected>Select Van</option>
-                                <option value="admin">Van 1</option>
-                                <option value="warehouse">Van 2</option>
-                                <option value="driver">Van 3</option>
-                                <option value="location">Van 4</option>
-                            </select>
+                            <div class="custom-select-container">
+                                <div class="search-wrapper">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input type="text" 
+                                           class="search-input" 
+                                           [(ngModel)]="vanSearchTerm" 
+                                           [ngModelOptions]="{standalone: true}"
+                                           placeholder="Search and select van..."
+                                           (focus)="showVanDropdown = true"
+                                           (blur)="hideVanDropdown()"
+                                           (input)="filterVans()">
+                                    <button type="button" 
+                                            class="clear-button" 
+                                            *ngIf="selectedVan"
+                                            (click)="clearVan()"
+                                            title="Clear selection">
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showVanDropdown && getFilteredVans().length > 0">
+                                    <div class="dropdown-item" 
+                                         *ngFor="let van of getFilteredVans()"
+                                         (mousedown)="selectVan(van)"
+                                         [class.selected]="selectedVan?.value === van.value">
+                                        {{van.name}}
+                                    </div>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showVanDropdown && getFilteredVans().length === 0">
+                                    <div class="dropdown-item no-results">No vans found</div>
+                                </div>
+                            </div>
                         </div>
 
                     </div>
                     <div class="form-row">
                         <div class="form-group" *ngIf="selectedTransferOption == 'manual'">
                             <label>Select Product</label>
-                            <select class="form-control" formControlName="product" style="width: 100%;">
-                                <option value="" disabled selected>Select Product</option>
-                                <option value="admin">Product 1</option>
-                                <option value="warehouse">Product 2</option>
-                                <option value="driver">Product 3</option>
-                                <option value="location">Product 4</option>
-                            </select>
+                            <div class="custom-select-container">
+                                <div class="search-wrapper">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input type="text" 
+                                           class="search-input" 
+                                           [(ngModel)]="productSearchTerm" 
+                                           [ngModelOptions]="{standalone: true}"
+                                           placeholder="Search and select product..."
+                                           (focus)="showProductDropdown = true"
+                                           (blur)="hideProductDropdown()"
+                                           (input)="filterProducts()">
+                                    <button type="button" 
+                                            class="clear-button" 
+                                            *ngIf="selectedProduct"
+                                            (click)="clearProduct()"
+                                            title="Clear selection">
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showProductDropdown && getFilteredProducts().length > 0">
+                                    <div class="dropdown-item" 
+                                         *ngFor="let product of getFilteredProducts()"
+                                         (mousedown)="selectProduct(product)"
+                                         [class.selected]="selectedProduct?.value === product.value">
+                                        {{product.name}}
+                                    </div>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showProductDropdown && getFilteredProducts().length === 0">
+                                    <div class="dropdown-item no-results">No products found</div>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group" *ngIf="selectedTransferOption == 'scan'">
                             <div style="flex:1;">
