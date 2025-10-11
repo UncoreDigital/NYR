@@ -2,9 +2,15 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { WarehouseService } from '../../services/warehouse.service';
+import { WarehouseResponse } from '../../models/warehouse.model';
+import { ToastService } from '../../services/toast.service';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 export interface Warehouse {
+  id: number;
   warehouseName: string;
   warehouseAddress: string;
   city: string;
@@ -21,24 +27,54 @@ export interface Warehouse {
 export class WarehouseComponent implements OnInit {
   displayedColumns: string[] = ['warehouseName', 'warehouseAddress', 'city', 'state', 'zipCode', 'actions'];
   dataSource = new MatTableDataSource<Warehouse>();
+  
+  isLoading = false;
+  errorMessage = '';
+  warehouses: Warehouse[] = [];
+  deletingWarehouseId: number | null = null;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  warehouses: Warehouse[] = [
-    { warehouseName: 'Warehouse 1', warehouseAddress: '123 Main St', city: 'New York', state: 'NY', zipCode: '10001', country: 'USA' },
-    { warehouseName: 'Warehouse 2', warehouseAddress: '456 Elm St', city: 'Los Angeles', state: 'CA', zipCode: '90001', country: 'USA' },
-    { warehouseName: 'Warehouse 3', warehouseAddress: '789 Oak St', city: 'Chicago', state: 'IL', zipCode: '60601', country: 'USA' },
-    { warehouseName: 'Warehouse 4', warehouseAddress: '101 Pine St', city: 'Houston', state: 'TX', zipCode: '77001', country: 'USA' },
-    { warehouseName: 'Warehouse 5', warehouseAddress: '202 Maple St', city: 'Phoenix', state: 'AZ', zipCode: '85001', country: 'USA' },
-    { warehouseName: 'Warehouse 6', warehouseAddress: '303 Cedar St', city: 'Philadelphia', state: 'PA', zipCode: '19019', country: 'USA' },
-    { warehouseName: 'Warehouse 7', warehouseAddress: '404 Birch St', city: 'San Antonio', state: 'TX', zipCode: '78201', country: 'USA' },  
-  ];
-
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private warehouseService: WarehouseService,
+    private toastService: ToastService,
+    private dialog: MatDialog
+  ) { }
 
   ngOnInit(): void {
-    this.dataSource.data = this.warehouses;
+    this.loadWarehouses();
+  }
+
+  loadWarehouses(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+    
+    this.warehouseService.getWarehouses().subscribe({
+      next: (apiWarehouses: WarehouseResponse[]) => {
+        this.warehouses = this.mapApiResponseToWarehouse(apiWarehouses);
+        this.dataSource.data = this.warehouses;
+        this.isLoading = false;
+      },
+      error: (error: any) => {
+        console.error('Error loading warehouses:', error);
+        this.toastService.error('Error', 'Failed to load warehouses. Please try again.');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private mapApiResponseToWarehouse(apiWarehouses: WarehouseResponse[]): Warehouse[] {
+    return apiWarehouses.map(apiWarehouse => ({
+      id: apiWarehouse.id,
+      warehouseName: apiWarehouse.name,
+      warehouseAddress: apiWarehouse.addressLine1 + (apiWarehouse.addressLine2 ? ', ' + apiWarehouse.addressLine2 : ''),
+      city: apiWarehouse.city,
+      state: apiWarehouse.state,
+      zipCode: apiWarehouse.zipCode,
+      country: 'USA' // Default country as per existing pattern
+    }));
   }
 
   ngAfterViewInit() {
@@ -62,9 +98,41 @@ export class WarehouseComponent implements OnInit {
 
   editWarehouse(warehouse: Warehouse) {
     console.log('Edit Warehouse:', warehouse);
+    this.router.navigate(['/warehouse/edit', warehouse.id]);
   }
 
   deleteWarehouse(warehouse: Warehouse) {
-    console.log('Delete Warehouse:', warehouse);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Warehouse',
+        message: `Are you sure you want to delete warehouse "${warehouse.warehouseName}"? This action cannot be undone.`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.performDelete(warehouse);
+      }
+    });
+  }
+
+  private performDelete(warehouse: Warehouse): void {
+    this.deletingWarehouseId = warehouse.id;
+    this.warehouseService.deleteWarehouse(warehouse.id).subscribe({
+      next: () => {
+        this.deletingWarehouseId = null;
+        this.toastService.success('Success', 'Warehouse has been deleted successfully');
+        this.loadWarehouses(); // Refresh the warehouse list
+      },
+      error: (error: any) => {
+        this.deletingWarehouseId = null;
+        console.error('Error deleting warehouse:', error);
+        const message = error.error?.message || 'Failed to delete warehouse. Please try again.';
+        this.toastService.error('Error', message);
+      }
+    });
   }
 }

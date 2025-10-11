@@ -132,6 +132,11 @@ const routes: Routes = [
     canActivate: [AuthGuard] 
   },
   { 
+    path: 'warehouse/edit/:id', 
+    component: AddWarehouseComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
     path: 'product', 
     component: ProductComponent, 
     canActivate: [AuthGuard] 

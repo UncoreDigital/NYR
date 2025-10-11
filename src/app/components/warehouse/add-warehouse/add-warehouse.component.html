@@ -17,30 +17,41 @@
                 <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
 
                 <span class="breadcrumb-item text-gray-800 font-semibold active">
-                    Add Warehouse
+                    {{ isEditMode ? 'Edit Warehouse' : 'Add Warehouse' }}
                 </span>
             </div>
 
 
             <!-- Page Header -->
             <div class="page-header">
-                <h1>Add Warehouse</h1>
-
+                <h1>{{ isEditMode ? 'Edit Warehouse' : 'Add Warehouse' }}</h1>
             </div>
 
-            <div class="table-container">
+            <!-- Loading Spinner for Edit Mode -->
+            <div *ngIf="isLoading" class="loading-container">
+                <mat-spinner diameter="50"></mat-spinner>
+                <p>Loading warehouse data...</p>
+            </div>
+
+            <div class="table-container" *ngIf="!isLoading">
                 <form [formGroup]="warehouseForm" class="user-form" (ngSubmit)="onSubmit()">
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Warehouse Name</label>
+                            <label>Warehouse Name*</label>
                             <input formControlName="warehouseName" type="text" placeholder="Enter Warehouse Name" />
+                            <div *ngIf="warehouseForm.get('warehouseName')?.invalid && warehouseForm.get('warehouseName')?.touched" class="error-message">
+                                Warehouse name is required
+                            </div>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Address Line 1</label>
+                            <label>Address Line 1*</label>
                             <input formControlName="address1" type="text" placeholder="Enter Address Line 1" />
+                            <div *ngIf="warehouseForm.get('address1')?.invalid && warehouseForm.get('address1')?.touched" class="error-message">
+                                Address line 1 is required
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Address Line 2</label>
@@ -50,22 +61,34 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>City</label>
+                            <label>City*</label>
                             <input formControlName="city" type="text" placeholder="Enter City" />
+                            <div *ngIf="warehouseForm.get('city')?.invalid && warehouseForm.get('city')?.touched" class="error-message">
+                                City is required
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label>State</label>
+                            <label>State*</label>
                             <input formControlName="state" type="text" placeholder="Enter State" />
+                            <div *ngIf="warehouseForm.get('state')?.invalid && warehouseForm.get('state')?.touched" class="error-message">
+                                State is required
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label>Zip Code</label>
-                            <input formControlName="zipcode" type="text" placeholder="Enter Zip Code" />
+                            <label>Zip Code*</label>
+                            <input formControlName="zipCode" type="text" placeholder="Enter Zip Code" />
+                            <div *ngIf="warehouseForm.get('zipCode')?.invalid && warehouseForm.get('zipCode')?.touched" class="error-message">
+                                Zip code is required
+                            </div>
                         </div>
                     </div>
                    
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Save</button>
-                        <button type="reset" class="btn btn-outline">Cancel</button>
+                        <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+                            <span *ngIf="!isSaving">Save</span>
+                            <span *ngIf="isSaving">Saving...</span>
+                        </button>
+                        <button type="reset" class="btn btn-outline" [disabled]="isSaving" (click)="onCancel()">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -78,10 +101,10 @@
             <mat-icon>check_circle</mat-icon>
         </div>
         <div class="modal-message">
-            <h2>Warehouse has been successfully added.</h2>
+            <h2>Warehouse has been successfully {{ isEditMode ? 'updated' : 'added' }}.</h2>
         </div>
         <div class="modal-actions">
-            <button class="btn btn-primary" (click)="addAnotherWarehouse()">Add Another Warehouse</button>
+            <button class="btn btn-primary" (click)="addAnotherWarehouse()" *ngIf="!isEditMode">Add Another Warehouse</button>
             <button class="btn btn-outline" (click)="goToWarehousesList()">Go to Warehouses List</button>
         </div>
     </div>
