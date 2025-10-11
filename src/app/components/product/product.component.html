@@ -29,7 +29,14 @@
 
       <!-- Product Table -->
       <div class="table-container">
-        <table mat-table [dataSource]="dataSource" matSort class="customer-table">
+        <!-- Loading Spinner -->
+        <div *ngIf="isLoading" class="loading-container">
+          <mat-spinner diameter="50"></mat-spinner>
+          <p>Loading products...</p>
+        </div>
+
+        <!-- Table -->
+        <table *ngIf="!isLoading" mat-table [dataSource]="dataSource" matSort class="customer-table">
           <ng-container matColumnDef="category">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>CATEGORY</th>
             <td mat-cell *matCellDef="let product">{{product.category}}</td>
@@ -59,8 +66,9 @@
                   <mat-icon>edit</mat-icon>
                 </button>
                 <span class="group-divider"></span>
-                <button class="group-btn delete" (click)="deleteProduct(product)" title="Delete">
-                  <mat-icon>delete</mat-icon>
+                <button class="group-btn delete" (click)="deleteProduct(product)" title="Delete" [disabled]="isDeleting && deletingProductId === product.id">
+                  <span *ngIf="isDeleting && deletingProductId === product.id" class="delete-spinner"></span>
+                  <mat-icon *ngIf="!(isDeleting && deletingProductId === product.id)">delete</mat-icon>
                 </button>
               </div>
             </td>
@@ -71,7 +79,7 @@
         </table>
 
         <!-- Paginator -->
-        <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons class="table-paginator">
+        <mat-paginator *ngIf="!isLoading" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons class="table-paginator">
         </mat-paginator>
       </div>
     </div>

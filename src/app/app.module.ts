@@ -100,7 +100,8 @@ import { InventoryDetailComponent } from './components/inventory-detail/inventor
     MatSelectModule,
     SidebarComponent,
     HeaderComponent,
-    FormsModule
+    FormsModule,
+    SuppliesComponent
   ],
   providers: [
     {

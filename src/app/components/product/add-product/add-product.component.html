@@ -22,11 +22,27 @@
 
             <!-- Page Header -->
             <div class="page-header">
-                <h1>Add New Product</h1>
+                <h1>{{ isEditMode ? 'Edit Product' : 'Add New Product' }}</h1>
             </div>
 
             <div class="table-container">
-                <form [formGroup]="productForm" class="user-form" (ngSubmit)="onSubmit()">
+                <!-- Loading Overlay -->
+                <div *ngIf="isLoading" class="loading-overlay">
+                    <div class="loading-content">
+                        <div class="loading-spinner-large"></div>
+                        <p>{{ isEditMode ? 'Updating product...' : 'Adding product...' }}</p>
+                    </div>
+                </div>
+
+                <!-- Product Loading Overlay -->
+                <div *ngIf="isLoadingProduct" class="loading-overlay">
+                    <div class="loading-content">
+                        <div class="loading-spinner-large"></div>
+                        <p>Loading product...</p>
+                    </div>
+                </div>
+                
+                <form [formGroup]="productForm" class="user-form" (ngSubmit)="onSubmit()" [class.loading]="isLoading">
                     <div style="display:flex; gap:32px;">
                         <!-- Left Column -->
                         <div style="flex:2;">
@@ -44,13 +60,32 @@
                         <!-- Right Column: Upload Image -->
                         <div style="flex:1;">
                             <label style="font-weight:500;">Upload Image</label>
-                            <div
-                                style="border:1.5px dashed #d1d5db; border-radius:12px; min-height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-top:8px;">
-                                <button type="button"
-                                    style="background:none; border:none; display:flex; flex-direction:column; align-items:center; color:#02C3B4; cursor:pointer;">
-                                    <mat-icon style="font-size:36px; width: auto; height: auto;">cloud_upload</mat-icon>
-                                    <span>Browse</span>
+                            
+                            <!-- Image Preview -->
+                            <div *ngIf="imagePreview" class="image-preview-container">
+                                <img [src]="imagePreview" alt="Product Preview" class="image-preview">
+                                <button type="button" class="remove-image-btn" (click)="removeImage()" title="Remove Image">
+                                    <mat-icon>close</mat-icon>
                                 </button>
+                            </div>
+                            
+                            <!-- Upload Area -->
+                            <div *ngIf="!imagePreview" 
+                                class="upload-area" 
+                                [class.uploading]="isUploadingImage"
+                                (click)="fileInput.click()">
+                                <input #fileInput type="file" accept="image/*" (change)="onImageSelected($event)" style="display: none;">
+                                
+                                <div *ngIf="!isUploadingImage" class="upload-content">
+                                    <mat-icon class="upload-icon">cloud_upload</mat-icon>
+                                    <span class="upload-text">Click to browse or drag & drop</span>
+                                    <span class="upload-hint">Supports: JPEG, PNG, GIF, WebP (Max 5MB)</span>
+                                </div>
+                                
+                                <div *ngIf="isUploadingImage" class="upload-loading">
+                                    <div class="upload-spinner"></div>
+                                    <span>Processing image...</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -108,25 +143,42 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Category</label>
-                            <select class="form-control" formControlName="category">
+                            <select class="form-control" formControlName="category" [disabled]="isLoadingDropdowns">
                                 <option value="" disabled selected>Select a Category</option>
-                                <option>Select Category</option>
+                                <option *ngFor="let category of categories" [value]="category.name">
+                                    {{ category.name }}
+                                </option>
                             </select>
+                            <div *ngIf="isLoadingDropdowns" class="dropdown-loading">
+                                <span class="loading-text">Loading categories...</span>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Brand</label>
-                            <select class="form-control" formControlName="brand">
-                                <option>Select Brand</option>
+                            <select class="form-control" formControlName="brand" [disabled]="isLoadingDropdowns">
+                                <option value="" disabled selected>Select a Brand</option>
+                                <option *ngFor="let brand of brands" [value]="brand.name">
+                                    {{ brand.name }}
+                                </option>
                             </select>
+                            <div *ngIf="isLoadingDropdowns" class="dropdown-loading">
+                                <span class="loading-text">Loading brands...</span>
+                            </div>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group" style="flex:1;">
                             <label>Supplier</label>
-                            <select class="form-control" formControlName="supplier">
-                                <option>John, Smith</option>
+                            <select class="form-control" formControlName="supplier" [disabled]="isLoadingDropdowns">
+                                <option value="" disabled selected>Select a Supplier</option>
+                                <option *ngFor="let supplier of suppliers" [value]="supplier.name">
+                                    {{ supplier.name }}
+                                </option>
                             </select>
+                            <div *ngIf="isLoadingDropdowns" class="dropdown-loading">
+                                <span class="loading-text">Loading suppliers...</span>
+                            </div>
                         </div>
                         <div class="form-group" style="flex:1;">
                             <label>Price</label>
@@ -164,8 +216,11 @@
 
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Add Product</button>
-                        <button type="button" class="btn btn-outline">Cancel</button>
+                        <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+                            <span *ngIf="isLoading" class="loading-spinner"></span>
+                            {{ isLoading ? (isEditMode ? 'Updating Product...' : 'Adding Product...') : (isEditMode ? 'Update Product' : 'Add Product') }}
+                        </button>
+                        <button type="button" class="btn btn-outline" [disabled]="isLoading">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -194,10 +249,10 @@
             <mat-icon>check_circle</mat-icon>
         </div>
         <div class="modal-message">
-            <h2>Product has been successfully added.</h2>
+            <h2>Product has been successfully {{ isEditMode ? 'updated' : 'added' }}.</h2>
         </div>
         <div class="modal-actions">
-            <button class="btn btn-primary" (click)="addAnotherProduct()">Add Another Product</button>
+            <button *ngIf="!isEditMode" class="btn btn-primary" (click)="addAnotherProduct()">Add Another Product</button>
             <button class="btn btn-outline" (click)="goToProductsList()">Go to Products List</button>
         </div>
     </div>
