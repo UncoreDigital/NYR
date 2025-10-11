@@ -28,6 +28,7 @@ import { AddLocationComponent } from './components/location/add-location/add-loc
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 import { AddUserComponent } from './components/user/add-user/add-user.component';
 import { UserComponent } from './components/user/user.component';
+import { AddVanComponent } from './components/van/add-van/add-van.component';
 import { SupplierComponent } from './components/supplier/supplier.component';
 import { VanComponent } from './components/van/van.component';
 import { WarehouseComponent } from './components/warehouse/warehouse.component';
@@ -60,6 +61,7 @@ import { InventoryDetailComponent } from './components/inventory-detail/inventor
     ConfirmDialogComponent,
     AddUserComponent,
     UserComponent,
+    AddVanComponent,
     SupplierComponent,
     VanComponent,
     WarehouseComponent,

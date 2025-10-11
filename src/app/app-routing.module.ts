@@ -117,6 +117,11 @@ const routes: Routes = [
     canActivate: [AuthGuard] 
   },
   { 
+    path: 'van/edit/:id', 
+    component: AddVanComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
     path: 'warehouse', 
     component: WarehouseComponent, 
     canActivate: [AuthGuard] 
