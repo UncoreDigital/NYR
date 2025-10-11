@@ -72,13 +72,14 @@
             <th mat-header-cell *matHeaderCellDef>ACTION</th>
             <td mat-cell *matCellDef="let user">
               <div class="action-group">
-                <button class="group-btn edit" (click)="editUser(user)" title="Edit">
+                <button class="group-btn edit" (click)="editUser(user)" title="Edit" *ngIf="!isAdmin(user)">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <span class="group-divider"></span>
-                <button class="group-btn delete" (click)="deleteUser(user)" title="Delete">
+                <span class="group-divider" *ngIf="!isAdmin(user)"></span>
+                <button class="group-btn delete" (click)="deleteUser(user)" title="Delete" *ngIf="!isAdmin(user)">
                   <mat-icon>delete</mat-icon>
                 </button>
+                <span *ngIf="isAdmin(user)" class="admin-text">Admin User</span>
               </div>
             </td>
           </ng-container>

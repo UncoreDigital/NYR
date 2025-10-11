@@ -34,3 +34,11 @@
 .error-message button {
   margin-left: auto;
 }
+
+/* Admin Text */
+.admin-text {
+  color: #666;
+  font-style: italic;
+  font-size: 0.9rem;
+  padding: 0.5rem;
+}

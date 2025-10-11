@@ -127,4 +127,8 @@ export class UserComponent implements OnInit {
       }
     });
   }
+
+  isAdmin(user: User): boolean {
+    return user.role.toLowerCase() === 'administrators' || user.role.toLowerCase() === 'admin';
+  }
 }

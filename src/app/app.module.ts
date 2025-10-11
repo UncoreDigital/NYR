@@ -75,7 +75,7 @@ import { InventoryDetailComponent } from './components/inventory-detail/inventor
     TransferVanComponent,
     InventoryLocationComponent,
     TransferLocationComponent,
-    ToastComponent
+    ToastComponent,
     InventoryDetailComponent
   ],
   imports: [
