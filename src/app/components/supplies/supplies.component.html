@@ -20,7 +20,26 @@
                                     <mat-icon class="product-multiselect-arrow" [class.rotated]="isProductDropdownOpen">keyboard_arrow_down</mat-icon>
                                 </div>
                                 <div class="product-multiselect-options" *ngIf="isProductDropdownOpen">
-                                    <div class="product-multiselect-option" *ngFor="let product of products" 
+                                    <div class="search-wrapper">
+                                        <mat-icon class="search-icon">search</mat-icon>
+                                        <input 
+                                            type="text" 
+                                            class="search-input" 
+                                            placeholder="Search products..."
+                                            [value]="productSearchTerm"
+                                            (input)="onProductSearchInput($event); filterProducts()"
+                                            (click)="$event.stopPropagation()"
+                                        >
+                                        <button 
+                                            *ngIf="productSearchTerm" 
+                                            type="button" 
+                                            class="clear-button"
+                                            (click)="clearProductSearch(); $event.stopPropagation()"
+                                        >
+                                            <mat-icon>close</mat-icon>
+                                        </button>
+                                    </div>
+                                    <div class="product-multiselect-option" *ngFor="let product of getFilteredProducts()" 
                                          (click)="toggleProduct(product.id)">
                                         <input type="checkbox" 
                                                [checked]="isProductSelected(product.id)"
@@ -28,17 +47,50 @@
                                                class="product-multiselect-checkbox">
                                         <span class="product-multiselect-option-text">{{ product.name }}</span>
                                     </div>
+                                    <div *ngIf="getFilteredProducts().length === 0" class="no-results">
+                                        No products found
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Request Supplier</label>
-                            <select formControlName="suppliesName" class="form-control">
-                                <option value="" disabled selected>Request Supplier</option>
-                                <option value="supplier1">Supplier 1</option>
-                                <option value="supplier2">Supplier 2</option>
-                                <option value="supplier3">Supplier 3</option>
-                            </select>
+                            <div class="custom-select-container">
+                                <div class="search-wrapper" (click)="showSupplierDropdown = true">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        placeholder="Request Supplier"
+                                        [value]="supplierSearchTerm"
+                                        (input)="onSupplierSearchInput($event); filterSuppliers()"
+                                        (focus)="showSupplierDropdown = true"
+                                        (blur)="hideSupplierDropdown()"
+                                        [readonly]="selectedSupplier ? true : false"
+                                    >
+                                    <button 
+                                        *ngIf="selectedSupplier" 
+                                        type="button" 
+                                        class="clear-button"
+                                        (click)="clearSupplier(); $event.stopPropagation()"
+                                    >
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showSupplierDropdown && !selectedSupplier">
+                                    <div 
+                                        class="dropdown-item" 
+                                        *ngFor="let supplier of getFilteredSuppliers()"
+                                        (click)="selectSupplier(supplier)"
+                                        [class.selected]="selectedSupplier?.value === supplier.value"
+                                    >
+                                        {{ supplier.name }}
+                                    </div>
+                                    <div *ngIf="getFilteredSuppliers().length === 0" class="no-results">
+                                        No suppliers found
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="form-row">

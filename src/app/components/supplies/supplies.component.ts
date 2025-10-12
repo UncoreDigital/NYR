@@ -152,6 +152,7 @@ export class SuppliesComponent {
   // Product multiselect dropdown properties
   isProductDropdownOpen = false;
   selectedProductsList: string[] = [];
+  productSearchTerm: string = '';
   products = [
     { id: 'pneumatic-walking-boot', name: 'Pneumatic Walking Boot' },
     { id: 'other-product', name: 'Other Product' },
@@ -425,5 +426,36 @@ export class SuppliesComponent {
     this.supplierSearchTerm = '';
     this.suppliesForm.patchValue({ suppliesName: '' });
     this.showSupplierDropdown = false;
+  }
+
+  // Product filtering methods
+  getFilteredProducts() {
+    if (!this.productSearchTerm.trim()) {
+      return this.products;
+    }
+    return this.products.filter(product => 
+      product.name.toLowerCase().includes(this.productSearchTerm.toLowerCase())
+    );
+  }
+
+  filterProducts() {
+    // Automatically show dropdown when user starts typing
+    if (!this.isProductDropdownOpen) {
+      this.isProductDropdownOpen = true;
+    }
+  }
+
+  clearProductSearch() {
+    this.productSearchTerm = '';
+  }
+
+  onProductSearchInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.productSearchTerm = target.value;
+  }
+
+  onSupplierSearchInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.supplierSearchTerm = target.value;
   }
 }
