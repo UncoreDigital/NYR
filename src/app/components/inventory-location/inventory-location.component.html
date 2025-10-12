@@ -13,18 +13,45 @@
             <!-- Page Header -->
             <div class="page-header">
                 <h1>Locations</h1>
-
             </div>
 
-            <!-- Search Bar -->
+            <!-- Location Header with Filter and Search -->
             <div class="search-section">
+                <div class="filter-container">
+                    <div class="filter-group">
+                        <button mat-icon-button style="height: 24px; width: 18px;">
+                            <img class="imgFilter" src="assets/filter.png" alt="Filter" />
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <mat-select class="select-filter" placeholder="Customer Name" [(value)]="selectedCustomerName"
+                            (selectionChange)="onCustomerNameFilterChange()">
+                            <mat-option value="">Customer Name</mat-option>
+                            <mat-option *ngFor="let customer of getUniqueCustomerNames()"
+                                [value]="customer">{{customer}}</mat-option>
+                        </mat-select>
+                        <div class="dropdown-divider"></div>
+                        <mat-select class="select-filter" placeholder="Location" [(value)]="selectedLocation"
+                            (selectionChange)="onLocationFilterChange()">
+                            <mat-option value="">Location</mat-option>
+                            <mat-option *ngFor="let location of getUniqueLocations()"
+                                [value]="location">{{location}}</mat-option>
+                        </mat-select>
+                    </div>
+                    <button class="reset-filter-btn" (click)="resetFilters()">
+                        <mat-icon>refresh</mat-icon>
+                        Reset Filter
+                    </button>
+                </div>
                 <div class="search-container">
                     <mat-icon class="search-icon">search</mat-icon>
-                    <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)">
+                    <input type="text" placeholder="Search" class="search-input" [(ngModel)]="searchTerm"
+                        (keyup)="applyFilter($event)">
                 </div>
-                <button class="btn btn-primary" (click)="transferToVan()">
-                    Transfer Inventory
-                </button>
+                <div style="margin-left: auto;">
+                    <button class="btn btn-primary" (click)="transferToVan()">
+                        Transfer Inventory
+                    </button>
+                </div>
             </div>
 
             <div class="table-container">
@@ -69,6 +96,5 @@
                 <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons class="table-paginator">
                 </mat-paginator>
             </div>
+
         </div>
-    </div>
-</div>
