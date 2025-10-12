@@ -1,5 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SidebarComponent } from '../../sidebar/sidebar.component';
+import { HeaderComponent } from '../../header/header.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { UserService } from '../../../services/user.service';
 import { CustomerService, CustomerApiModel } from '../../../services/customer.service';
@@ -35,6 +41,21 @@ export class AddUserComponent implements OnInit {
     { id: 3, name: 'Drivers' },
     { id: 4, name: 'Location Staff' }
   ];
+
+  // Role dropdown properties
+  roleSearchTerm: string = '';
+  showRoleDropdown: boolean = false;
+  selectedRole: any = null;
+
+  // Customer dropdown properties
+  customerSearchTerm: string = '';
+  showCustomerDropdown: boolean = false;
+  selectedCustomer: CustomerApiModel | any = null;
+
+  // Location dropdown properties
+  locationSearchTerm: string = '';
+  showLocationDropdown: boolean = false;
+  selectedLocation: any = null;
 
   constructor(
     private fb: FormBuilder, 
@@ -282,5 +303,130 @@ export class AddUserComponent implements OnInit {
 
   driverAvailabilityClick() {
     this.driverAvailability = true;
+  }
+
+  // Role dropdown methods
+  getFilteredRoles() {
+    if (!this.roleSearchTerm.trim()) {
+      return this.roles;
+    }
+    return this.roles.filter(role => 
+      role.name.toLowerCase().includes(this.roleSearchTerm.toLowerCase())
+    );
+  }
+
+  filterRoles() {
+    if (!this.showRoleDropdown) {
+      this.showRoleDropdown = true;
+    }
+  }
+
+  selectRole(role: any) {
+    this.selectedRole = role;
+    this.roleSearchTerm = role.name;
+    this.userForm.patchValue({ roleId: role.id });
+    this.showRoleDropdown = false;
+  }
+
+  hideRoleDropdown() {
+    setTimeout(() => {
+      this.showRoleDropdown = false;
+    }, 150);
+  }
+
+  clearRole() {
+    this.selectedRole = null;
+    this.roleSearchTerm = '';
+    this.userForm.patchValue({ roleId: '' });
+    this.showRoleDropdown = false;
+  }
+
+  onRoleSearchInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.roleSearchTerm = target.value;
+  }
+
+  // Customer dropdown methods
+  getFilteredCustomers(): CustomerApiModel[] {
+    if (!this.customerSearchTerm.trim()) {
+      return this.customers;
+    }
+    return this.customers.filter(customer => 
+      customer.companyName.toLowerCase().includes(this.customerSearchTerm.toLowerCase())
+    );
+  }
+
+  filterCustomers() {
+    if (!this.showCustomerDropdown) {
+      this.showCustomerDropdown = true;
+    }
+  }
+
+  selectCustomer(customer: CustomerApiModel) {
+    this.selectedCustomer = customer;
+    this.customerSearchTerm = customer.companyName;
+    this.userForm.patchValue({ customerId: customer.id });
+    this.showCustomerDropdown = false;
+    this.onCustomerChange();
+  }
+
+  hideCustomerDropdown() {
+    setTimeout(() => {
+      this.showCustomerDropdown = false;
+    }, 150);
+  }
+
+  clearCustomer() {
+    this.selectedCustomer = null;
+    this.customerSearchTerm = '';
+    this.userForm.patchValue({ customerId: '' });
+    this.showCustomerDropdown = false;
+    this.onCustomerChange();
+  }
+
+  onCustomerSearchInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.customerSearchTerm = target.value;
+  }
+
+  // Location dropdown methods
+  getFilteredLocations() {
+    if (!this.locationSearchTerm.trim()) {
+      return this.locations;
+    }
+    return this.locations.filter(location => 
+      location.locationName.toLowerCase().includes(this.locationSearchTerm.toLowerCase())
+    );
+  }
+
+  filterLocations() {
+    if (!this.showLocationDropdown) {
+      this.showLocationDropdown = true;
+    }
+  }
+
+  selectLocation(location: any) {
+    this.selectedLocation = location;
+    this.locationSearchTerm = location.locationName;
+    this.userForm.patchValue({ locationId: location.id });
+    this.showLocationDropdown = false;
+  }
+
+  hideLocationDropdown() {
+    setTimeout(() => {
+      this.showLocationDropdown = false;
+    }, 150);
+  }
+
+  clearLocation() {
+    this.selectedLocation = null;
+    this.locationSearchTerm = '';
+    this.userForm.patchValue({ locationId: '' });
+    this.showLocationDropdown = false;
+  }
+
+  onLocationSearchInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.locationSearchTerm = target.value;
   }
 }

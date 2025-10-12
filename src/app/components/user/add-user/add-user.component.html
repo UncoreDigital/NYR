@@ -40,30 +40,129 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Select Role</label>
-                            <select formControlName="roleId" class="form-control">
-                                <option value="" disabled selected>Select a role</option>
-                                <option *ngFor="let role of roles" [value]="role.id">{{ role.name }}</option>
-                            </select>
+                            <div class="custom-select-container">
+                                <div class="search-wrapper" (click)="showRoleDropdown = true">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        placeholder="Select a role"
+                                        [value]="roleSearchTerm"
+                                        (input)="onRoleSearchInput($event); filterRoles()"
+                                        (focus)="showRoleDropdown = true"
+                                        (blur)="hideRoleDropdown()"
+                                        [readonly]="selectedRole ? true : false"
+                                    >
+                                    <button 
+                                        *ngIf="selectedRole" 
+                                        type="button" 
+                                        class="clear-button"
+                                        (click)="clearRole(); $event.stopPropagation()"
+                                    >
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showRoleDropdown && !selectedRole">
+                                    <div 
+                                        class="dropdown-item" 
+                                        *ngFor="let role of getFilteredRoles()"
+                                        (click)="selectRole(role)"
+                                        [class.selected]="selectedRole?.id === role.id"
+                                    >
+                                        {{ role.name }}
+                                    </div>
+                                    <div *ngIf="getFilteredRoles().length === 0" class="no-results">
+                                        No roles found
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group"
                             *ngIf="userForm.get('roleId')?.value == '' || userForm.get('roleId')?.value == 1 || userForm.get('roleId')?.value == 4">
                             <label>Customer</label>
-                            <select formControlName="customerId" class="form-control" (change)="onCustomerChange()">
-                                <option value="" disabled selected>Select a Customer</option>
-                                <option *ngFor="let customer of customers" [value]="customer.id">{{ customer.companyName }}</option>
-                            </select>
+                            <div class="custom-select-container">
+                                <div class="search-wrapper" (click)="showCustomerDropdown = true">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        placeholder="Select a Customer"
+                                        [value]="customerSearchTerm"
+                                        (input)="onCustomerSearchInput($event); filterCustomers()"
+                                        (focus)="showCustomerDropdown = true"
+                                        (blur)="hideCustomerDropdown()"
+                                        [readonly]="selectedCustomer ? true : false"
+                                    >
+                                    <button 
+                                        *ngIf="selectedCustomer" 
+                                        type="button" 
+                                        class="clear-button"
+                                        (click)="clearCustomer(); $event.stopPropagation()"
+                                    >
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showCustomerDropdown && !selectedCustomer">
+                                    <div 
+                                        class="dropdown-item" 
+                                        *ngFor="let customer of getFilteredCustomers()"
+                                        (click)="selectCustomer(customer)"
+                                        [class.selected]="selectedCustomer?.id === customer.id"
+                                    >
+                                        {{ customer.companyName }}
+                                    </div>
+                                    <div *ngIf="getFilteredCustomers().length === 0" class="no-results">
+                                        No customers found
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group"
                             *ngIf="userForm.get('roleId')?.value == '' || userForm.get('roleId')?.value == 1 || userForm.get('roleId')?.value == 4">
                             <label>Select Location</label>
-                            <select formControlName="locationId" class="form-control" [disabled]="!userForm.get('customerId')?.value || isLoadingLocations">
-                                <option value="" disabled selected>
-                                    {{ !userForm.get('customerId')?.value ? 'Select Customer first' : 
-                                       isLoadingLocations ? 'Loading locations...' :
-                                       locations.length === 0 ? 'No locations available' : 'Select a Location' }}
-                                </option>
-                                <option *ngFor="let location of locations" [value]="location.id">{{ location.locationName }}</option>
-                            </select>
+                            <div class="custom-select-container" *ngIf="!isLoadingLocations">
+                                <div class="search-wrapper" 
+                                     (click)="userForm.get('customerId')?.value ? showLocationDropdown = true : null"
+                                     [class.disabled]="!userForm.get('customerId')?.value">
+                                     <mat-icon class="search-icon">search</mat-icon>
+                                     <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        [placeholder]="!userForm.get('customerId')?.value ? 'Select Customer first' : 
+                                                     locations.length === 0 ? 'No locations available' : 'Select a Location'"
+                                        [value]="locationSearchTerm"
+                                        (input)="onLocationSearchInput($event); filterLocations()"
+                                        (focus)="userForm.get('customerId')?.value ? showLocationDropdown = true : null"
+                                        (blur)="hideLocationDropdown()"
+                                        [readonly]="selectedLocation ? true : false"
+                                        [disabled]="!userForm.get('customerId')?.value"
+                                    >
+                                    <button 
+                                        *ngIf="selectedLocation" 
+                                        type="button" 
+                                        class="clear-button"
+                                        (click)="clearLocation(); $event.stopPropagation()"
+                                    >
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showLocationDropdown && !selectedLocation && locations.length > 0">
+                                    <div 
+                                        class="dropdown-item" 
+                                        *ngFor="let location of getFilteredLocations()"
+                                        (click)="selectLocation(location)"
+                                        [class.selected]="selectedLocation?.id === location.id"
+                                    >
+                                        {{ location.locationName }}
+                                    </div>
+                                    <div *ngIf="getFilteredLocations().length === 0" class="no-results">
+                                        No locations found
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="isLoadingLocations" class="loading-container">
+                                <span class="loading-text">Loading locations...</span>
+                            </div>
                         </div>
                         <div class="form-group" *ngIf="userForm.get('roleId')?.value == 3">
                             <label>&nbsp;</label>
