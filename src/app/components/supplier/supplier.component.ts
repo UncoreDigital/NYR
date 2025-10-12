@@ -28,6 +28,11 @@ export class SupplierComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   isLoading = false;
+  suppliers: Supplier[] = [];
+  filteredSuppliers: Supplier[] = [];
+  selectedStatus = '';
+  selectedSupplierName = '';
+  searchTerm = '';
 
   constructor(
     private router: Router,
@@ -55,7 +60,9 @@ export class SupplierComponent implements OnInit {
           email: s.email,
           status: s.isActive ? 'Active' : 'Inactive'
         }));
-        this.dataSource.data = mapped;
+        this.suppliers = mapped;
+        this.filteredSuppliers = [...this.suppliers];
+        this.applyFilters();
         this.isLoading = false;
       },
       error: (error) => {
@@ -67,8 +74,59 @@ export class SupplierComponent implements OnInit {
   }
 
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.searchTerm = (event.target as HTMLInputElement).value;
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    let filtered = [...this.suppliers];
+
+    // Apply supplier name filter
+    if (this.selectedSupplierName) {
+      filtered = filtered.filter(supplier => 
+        supplier.supplierName === this.selectedSupplierName
+      );
+    }
+
+    // Apply status filter
+    if (this.selectedStatus) {
+      filtered = filtered.filter(supplier => 
+        supplier.status.toLowerCase() === this.selectedStatus.toLowerCase()
+      );
+    }
+
+    // Apply search filter
+    if (this.searchTerm) {
+      const searchLower = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(supplier =>
+        supplier.supplierName.toLowerCase().includes(searchLower) ||
+        supplier.email.toLowerCase().includes(searchLower) ||
+        supplier.phoneNumber.toLowerCase().includes(searchLower) ||
+        supplier.status.toLowerCase().includes(searchLower)
+      );
+    }
+
+    this.filteredSuppliers = filtered;
+    this.dataSource.data = this.filteredSuppliers;
+  }
+
+  onSupplierNameFilterChange() {
+    this.applyFilters();
+  }
+
+  onStatusFilterChange() {
+    this.applyFilters();
+  }
+
+  getUniqueSupplierNames(): string[] {
+    return [...new Set(this.suppliers.map(supplier => supplier.supplierName))].sort();
+  }
+
+  resetFilters() {
+    this.selectedStatus = '';
+    this.selectedSupplierName = '';
+    this.searchTerm = '';
+    this.applyFilters();
   }
 
   addSupplier() {

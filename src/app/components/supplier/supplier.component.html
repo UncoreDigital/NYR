@@ -12,19 +12,46 @@
 
       <!-- Page Header -->
       <div class="page-header">
-        <h1>Supplier</h1>
-
+        <h1>Suppliers</h1>
       </div>
 
       <!-- Search Bar -->
       <div class="search-section">
+        <div class="filter-container">
+          <div class="filter-group">
+            <button mat-icon-button style="height: 24px; width: 18px;">
+              <img class="imgFilter" src="assets/filter.png" alt="Filter" />
+            </button>
+            <mat-select class="select-filter" placeholder="Supplier Name" [(value)]="selectedSupplierName" (selectionChange)="onSupplierNameFilterChange()">
+              <mat-option value="">Supplier Name</mat-option>
+              <mat-option *ngFor="let supplier of getUniqueSupplierNames()" [value]="supplier">{{supplier}}</mat-option>
+            </mat-select>
+            <mat-select class="select-filter" placeholder="Status" [(value)]="selectedStatus" (selectionChange)="onStatusFilterChange()">
+              <mat-option value="">Status</mat-option>
+              <mat-option value="active">Active</mat-option>
+              <mat-option value="inactive">Inactive</mat-option>
+            </mat-select>
+          </div>
+          <button class="reset-filter-btn" (click)="resetFilters()">
+            <mat-icon>refresh</mat-icon>
+            Reset Filter
+          </button>
+          <!-- <mat-icon class="search-icon">search</mat-icon>
+          <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)"> -->
+        </div>
         <div class="search-container">
           <mat-icon class="search-icon">search</mat-icon>
-          <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)">
+          <input type="text" 
+                 placeholder="Search" 
+                 class="search-input" 
+                 [(ngModel)]="searchTerm"
+                 (keyup)="applyFilter($event)">
         </div>
-        <button class="btn btn-primary" (click)="addSupplier()">
-          Add Supplier
-        </button>
+        <div style="margin-left: auto;">
+          <button class="btn btn-primary" (click)="addSupplier()">
+            Add Supplier
+          </button>
+        </div>
       </div>
 
       <!-- Loading State -->
