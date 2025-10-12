@@ -22,10 +22,12 @@
             <button mat-icon-button style="height: 24px; width: 18px;">
               <img class="imgFilter" src="assets/filter.png" alt="Filter" />
             </button>
+            <div class="dropdown-divider"></div>
             <mat-select class="select-filter" placeholder="Supplier Name" [(value)]="selectedSupplierName" (selectionChange)="onSupplierNameFilterChange()">
               <mat-option value="">Supplier Name</mat-option>
               <mat-option *ngFor="let supplier of getUniqueSupplierNames()" [value]="supplier">{{supplier}}</mat-option>
             </mat-select>
+            <div class="dropdown-divider"></div>
             <mat-select class="select-filter" placeholder="Status" [(value)]="selectedStatus" (selectionChange)="onStatusFilterChange()">
               <mat-option value="">Status</mat-option>
               <mat-option value="active">Active</mat-option>

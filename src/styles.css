@@ -975,3 +975,10 @@ input[type="time"]:disabled {
 .search-section .mat-mdc-select-trigger {
   font-size: 14px;
 }
+
+.dropdown-divider {
+  width: 1px;
+  height: 24px;
+  background-color: #e5e7eb;
+  margin: 0 8px;
+}
