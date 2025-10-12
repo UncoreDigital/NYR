@@ -29,6 +29,9 @@ export class UserComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
   users: User[] = [];
+  filteredUsers: User[] = [];
+  selectedRole = '';
+  searchTerm = '';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -51,7 +54,8 @@ export class UserComponent implements OnInit {
     this.userService.getUsers().subscribe({
       next: (apiUsers: UserResponse[]) => {
         this.users = this.mapApiResponseToUser(apiUsers);
-        this.dataSource.data = this.users;
+        this.filteredUsers = [...this.users];
+        this.applyFilters();
         this.isLoading = false;
       },
       error: (error: any) => {
@@ -78,8 +82,43 @@ export class UserComponent implements OnInit {
   }
 
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.searchTerm = (event.target as HTMLInputElement).value;
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    let filtered = [...this.users];
+
+    // Apply role filter
+    if (this.selectedRole) {
+      filtered = filtered.filter(user => 
+        user.role.toLowerCase() === this.selectedRole.toLowerCase()
+      );
+    }
+
+    // Apply search filter
+    if (this.searchTerm) {
+      const searchLower = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(user =>
+        user.name.toLowerCase().includes(searchLower) ||
+        user.email.toLowerCase().includes(searchLower) ||
+        user.role.toLowerCase().includes(searchLower) ||
+        user.phoneNumber.toLowerCase().includes(searchLower)
+      );
+    }
+
+    this.filteredUsers = filtered;
+    this.dataSource.data = this.filteredUsers;
+  }
+
+  onRoleFilterChange() {
+    this.applyFilters();
+  }
+
+  resetFilters() {
+    this.selectedRole = '';
+    this.searchTerm = '';
+    this.applyFilters();
   }
 
   addUser() {
