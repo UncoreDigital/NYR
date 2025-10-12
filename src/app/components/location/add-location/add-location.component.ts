@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SidebarComponent } from '../../sidebar/sidebar.component';
@@ -26,6 +26,11 @@ export class AddLocationComponent implements OnInit {
   isEditMode = false;
   locationId: number | null = null;
   currentLocation: LocationResponse | null = null;
+
+  // Customer dropdown properties
+  customerSearchTerm: string = '';
+  showCustomerDropdown: boolean = false;
+  selectedCustomer: CustomerApiModel | any = null;
 
   constructor(
     private fb: FormBuilder, 
@@ -122,6 +127,13 @@ export class AddLocationComponent implements OnInit {
       email: location.email,
       comments: location.comments
     });
+    
+    // Set selected customer for dropdown
+    const customer = this.customers.find(c => c.id === location.customerId);
+    if (customer) {
+      this.selectedCustomer = customer;
+      this.customerSearchTerm = customer.companyName;
+    }
   }
 
   onSubmit() {
@@ -197,5 +209,47 @@ export class AddLocationComponent implements OnInit {
 
   goToLocationsList() {
     this.router.navigate(['/location']);
+  }
+
+  // Customer dropdown methods
+  getFilteredCustomers(): CustomerApiModel[] {
+    if (!this.customerSearchTerm.trim()) {
+      return this.customers;
+    }
+    return this.customers.filter(customer => 
+      customer.companyName.toLowerCase().includes(this.customerSearchTerm.toLowerCase())
+    );
+  }
+
+  filterCustomers() {
+    // Automatically show dropdown when user starts typing
+    if (!this.showCustomerDropdown) {
+      this.showCustomerDropdown = true;
+    }
+  }
+
+  selectCustomer(customer: CustomerApiModel) {
+    this.selectedCustomer = customer;
+    this.customerSearchTerm = customer.companyName;
+    this.locationForm.patchValue({ customerId: customer.id });
+    this.showCustomerDropdown = false;
+  }
+
+  hideCustomerDropdown() {
+    setTimeout(() => {
+      this.showCustomerDropdown = false;
+    }, 150);
+  }
+
+  clearCustomer() {
+    this.selectedCustomer = null;
+    this.customerSearchTerm = '';
+    this.locationForm.patchValue({ customerId: '' });
+    this.showCustomerDropdown = false;
+  }
+
+  onSearchInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.customerSearchTerm = target.value;
   }
 }

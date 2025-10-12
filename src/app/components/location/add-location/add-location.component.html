@@ -45,12 +45,42 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Customer Name</label>
-                            <select formControlName="customerId" class="form-select">
-                                <option value="">Select Customer</option>
-                                <option *ngFor="let customer of customers" [value]="customer.id">
-                                    {{ customer.companyName }}
-                                </option>
-                            </select>
+                            <div class="custom-select-container">
+                                <div class="search-wrapper" (click)="showCustomerDropdown = true">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        placeholder="Select Customer"
+                                        [value]="customerSearchTerm"
+                                        (input)="onSearchInput($event); filterCustomers()"
+                                        (focus)="showCustomerDropdown = true"
+                                        (blur)="hideCustomerDropdown()"
+                                        [readonly]="selectedCustomer ? true : false"
+                                    >
+                                    <button 
+                                        *ngIf="selectedCustomer" 
+                                        type="button" 
+                                        class="clear-button"
+                                        (click)="clearCustomer(); $event.stopPropagation()"
+                                    >
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showCustomerDropdown && !selectedCustomer">
+                                    <div 
+                                        class="dropdown-item" 
+                                        *ngFor="let customer of getFilteredCustomers()"
+                                        (click)="selectCustomer(customer)"
+                                        [class.selected]="selectedCustomer?.id === customer.id"
+                                    >
+                                        {{ customer.companyName }}
+                                    </div>
+                                    <div *ngIf="getFilteredCustomers().length === 0" class="no-results">
+                                        No customers found
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Location Name</label>

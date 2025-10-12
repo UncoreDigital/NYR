@@ -45,6 +45,21 @@ export class AddProductComponent implements OnInit {
   productId: number | null = null;
   isLoadingProduct = false;
 
+  // Category dropdown properties
+  categorySearchTerm: string = '';
+  showCategoryDropdown: boolean = false;
+  selectedCategory: Category | any = null;
+
+  // Brand dropdown properties
+  brandSearchTerm: string = '';
+  showBrandDropdown: boolean = false;
+  selectedBrand: Brand | any = null;
+
+  // Supplier dropdown properties
+  supplierSearchTerm: string = '';
+  showSupplierDropdown: boolean = false;
+  selectedSupplier: SupplierApiModel | any = null;
+
   constructor(
     private fb: FormBuilder, 
     private router: Router,
@@ -154,6 +169,28 @@ export class AddProductComponent implements OnInit {
       showInCatalogue: product.showInCatalogue,
       universal: product.isUniversal
     });
+
+    // Set selected dropdown items
+    const category = this.categories.find(c => c.id === product.categoryId);
+    if (category) {
+      this.selectedCategory = category;
+      this.categorySearchTerm = category.name;
+      this.productForm.patchValue({ category: category.name });
+    }
+
+    const brand = this.brands.find(b => b.id === product.brandId);
+    if (brand) {
+      this.selectedBrand = brand;
+      this.brandSearchTerm = brand.name;
+      this.productForm.patchValue({ brand: brand.name });
+    }
+
+    const supplier = this.suppliers.find(s => s.id === product.supplierId);
+    if (supplier) {
+      this.selectedSupplier = supplier;
+      this.supplierSearchTerm = supplier.name;
+      this.productForm.patchValue({ supplier: supplier.name });
+    }
 
     // Set image URL and preview
     if (product.imageUrl) {
@@ -366,5 +403,128 @@ export class AddProductComponent implements OnInit {
   private getSupplierId(supplierName: string): number {
     const supplier = this.suppliers.find(s => s.name === supplierName);
     return supplier ? supplier.id : 1;
+  }
+
+  // Category dropdown methods
+  getFilteredCategories(): Category[] {
+    if (!this.categorySearchTerm.trim()) {
+      return this.categories;
+    }
+    return this.categories.filter(category => 
+      category.name.toLowerCase().includes(this.categorySearchTerm.toLowerCase())
+    );
+  }
+
+  filterCategories() {
+    if (!this.showCategoryDropdown) {
+      this.showCategoryDropdown = true;
+    }
+  }
+
+  selectCategory(category: Category) {
+    this.selectedCategory = category;
+    this.categorySearchTerm = category.name;
+    this.productForm.patchValue({ category: category.name });
+    this.showCategoryDropdown = false;
+  }
+
+  hideCategoryDropdown() {
+    setTimeout(() => {
+      this.showCategoryDropdown = false;
+    }, 150);
+  }
+
+  clearCategory() {
+    this.selectedCategory = null;
+    this.categorySearchTerm = '';
+    this.productForm.patchValue({ category: '' });
+    this.showCategoryDropdown = false;
+  }
+
+  onCategorySearchInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.categorySearchTerm = target.value;
+  }
+
+  // Brand dropdown methods
+  getFilteredBrands(): Brand[] {
+    if (!this.brandSearchTerm.trim()) {
+      return this.brands;
+    }
+    return this.brands.filter(brand => 
+      brand.name.toLowerCase().includes(this.brandSearchTerm.toLowerCase())
+    );
+  }
+
+  filterBrands() {
+    if (!this.showBrandDropdown) {
+      this.showBrandDropdown = true;
+    }
+  }
+
+  selectBrand(brand: Brand) {
+    this.selectedBrand = brand;
+    this.brandSearchTerm = brand.name;
+    this.productForm.patchValue({ brand: brand.name });
+    this.showBrandDropdown = false;
+  }
+
+  hideBrandDropdown() {
+    setTimeout(() => {
+      this.showBrandDropdown = false;
+    }, 150);
+  }
+
+  clearBrand() {
+    this.selectedBrand = null;
+    this.brandSearchTerm = '';
+    this.productForm.patchValue({ brand: '' });
+    this.showBrandDropdown = false;
+  }
+
+  onBrandSearchInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.brandSearchTerm = target.value;
+  }
+
+  // Supplier dropdown methods
+  getFilteredSuppliers(): SupplierApiModel[] {
+    if (!this.supplierSearchTerm.trim()) {
+      return this.suppliers;
+    }
+    return this.suppliers.filter(supplier => 
+      supplier.name.toLowerCase().includes(this.supplierSearchTerm.toLowerCase())
+    );
+  }
+
+  filterSuppliers() {
+    if (!this.showSupplierDropdown) {
+      this.showSupplierDropdown = true;
+    }
+  }
+
+  selectSupplier(supplier: SupplierApiModel) {
+    this.selectedSupplier = supplier;
+    this.supplierSearchTerm = supplier.name;
+    this.productForm.patchValue({ supplier: supplier.name });
+    this.showSupplierDropdown = false;
+  }
+
+  hideSupplierDropdown() {
+    setTimeout(() => {
+      this.showSupplierDropdown = false;
+    }, 150);
+  }
+
+  clearSupplier() {
+    this.selectedSupplier = null;
+    this.supplierSearchTerm = '';
+    this.productForm.patchValue({ supplier: '' });
+    this.showSupplierDropdown = false;
+  }
+
+  onSupplierSearchInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.supplierSearchTerm = target.value;
   }
 }

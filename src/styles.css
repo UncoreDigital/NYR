@@ -714,7 +714,7 @@ input[type="time"]:disabled {
 
 .search-wrapper .search-input {
   width: 100%;
-  padding: 12px 16px 12px 45px;
+  padding: 10px 16px 10px 45px;
   border: 1px solid #e0e0e0;
   border-radius: 6px;
   font-size: 14px;
@@ -833,5 +833,5 @@ input[type="time"]:disabled {
 }
 
 .form-group .custom-select-container {
-  margin-top: 4px;
+  /* margin-top: 4px; */
 }

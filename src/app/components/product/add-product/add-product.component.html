@@ -143,24 +143,84 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Category</label>
-                            <select class="form-control" formControlName="category" [disabled]="isLoadingDropdowns">
-                                <option value="" disabled selected>Select a Category</option>
-                                <option *ngFor="let category of categories" [value]="category.name">
-                                    {{ category.name }}
-                                </option>
-                            </select>
+                            <div class="custom-select-container" *ngIf="!isLoadingDropdowns">
+                                <div class="search-wrapper" (click)="showCategoryDropdown = true">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        placeholder="Select a Category"
+                                        [value]="categorySearchTerm"
+                                        (input)="onCategorySearchInput($event); filterCategories()"
+                                        (focus)="showCategoryDropdown = true"
+                                        (blur)="hideCategoryDropdown()"
+                                        [readonly]="selectedCategory ? true : false"
+                                    >
+                                    <button 
+                                        *ngIf="selectedCategory" 
+                                        type="button" 
+                                        class="clear-button"
+                                        (click)="clearCategory(); $event.stopPropagation()"
+                                    >
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showCategoryDropdown && !selectedCategory">
+                                    <div 
+                                        class="dropdown-item" 
+                                        *ngFor="let category of getFilteredCategories()"
+                                        (click)="selectCategory(category)"
+                                        [class.selected]="selectedCategory?.id === category.id"
+                                    >
+                                        {{ category.name }}
+                                    </div>
+                                    <div *ngIf="getFilteredCategories().length === 0" class="no-results">
+                                        No categories found
+                                    </div>
+                                </div>
+                            </div>
                             <div *ngIf="isLoadingDropdowns" class="dropdown-loading">
                                 <span class="loading-text">Loading categories...</span>
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Brand</label>
-                            <select class="form-control" formControlName="brand" [disabled]="isLoadingDropdowns">
-                                <option value="" disabled selected>Select a Brand</option>
-                                <option *ngFor="let brand of brands" [value]="brand.name">
-                                    {{ brand.name }}
-                                </option>
-                            </select>
+                            <div class="custom-select-container" *ngIf="!isLoadingDropdowns">
+                                <div class="search-wrapper" (click)="showBrandDropdown = true">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        placeholder="Select a Brand"
+                                        [value]="brandSearchTerm"
+                                        (input)="onBrandSearchInput($event); filterBrands()"
+                                        (focus)="showBrandDropdown = true"
+                                        (blur)="hideBrandDropdown()"
+                                        [readonly]="selectedBrand ? true : false"
+                                    >
+                                    <button 
+                                        *ngIf="selectedBrand" 
+                                        type="button" 
+                                        class="clear-button"
+                                        (click)="clearBrand(); $event.stopPropagation()"
+                                    >
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showBrandDropdown && !selectedBrand">
+                                    <div 
+                                        class="dropdown-item" 
+                                        *ngFor="let brand of getFilteredBrands()"
+                                        (click)="selectBrand(brand)"
+                                        [class.selected]="selectedBrand?.id === brand.id"
+                                    >
+                                        {{ brand.name }}
+                                    </div>
+                                    <div *ngIf="getFilteredBrands().length === 0" class="no-results">
+                                        No brands found
+                                    </div>
+                                </div>
+                            </div>
                             <div *ngIf="isLoadingDropdowns" class="dropdown-loading">
                                 <span class="loading-text">Loading brands...</span>
                             </div>
@@ -170,12 +230,51 @@
                     <div class="form-row">
                         <div class="form-group" style="flex:1;">
                             <label>Supplier</label>
-                            <select class="form-control" formControlName="supplier" [disabled]="isLoadingDropdowns">
-                                <option value="" disabled selected>Select a Supplier</option>
-                                <option *ngFor="let supplier of suppliers" [value]="supplier.name">
-                                    {{ supplier.name }}
-                                </option>
-                            </select>
+                            <div class="custom-select-container" *ngIf="!isLoadingDropdowns">
+                                <div class="search-wrapper" (click)="showSupplierDropdown = true">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        placeholder="Select a Supplier"
+                                        [value]="supplierSearchTerm"
+                                        (input)="onSupplierSearchInput($event); filterSuppliers()"
+                                        (focus)="showSupplierDropdown = true"
+                                        (blur)="hideSupplierDropdown()"
+                                        [readonly]="selectedSupplier ? true : false"
+                                    >
+                                    <button 
+                                        *ngIf="selectedSupplier" 
+                                        type="button" 
+                                        class="clear-button"
+                                        (click)="clearSupplier(); $event.stopPropagation()"
+                                    >
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showSupplierDropdown && !selectedSupplier">
+                                    <div 
+                                        class="dropdown-item supplier-item" 
+                                        *ngFor="let supplier of getFilteredSuppliers()"
+                                        (click)="selectSupplier(supplier)"
+                                        [class.selected]="selectedSupplier?.id === supplier.id"
+                                    >
+                                        <div class="supplier-main-info">
+                                            <div class="supplier-name">{{ supplier.name }}</div>
+                                            <div class="supplier-contact" *ngIf="supplier.contactPerson">
+                                                Contact: {{ supplier.contactPerson }}
+                                            </div>
+                                        </div>
+                                        <div class="supplier-details" *ngIf="supplier.email || supplier.phoneNumber">
+                                            <div class="supplier-email" *ngIf="supplier.email">{{ supplier.email }}</div>
+                                            <div class="supplier-phone" *ngIf="supplier.phoneNumber">{{ supplier.phoneNumber }}</div>
+                                        </div>
+                                    </div>
+                                    <div *ngIf="getFilteredSuppliers().length === 0" class="no-results">
+                                        No suppliers found
+                                    </div>
+                                </div>
+                            </div>
                             <div *ngIf="isLoadingDropdowns" class="dropdown-loading">
                                 <span class="loading-text">Loading suppliers...</span>
                             </div>
