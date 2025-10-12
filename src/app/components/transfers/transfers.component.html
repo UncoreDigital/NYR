@@ -100,12 +100,37 @@
       <div class="form-row">
         <div class="form-group">
           <label>Select Location</label>
-          <select class="form-control">
-            <option value="" disabled selected>Select a Location</option>
-            <option value="admin">US - Planet Health</option>
-            <option value="warehouse">UK - Planet Health</option>
-            <option value="driver">India - Avetis</option>
-          </select>
+          <div class="custom-select-container">
+            <div class="search-wrapper">
+              <mat-icon class="search-icon">search</mat-icon>
+              <input type="text" 
+                     class="search-input" 
+                     [(ngModel)]="locationSearchTerm" 
+                     [ngModelOptions]="{standalone: true}"
+                     placeholder="Search and select location..."
+                     (focus)="showLocationDropdown = true"
+                     (blur)="hideLocationDropdown()"
+                     (input)="filterLocations()">
+              <button type="button" 
+                      class="clear-button" 
+                      *ngIf="selectedLocation"
+                      (click)="clearLocation()"
+                      title="Clear selection">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            <div class="dropdown-list" *ngIf="showLocationDropdown && getFilteredLocations().length > 0">
+              <div class="dropdown-item" 
+                   *ngFor="let location of getFilteredLocations()"
+                   (mousedown)="selectLocation(location)"
+                   [class.selected]="selectedLocation?.value === location.value">
+                {{location.name}}
+              </div>
+            </div>
+            <div class="dropdown-list" *ngIf="showLocationDropdown && getFilteredLocations().length === 0">
+              <div class="dropdown-item no-results">No locations found</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

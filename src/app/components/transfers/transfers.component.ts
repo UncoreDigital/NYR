@@ -37,6 +37,20 @@ export class TransfersComponent implements OnInit {
   ];
   showFollowUpModal: boolean = false;
 
+  // Location dropdown properties
+  locationSearchTerm: string = '';
+  showLocationDropdown: boolean = false;
+  selectedLocation: any = null;
+  
+  // Location data array
+  locations = [
+    { value: 'us-planet-health', name: 'US - Planet Health' },
+    { value: 'uk-planet-health', name: 'UK - Planet Health' },
+    { value: 'india-avetis', name: 'India - Avetis' },
+    { value: 'canada-health-center', name: 'Canada - Health Center' },
+    { value: 'australia-medical', name: 'Australia - Medical Center' }
+  ];
+
   constructor(private router: Router) { }
 
   ngOnInit(): void {
@@ -129,5 +143,37 @@ export class TransfersComponent implements OnInit {
 
   getTooltipText(): string {
     return 'Title\n\nSupporting line text lorem ipsum dolor sit amet, consectetur\n\nLabel    Label';
+  }
+
+  // Location dropdown methods
+  getFilteredLocations() {
+    if (!this.locationSearchTerm) {
+      return this.locations;
+    }
+    return this.locations.filter(location => 
+      location.name.toLowerCase().includes(this.locationSearchTerm.toLowerCase())
+    );
+  }
+  
+  filterLocations() {
+    // Trigger filtering when user types
+  }
+  
+  selectLocation(location: any) {
+    this.selectedLocation = location;
+    this.locationSearchTerm = location.name;
+    this.showLocationDropdown = false;
+  }
+  
+  hideLocationDropdown() {
+    setTimeout(() => {
+      this.showLocationDropdown = false;
+    }, 200);
+  }
+  
+  clearLocation() {
+    this.selectedLocation = null;
+    this.locationSearchTerm = '';
+    this.showLocationDropdown = false;
   }
 }

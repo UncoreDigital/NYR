@@ -103,13 +103,36 @@
             <div class="form-group" *ngIf="selectedDriverOption === 'assign'">
                 <label class="form-label" style="text-align: left;">Available Driver</label>
                 <div class="input-container" style="text-align: left;">
-                    <select class="form-control" [(ngModel)]="selectedDriver" style="width: 100%;">
-                        <option value="" disabled selected>Select a Driver</option>
-                        <option value="admin">Driver 1</option>
-                        <option value="warehouse">Driver 2</option>
-                        <option value="driver">Driver 3</option>
-                        <option value="location">Driver 4</option>
-                    </select>
+                    <div class="custom-select-container">
+                        <div class="search-wrapper">
+                            <mat-icon class="search-icon">search</mat-icon>
+                            <input type="text" 
+                                   class="search-input" 
+                                   [(ngModel)]="driverSearchTerm" 
+                                   placeholder="Search and select driver..."
+                                   (focus)="showDriverDropdown = true"
+                                   (blur)="hideDriverDropdown()"
+                                   (input)="filterDrivers()">
+                            <button type="button" 
+                                    class="clear-button" 
+                                    *ngIf="selectedDriverObj"
+                                    (click)="clearDriver()"
+                                    title="Clear selection">
+                                <mat-icon>close</mat-icon>
+                            </button>
+                        </div>
+                        <div class="dropdown-list" *ngIf="showDriverDropdown && getFilteredDrivers().length > 0">
+                            <div class="dropdown-item" 
+                                 *ngFor="let driver of getFilteredDrivers()"
+                                 (mousedown)="selectDriver(driver)"
+                                 [class.selected]="selectedDriverObj?.value === driver.value">
+                                {{driver.name}}
+                            </div>
+                        </div>
+                        <div class="dropdown-list" *ngIf="showDriverDropdown && getFilteredDrivers().length === 0">
+                            <div class="dropdown-item no-results">No drivers found</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
