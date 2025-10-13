@@ -72,6 +72,9 @@
               <th mat-header-cell *matHeaderCellDef>ACTION</th>
               <td mat-cell *matCellDef="let customer">
                 <div class="action-group">
+                  <button class="group-btn edit" (click)="openCreditCardModal(customer)" title="Credit Card Info">
+                    <mat-icon style="color: black;">credit_card</mat-icon>
+                  </button>
                   <button class="group-btn edit" (click)="editCustomer(customer)" title="Edit">
                     <mat-icon>edit</mat-icon>
                   </button>
@@ -101,6 +104,118 @@
           </div>
         </ng-template>
       </ng-template>
+    </div>
+  </div>
+</div>
+
+<!-- Credit Card Information Modal -->
+<div class="modal-overlay" *ngIf="showCreditCardModal" (click)="closeCreditCardModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Credit Card Information</h2>
+      <button class="close-btn" (click)="closeCreditCardModal()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="modal-content">
+      <form class="credit-card-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Card Company Name</label>
+            <input type="text" class="form-input" placeholder="Enter Card Company Name" [(ngModel)]="creditCardData.cardCompanyName" name="cardCompanyName">
+          </div>
+          <div class="form-group">
+            <label>Name on the card</label>
+            <input type="text" class="form-input" placeholder="Enter Name on the card" [(ngModel)]="creditCardData.nameOnCard" name="nameOnCard">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Credit Card Number</label>
+            <input type="text" class="form-input" placeholder="Enter Credit Card Number" [(ngModel)]="creditCardData.cardNumber" name="cardNumber">
+          </div>
+          <div class="form-group">
+            <label>Credit Card Type</label>
+            <input type="text" class="form-input" placeholder="Enter Credit Card Type" [(ngModel)]="creditCardData.cardType" name="cardType">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group mb-0">
+            <label>Security Code</label>
+            <input type="text" class="form-input" placeholder="Enter Security Code" [(ngModel)]="creditCardData.securityCode" name="securityCode">
+          </div>
+          <div class="form-group mb-0">
+            <label>Expiration Date</label>
+            <input type="text" class="form-input" placeholder="Enter Expiration Date" [(ngModel)]="creditCardData.expirationDate" name="expirationDate">
+          </div>
+        </div>
+        <hr class="form-divider">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Bank Name</label>
+            <input type="text" class="form-input" placeholder="Enter Bank Name" [(ngModel)]="creditCardData.bankName" name="bankName">
+          </div>
+          <div class="form-group">
+            <label>Bank Phone</label>
+            <input type="text" class="form-input" placeholder="Enter Bank Phone" [(ngModel)]="creditCardData.bankPhone" name="bankPhone">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>Address</label>
+            <input type="text" class="form-input" placeholder="Enter address" [(ngModel)]="creditCardData.address" name="address">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group mb-0">
+            <label>City</label>
+            <input type="text" class="form-input" placeholder="Enter City" [(ngModel)]="creditCardData.city" name="city">
+          </div>
+          <div class="form-group mb-0">
+            <label>State</label>
+            <input type="text" class="form-input" placeholder="Enter State" [(ngModel)]="creditCardData.state" name="state">
+          </div>
+          <div class="form-group mb-0">
+            <label>Zip Code</label>
+            <input type="text" class="form-input" placeholder="Enter Zip Code" [(ngModel)]="creditCardData.zipCode" name="zipCode">
+          </div>
+        </div>
+        <hr class="form-divider">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Account Type</label>
+            <input type="text" class="form-input" placeholder="Enter Account Type" [(ngModel)]="creditCardData.accountType" name="accountType">
+          </div>
+          <div class="form-group">
+            <label>Bank Rep Name</label>
+            <input type="text" class="form-input" placeholder="Enter Bank Rep Name" [(ngModel)]="creditCardData.bankRepName" name="bankRepName">
+          </div>
+          <div class="form-group">
+            <label>Account Number</label>
+            <input type="text" class="form-input" placeholder="Enter Account Number" [(ngModel)]="creditCardData.accountNumber" name="accountNumber">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>Customer Since</label>
+            <input type="text" class="form-input" placeholder="Enter Customer Since" [(ngModel)]="creditCardData.customerSince" name="customerSince">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Balance</label>
+            <input type="text" class="form-input" placeholder="Enter balance" [(ngModel)]="creditCardData.balance" name="balance">
+          </div>
+          <div class="form-group">
+            <label>Credit Limit</label>
+            <input type="text" class="form-input" placeholder="Enter Credit Limit" [(ngModel)]="creditCardData.creditLimit" name="creditLimit">
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="saveCreditCardInfo()">Save</button>
+      <button class="btn btn-secondary" (click)="closeCreditCardModal()">Cancel</button>
     </div>
   </div>
 </div>

@@ -27,6 +27,29 @@ export class CustomerComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   isLoading = false;
+  showCreditCardModal = false;
+  selectedCustomer: Customer | null = null;
+  
+  creditCardData = {
+    cardCompanyName: '',
+    nameOnCard: '',
+    cardNumber: '',
+    cardType: '',
+    securityCode: '',
+    expirationDate: '',
+    bankName: '',
+    bankPhone: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    accountType: '',
+    bankRepName: '',
+    accountNumber: '',
+    customerSince: '',
+    balance: '',
+    creditLimit: ''
+  };
 
   constructor(
     private router: Router,
@@ -112,5 +135,48 @@ export class CustomerComponent implements OnInit {
         this.toastService.error('Error', message);
       }
     });
+  }
+
+  openCreditCardModal(customer: Customer): void {
+    this.selectedCustomer = customer;
+    this.showCreditCardModal = true;
+    // Reset form data
+    this.creditCardData = {
+      cardCompanyName: '',
+      nameOnCard: '',
+      cardNumber: '',
+      cardType: '',
+      securityCode: '',
+      expirationDate: '',
+      bankName: '',
+      bankPhone: '',
+      address: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      accountType: '',
+      bankRepName: '',
+      accountNumber: '',
+      customerSince: '',
+      balance: '',
+      creditLimit: ''
+    };
+  }
+
+  closeCreditCardModal(): void {
+    this.showCreditCardModal = false;
+    this.selectedCustomer = null;
+  }
+
+  saveCreditCardInfo(): void {
+    // Here you would typically save the credit card information
+    console.log('Saving credit card info for customer:', this.selectedCustomer);
+    console.log('Credit card data:', this.creditCardData);
+    
+    // Show success message
+    this.toastService.success('Success', 'Credit card information saved successfully');
+    
+    // Close modal
+    this.closeCreditCardModal();
   }
 }
