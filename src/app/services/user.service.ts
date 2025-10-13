@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UserResponse, User, CreateUserRequest, UpdateUserRequest } from '../models/user.model';
+import { DriverAvailability, DriverAvailabilityBulkRequest } from '../models/driver-availability.model';
 
 @Injectable({
   providedIn: 'root'
@@ -29,5 +30,30 @@ export class UserService {
 
   deleteUser(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/Users/${id}`);
+  }
+
+  getDriverAvailability(userId: number): Observable<DriverAvailability[]> {
+    return this.http.get<DriverAvailability[]>(`${this.API_URL}/Users/${userId}/driver-availability`);
+  }
+
+  saveDriverAvailability(userId: number, availabilityData: DriverAvailabilityBulkRequest): Observable<any> {
+    // Convert time strings to TimeSpan format for the API
+    const apiPayload = {
+      userId: availabilityData.userId,
+      days: availabilityData.days,
+      startTime: this.convertToTimeSpan(availabilityData.startTime),
+      endTime: this.convertToTimeSpan(availabilityData.endTime)
+    };
+    
+    return this.http.post(`${this.API_URL}/Users/${userId}/driver-availability`, apiPayload);
+  }
+
+  deleteDriverAvailability(userId: number, availabilityId: number): Observable<any> {
+    return this.http.delete(`${this.API_URL}/Users/${userId}/driver-availability/${availabilityId}`);
+  }
+
+  private convertToTimeSpan(timeString: string): string {
+    // Convert "HH:mm" to "HH:mm:ss" format for TimeSpan
+    return timeString + ':00';
   }
 }

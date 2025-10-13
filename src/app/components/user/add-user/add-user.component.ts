@@ -11,6 +11,7 @@ import { UserService } from '../../../services/user.service';
 import { CustomerService, CustomerApiModel } from '../../../services/customer.service';
 import { LocationService } from '../../../services/location.service';
 import { CreateUserRequest, UserResponse, UpdateUserRequest } from '../../../models/user.model';
+import { DriverAvailability, DriverAvailabilityBulkRequest } from '../../../models/driver-availability.model';
 import { ToastService } from '../../../services/toast.service';
 
 @Component({
@@ -26,6 +27,8 @@ export class AddUserComponent implements OnInit {
   driverDays: { [key: string]: boolean } = {};
   startTime: string = '';
   endTime: string = '';
+  existingDriverAvailabilities: DriverAvailability[] = [];
+  pendingDriverAvailabilities: { days: { [key: string]: boolean }, startTime: string, endTime: string }[] = [];
   
   isEditMode = false;
   userId: number | null = null;
@@ -160,6 +163,12 @@ export class AddUserComponent implements OnInit {
         next: (user: UserResponse) => {
           this.currentUser = user;
           this.populateForm(user);
+          
+          // Load driver availability if user is a driver
+          if (user.roleId === 3) {
+            this.loadDriverAvailability();
+          }
+          
           this.isLoading = false;
         },
         error: (error: any) => {
@@ -207,6 +216,40 @@ export class AddUserComponent implements OnInit {
     });
   }
 
+  loadDriverAvailability(): void {
+    if (this.userId) {
+      this.userService.getDriverAvailability(this.userId).subscribe({
+        next: (availabilities: DriverAvailability[]) => {
+          this.existingDriverAvailabilities = availabilities;
+          this.populateDriverAvailabilityForm();
+        },
+        error: (error: any) => {
+          console.error('Error loading driver availability:', error);
+          this.toastService.error('Error', 'Failed to load driver availability. Please try again.');
+        }
+      });
+    }
+  }
+
+  populateDriverAvailabilityForm(): void {
+    // Reset form
+    this.driverDays = {};
+    this.startTime = '';
+    this.endTime = '';
+
+    if (this.existingDriverAvailabilities.length > 0) {
+      // Set days based on existing availability
+      this.existingDriverAvailabilities.forEach(availability => {
+        this.driverDays[availability.dayOfWeek] = true;
+      });
+
+      // Set start and end times from first availability
+      const firstAvailability = this.existingDriverAvailabilities[0];
+      this.startTime = firstAvailability.startTime;
+      this.endTime = firstAvailability.endTime;
+    }
+  }
+
   onCustomerChange(): void {
     this.loadLocations();
   }
@@ -226,8 +269,8 @@ export class AddUserComponent implements OnInit {
           email: formValue.email,
           phoneNumber: formValue.phoneNumber,
           roleId: formValue.roleId,
-          customerId: formValue.customerId || 0,
-          locationId: formValue.locationId || 0,
+          customerId: formValue.roleId === 3 ? null : (formValue.customerId || 0),
+          locationId: formValue.roleId === 3 ? null : (formValue.locationId || 0),
           isActive: this.currentUser?.isActive ?? true
         };
 
@@ -255,16 +298,22 @@ export class AddUserComponent implements OnInit {
           phoneNumber: formValue.phoneNumber,
           password: formValue.password,
           roleId: formValue.roleId,
-          customerId: formValue.customerId || 0,
-          locationId: formValue.locationId || 0
+          customerId: formValue.roleId === 3 ? null : (formValue.customerId || 0),
+          locationId: formValue.roleId === 3 ? null : (formValue.locationId || 0)
         };
 
         this.userService.createUser(userData).subscribe({
           next: (response) => {
             console.log('User created successfully:', response);
-            this.isSaving = false;
-            this.toastService.success('Success', 'User has been created successfully');
-            this.showSuccess = true;
+            
+            // If user is a driver and has pending driver availability, save it
+            if (formValue.roleId === 3 && this.pendingDriverAvailabilities.length > 0) {
+              this.saveDriverAvailabilityForNewUser(response.id);
+            } else {
+              this.isSaving = false;
+              this.toastService.success('Success', 'User has been created successfully');
+              this.showSuccess = true;
+            }
           },
           error: (error: any) => {
             console.error('Error creating user:', error);
@@ -286,6 +335,8 @@ export class AddUserComponent implements OnInit {
   addAnotherUser() {
     this.showSuccess = false;
     this.userForm.reset();
+    this.pendingDriverAvailabilities = [];
+    this.resetDriverAvailabilityForm();
   }
 
   goToUsersList() {
@@ -293,15 +344,341 @@ export class AddUserComponent implements OnInit {
   }
 
   saveDriverAvailability() {
-    // Save logic here
-    this.driverAvailability = false;
+    // Validate form
+    if (!this.validateDriverAvailabilityForm()) {
+      return;
+    }
+
+    if (this.isEditMode && this.userId) {
+      // Edit mode - save directly to database
+      const bulkRequest: DriverAvailabilityBulkRequest = {
+        userId: this.userId,
+        days: this.driverDays,
+        startTime: this.startTime,
+        endTime: this.endTime
+      };
+
+      this.userService.saveDriverAvailability(this.userId, bulkRequest).subscribe({
+        next: (response) => {
+          console.log('Driver availability saved successfully:', response);
+          this.toastService.success('Success', 'Driver availability has been saved successfully');
+          this.driverAvailability = false;
+          // Reload driver availability to reflect changes
+          this.loadDriverAvailability();
+        },
+        error: (error: any) => {
+          console.error('Error saving driver availability:', error);
+          const message = error.error?.message || 'Failed to save driver availability. Please try again.';
+          this.toastService.error('Error', message);
+        }
+      });
+    } else {
+      // New user mode - add to pending array
+      const newAvailability = {
+        days: { ...this.driverDays },
+        startTime: this.startTime,
+        endTime: this.endTime
+      };
+      
+      this.pendingDriverAvailabilities.push(newAvailability);
+      this.toastService.success('Success', 'Driver availability added. You can add more or save the user.');
+      this.driverAvailability = false;
+      this.resetDriverAvailabilityForm();
+    }
   }
 
   closeDriverAvailability() {
     this.driverAvailability = false;
   }
 
+  validateDriverAvailabilityForm(): boolean {
+    // Check if at least one day is selected
+    const hasSelectedDays = Object.values(this.driverDays).some(selected => selected);
+    if (!hasSelectedDays) {
+      this.toastService.error('Validation Error', 'Please select at least one day');
+      return false;
+    }
+
+    // Check if start time is provided
+    if (!this.startTime) {
+      this.toastService.error('Validation Error', 'Please select start time');
+      return false;
+    }
+
+    // Check if end time is provided
+    if (!this.endTime) {
+      this.toastService.error('Validation Error', 'Please select end time');
+      return false;
+    }
+
+    // Check if start time is before end time
+    if (this.startTime >= this.endTime) {
+      this.toastService.error('Validation Error', 'Start time must be before end time');
+      return false;
+    }
+
+    // Check for minimum time duration (at least 1 hour)
+    const startTimeMinutes = this.timeToMinutes(this.startTime);
+    const endTimeMinutes = this.timeToMinutes(this.endTime);
+    const durationMinutes = endTimeMinutes - startTimeMinutes;
+    
+    if (durationMinutes < 60) {
+      this.toastService.error('Validation Error', 'Availability duration must be at least 1 hour');
+      return false;
+    }
+
+    // Check for duplicate availability
+    const isDuplicate = this.checkForDuplicateAvailability();
+    if (isDuplicate) {
+      this.toastService.error('Validation Error', 'This availability already exists. Please select different days or times.');
+      return false;
+    }
+
+    // Check for overlapping time ranges on same days
+    const hasOverlap = this.checkForOverlappingAvailability();
+    if (hasOverlap) {
+      this.toastService.error('Validation Error', 'This availability overlaps with existing availability on the same days.');
+      return false;
+    }
+
+    // Check maximum number of availabilities (limit to 10 for performance)
+    const totalAvailabilities = this.pendingDriverAvailabilities.length + 
+                               (this.isEditMode ? this.existingDriverAvailabilities.length : 0);
+    if (totalAvailabilities >= 10) {
+      this.toastService.error('Validation Error', 'Maximum 10 availability entries allowed per driver.');
+      return false;
+    }
+
+    // Check for reasonable time ranges (not too early or too late)
+    const startHour = parseInt(this.startTime.split(':')[0]);
+    const endHour = parseInt(this.endTime.split(':')[0]);
+    
+    if (startHour < 5 || startHour > 23) {
+      this.toastService.error('Validation Error', 'Start time should be between 5:00 AM and 11:00 PM.');
+      return false;
+    }
+    
+    if (endHour < 6 || endHour > 24) {
+      this.toastService.error('Validation Error', 'End time should be between 6:00 AM and 12:00 AM.');
+      return false;
+    }
+
+    return true;
+  }
+
+  resetDriverAvailabilityForm(): void {
+    this.driverDays = {};
+    this.startTime = '';
+    this.endTime = '';
+  }
+
+  removePendingAvailability(index: number): void {
+    this.pendingDriverAvailabilities.splice(index, 1);
+  }
+
+  removeExistingAvailability(index: number): void {
+    if (this.userId && this.existingDriverAvailabilities[index]) {
+      const availability = this.existingDriverAvailabilities[index];
+      
+      // Call API to delete the availability
+      this.userService.deleteDriverAvailability(this.userId, availability.id).subscribe({
+        next: (response: any) => {
+          console.log('Driver availability deleted successfully:', response);
+          this.toastService.success('Success', 'Driver availability has been removed');
+          // Reload driver availability to reflect changes
+          this.loadDriverAvailability();
+        },
+        error: (error: any) => {
+          console.error('Error deleting driver availability:', error);
+          const message = error.error?.message || 'Failed to remove driver availability. Please try again.';
+          this.toastService.error('Error', message);
+        }
+      });
+    }
+  }
+
+  getSelectedDaysText(availability: { days: { [key: string]: boolean }, startTime: string, endTime: string }): string {
+    const selectedDays = Object.keys(availability.days).filter(day => availability.days[day]);
+    const startTime12h = this.convertTo12Hour(availability.startTime);
+    const endTime12h = this.convertTo12Hour(availability.endTime);
+    return `${selectedDays.join(', ')}: ${startTime12h} - ${endTime12h}`;
+  }
+
+  getExistingAvailabilityText(availability: DriverAvailability): string {
+    const startTime12h = this.convertTo12Hour(availability.startTime);
+    const endTime12h = this.convertTo12Hour(availability.endTime);
+    return `${availability.dayOfWeek}: ${startTime12h} - ${endTime12h}`;
+  }
+
+  convertTo12Hour(time24: string): string {
+    const [hours, minutes] = time24.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const hours12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+    const minutesStr = minutes.toString().padStart(2, '0');
+    return `${hours12}:${minutesStr} ${period}`;
+  }
+
+  timeToMinutes(timeString: string): number {
+    const [hours, minutes] = timeString.split(':').map(Number);
+    return hours * 60 + minutes;
+  }
+
+  checkForDuplicateAvailability(): boolean {
+    const currentDays = Object.keys(this.driverDays).filter(day => this.driverDays[day]);
+    
+    // Check against pending availabilities
+    const pendingDuplicate = this.pendingDriverAvailabilities.some(availability => {
+      const existingDays = Object.keys(availability.days).filter(day => availability.days[day]);
+      
+      // Check if same days are selected
+      const sameDays = currentDays.length === existingDays.length && 
+                      currentDays.every(day => existingDays.includes(day));
+      
+      // Check if same time range
+      const sameTime = availability.startTime === this.startTime && 
+                       availability.endTime === this.endTime;
+      
+      return sameDays && sameTime;
+    });
+
+    if (pendingDuplicate) {
+      return true;
+    }
+
+    // Check against existing driver availabilities (for edit mode)
+    if (this.isEditMode && this.existingDriverAvailabilities.length > 0) {
+      const existingDuplicate = this.existingDriverAvailabilities.some(availability => {
+        const existingDays = [availability.dayOfWeek];
+        
+        // Check if same days are selected
+        const sameDays = currentDays.length === existingDays.length && 
+                        currentDays.every(day => existingDays.includes(day));
+        
+        // Check if same time range
+        const sameTime = availability.startTime === this.startTime && 
+                         availability.endTime === this.endTime;
+        
+        return sameDays && sameTime;
+      });
+
+      return existingDuplicate;
+    }
+
+    return false;
+  }
+
+  checkForOverlappingAvailability(): boolean {
+    const currentDays = Object.keys(this.driverDays).filter(day => this.driverDays[day]);
+    const currentStart = this.timeToMinutes(this.startTime);
+    const currentEnd = this.timeToMinutes(this.endTime);
+    
+    // Check against pending availabilities
+    const pendingOverlap = this.pendingDriverAvailabilities.some(availability => {
+      const existingDays = Object.keys(availability.days).filter(day => availability.days[day]);
+      
+      // Check if there are any common days
+      const hasCommonDays = currentDays.some(day => existingDays.includes(day));
+      
+      if (!hasCommonDays) {
+        return false;
+      }
+      
+      // Check for time overlap
+      const existingStart = this.timeToMinutes(availability.startTime);
+      const existingEnd = this.timeToMinutes(availability.endTime);
+      
+      // Two time ranges overlap if one starts before the other ends
+      return currentStart < existingEnd && currentEnd > existingStart;
+    });
+
+    if (pendingOverlap) {
+      return true;
+    }
+
+    // Check against existing driver availabilities (for edit mode)
+    if (this.isEditMode && this.existingDriverAvailabilities.length > 0) {
+      const existingOverlap = this.existingDriverAvailabilities.some(availability => {
+        const existingDays = [availability.dayOfWeek];
+        
+        // Check if there are any common days
+        const hasCommonDays = currentDays.some(day => existingDays.includes(day));
+        
+        if (!hasCommonDays) {
+          return false;
+        }
+        
+        // Check for time overlap
+        const existingStart = this.timeToMinutes(availability.startTime);
+        const existingEnd = this.timeToMinutes(availability.endTime);
+        
+        // Two time ranges overlap if one starts before the other ends
+        return currentStart < existingEnd && currentEnd > existingStart;
+      });
+
+      return existingOverlap;
+    }
+
+    return false;
+  }
+
+  saveDriverAvailabilityForNewUser(userId: number) {
+    if (this.pendingDriverAvailabilities.length > 0) {
+      // Save all pending availabilities
+      this.saveMultipleDriverAvailabilities(userId, 0);
+    } else {
+      this.isSaving = false;
+      this.toastService.success('Success', 'User has been created successfully');
+      this.showSuccess = true;
+    }
+  }
+
+  saveMultipleDriverAvailabilities(userId: number, index: number) {
+    if (index >= this.pendingDriverAvailabilities.length) {
+      // All availabilities saved
+      this.isSaving = false;
+      this.pendingDriverAvailabilities = [];
+      this.toastService.success('Success', 'User and driver availability have been created successfully');
+      this.showSuccess = true;
+      return;
+    }
+
+    const availability = this.pendingDriverAvailabilities[index];
+    const bulkRequest: DriverAvailabilityBulkRequest = {
+      userId: userId,
+      days: availability.days,
+      startTime: availability.startTime,
+      endTime: availability.endTime
+    };
+
+    this.userService.saveDriverAvailability(userId, bulkRequest).subscribe({
+      next: (response) => {
+        console.log(`Driver availability ${index + 1} saved successfully:`, response);
+        // Save next availability
+        this.saveMultipleDriverAvailabilities(userId, index + 1);
+      },
+      error: (error: any) => {
+        console.error(`Error saving driver availability ${index + 1}:`, error);
+        // Continue with next availability even if one fails
+        this.saveMultipleDriverAvailabilities(userId, index + 1);
+      }
+    });
+  }
+
   driverAvailabilityClick() {
+    // Check if maximum availabilities reached
+    const totalAvailabilities = this.pendingDriverAvailabilities.length + 
+                               (this.isEditMode ? this.existingDriverAvailabilities.length : 0);
+    
+    if (totalAvailabilities >= 10) {
+      this.toastService.error('Validation Error', 'Maximum 10 availability entries allowed per driver. Please remove some entries before adding new ones.');
+      return;
+    }
+
+    // Reset form to ensure clean state for adding new availability
+    this.resetDriverAvailabilityForm();
+    
+    // No need to load existing data in edit mode since we already display it as chips
+    // Just open the modal for adding new availability
     this.driverAvailability = true;
   }
 
