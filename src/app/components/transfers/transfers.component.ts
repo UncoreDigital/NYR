@@ -35,6 +35,13 @@ export class TransfersComponent implements OnInit {
     { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'delivered' },
     { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'in-transit' },
   ];
+  
+  // Filter properties
+  filteredTransfers: Transfers[] = [];
+  selectedWarehouseName = '';
+  selectedStatus = '';
+  searchTerm = '';
+  
   showFollowUpModal: boolean = false;
 
   // Location dropdown properties
@@ -54,7 +61,8 @@ export class TransfersComponent implements OnInit {
   constructor(private router: Router) { }
 
   ngOnInit(): void {
-    this.dataSource.data = this.transfers;
+    this.filteredTransfers = [...this.transfers];
+    this.applyFilters();
   }
 
   ngAfterViewInit() {
@@ -63,8 +71,64 @@ export class TransfersComponent implements OnInit {
   }
 
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.searchTerm = (event.target as HTMLInputElement).value;
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    let filtered = [...this.transfers];
+
+    // Apply warehouse filter
+    if (this.selectedWarehouseName) {
+      filtered = filtered.filter(transfer => 
+        transfer.locationName === this.selectedWarehouseName
+      );
+    }
+
+    // Apply status filter
+    if (this.selectedStatus) {
+      filtered = filtered.filter(transfer => 
+        transfer.status === this.selectedStatus
+      );
+    }
+
+    // Apply search filter
+    if (this.searchTerm) {
+      const searchLower = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(transfer =>
+        transfer.locationName.toLowerCase().includes(searchLower) ||
+        transfer.customerName.toLowerCase().includes(searchLower) ||
+        transfer.deliveryDate.toLowerCase().includes(searchLower) ||
+        transfer.driver.toLowerCase().includes(searchLower) ||
+        transfer.status.toLowerCase().includes(searchLower)
+      );
+    }
+
+    this.filteredTransfers = filtered;
+    this.dataSource.data = this.filteredTransfers;
+  }
+
+  onWarehouseNameFilterChange() {
+    this.applyFilters();
+  }
+
+  onStatusFilterChange() {
+    this.applyFilters();
+  }
+
+  getUniqueWarehouseNames(): string[] {
+    return [...new Set(this.transfers.map(transfer => transfer.locationName))].sort();
+  }
+
+  getUniqueStatuses(): string[] {
+    return [...new Set(this.transfers.map(transfer => transfer.status))].sort();
+  }
+
+  resetFilters() {
+    this.selectedWarehouseName = '';
+    this.selectedStatus = '';
+    this.searchTerm = '';
+    this.applyFilters();
   }
 
   addTransfer() {

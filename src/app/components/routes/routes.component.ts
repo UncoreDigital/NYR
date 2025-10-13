@@ -23,7 +23,7 @@ export class RoutesComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  vans: Routes[] = [
+  routes: Routes[] = [
     { driverName: 'John Doe', totalStops: '5', shippingDate: '2023-10-01', status: 'In Transit' },
     { driverName: 'Jane Smith', totalStops: '3', shippingDate: '2023-10-02', status: 'Delivered' },
     { driverName: 'Mike Johnson', totalStops: '4', shippingDate: '2023-10-03', status: 'Pending' },
@@ -38,10 +38,16 @@ export class RoutesComponent implements OnInit {
     { driverName: 'Olivia Lewis', totalStops: '5', shippingDate: '2023-10-12', status: 'Pending' },
   ];
 
+  filteredRoutes: Routes[] = [];
+  selectedDriver = '';
+  selectedDate = '';
+  searchTerm = '';
+
   constructor(private router: Router) { }
 
   ngOnInit(): void {
-    this.dataSource.data = this.vans;
+    this.filteredRoutes = [...this.routes];
+    this.applyFilters();
   }
 
   ngAfterViewInit() {
@@ -50,8 +56,63 @@ export class RoutesComponent implements OnInit {
   }
 
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.searchTerm = (event.target as HTMLInputElement).value;
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    let filtered = [...this.routes];
+
+    // Apply driver filter
+    if (this.selectedDriver) {
+      filtered = filtered.filter(route => 
+        route.driverName === this.selectedDriver
+      );
+    }
+
+    // Apply date filter
+    if (this.selectedDate) {
+      filtered = filtered.filter(route => 
+        route.shippingDate === this.selectedDate
+      );
+    }
+
+    // Apply search filter
+    if (this.searchTerm) {
+      const searchLower = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(route =>
+        route.driverName.toLowerCase().includes(searchLower) ||
+        route.totalStops.toLowerCase().includes(searchLower) ||
+        route.shippingDate.toLowerCase().includes(searchLower) ||
+        route.status.toLowerCase().includes(searchLower)
+      );
+    }
+
+    this.filteredRoutes = filtered;
+    this.dataSource.data = this.filteredRoutes;
+  }
+
+  onDriverFilterChange() {
+    this.applyFilters();
+  }
+
+  onDateFilterChange() {
+    this.applyFilters();
+  }
+
+  getUniqueDrivers(): string[] {
+    return [...new Set(this.routes.map(route => route.driverName))].sort();
+  }
+
+  formatDate(date: Date): string {
+    return date.toISOString().split('T')[0];
+  }
+
+  resetFilters() {
+    this.selectedDriver = '';
+    this.selectedDate = '';
+    this.searchTerm = '';
+    this.applyFilters();
   }
 
   createRoute() {

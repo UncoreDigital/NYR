@@ -16,11 +16,27 @@
 
       <!-- Search Bar -->
       <div class="search-section">
+        <div class="filter-container">
+          <div class="filter-group">
+            <button mat-icon-button style="height: 24px; width: 18px;">
+              <img class="imgFilter" src="assets/filter.png" alt="Filter" />
+            </button>
+            <div class="dropdown-divider"></div>
+            <mat-select class="select-filter" placeholder="Status" [(value)]="selectedStatus"
+              (selectionChange)="onStatusFilterChange()">
+              <mat-option value="">Status</mat-option>
+              <mat-option *ngFor="let status of getUniqueStatuses()" [value]="status">{{status | titlecase}}</mat-option>
+            </mat-select>
+          </div>
+          <button class="reset-filter-btn" (click)="resetFilters()">
+            <mat-icon>refresh</mat-icon>
+            Reset Filter
+          </button>
+        </div>
         <div class="search-container">
           <mat-icon class="search-icon">search</mat-icon>
-          <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)">
+          <input type="text" placeholder="Search" class="search-input" [(ngModel)]="searchTerm" (keyup)="applyFilter($event)">
         </div>
-
         <div class="button-group">
           <button class="btn btn-primary mr-15" (click)="transferToVan()">Transfer to Van</button>
           <button class="btn btn-primary mr-15" (click)="transferToLocation()">Transfer to Location</button>
