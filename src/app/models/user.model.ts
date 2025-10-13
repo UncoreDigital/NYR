@@ -1,3 +1,5 @@
+import { DriverAvailability } from './driver-availability.model';
+
 export interface UserResponse {
   id: number;
   name: string;
@@ -11,6 +13,7 @@ export interface UserResponse {
   locationName: string | null;
   createdAt: string;
   isActive: boolean;
+  driverAvailabilities?: DriverAvailability[];
 }
 
 export interface User {
@@ -52,8 +55,8 @@ export interface CreateUserRequest {
   phoneNumber: string;
   password: string;
   roleId: number;
-  customerId: number;
-  locationId: number;
+  customerId: number | null;
+  locationId: number | null;
 }
 
 export interface UpdateUserRequest {
