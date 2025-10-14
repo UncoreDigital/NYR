@@ -329,7 +329,19 @@ export class AddUserComponent implements OnInit {
   }
 
   onCancel() {
+    if (this.isEditMode) {
+      this.router.navigate(['/users']);
+      return;
+    }
     this.userForm.reset();
+    this.selectedRole = null;
+    this.selectedCustomer = null;
+    this.selectedLocation = null;
+    this.roleSearchTerm = '';
+    this.customerSearchTerm = '';
+    this.locationSearchTerm = '';
+    this.pendingDriverAvailabilities = [];
+    this.resetDriverAvailabilityForm();
   }
 
   addAnotherUser() {

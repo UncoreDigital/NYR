@@ -2,9 +2,11 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { CustomerService, CustomerApiModel } from '../../services/customer.service';
 import { ToastService } from '../../services/toast.service';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 export interface Customer {
   id: number;
@@ -54,7 +56,8 @@ export class CustomerComponent implements OnInit {
   constructor(
     private router: Router,
     private customerService: CustomerService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -121,17 +124,32 @@ export class CustomerComponent implements OnInit {
   }
 
   deleteCustomer(customer: Customer) {
-    const confirmed = confirm(`Are you sure you want to delete "${customer.companyName}"? This action cannot be undone.`);
-    if (!confirmed) return;
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Customer',
+        message: `Are you sure you want to delete customer "${customer.companyName}"? This action cannot be undone.`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
+    });
 
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.performDelete(customer);
+      }
+    });
+  }
+
+  private performDelete(customer: Customer): void {
     this.customerService.deleteCustomer(customer.id).subscribe({
       next: () => {
-        this.toastService.success('Success', 'Customer deleted successfully');
+        this.toastService.success('Success', 'Customer has been deleted successfully');
         this.fetchCustomers(); // Refresh the list
       },
       error: (error) => {
         console.error('Failed to delete customer', error);
-        const message = error?.error?.message || 'Failed to delete customer';
+        const message = error?.error?.message || 'Failed to delete customer. Please try again.';
         this.toastService.error('Error', message);
       }
     });

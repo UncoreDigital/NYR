@@ -2,11 +2,13 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { ProductApiModel } from '../../models/product.model';
 import { ToastService } from '../../services/toast.service';
 import { Product } from '../../models/product.model';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 export interface ProductDisplay {
   id: number;
@@ -35,7 +37,8 @@ export class ProductComponent implements OnInit {
   constructor(
     private router: Router,
     private productService: ProductService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -94,9 +97,24 @@ export class ProductComponent implements OnInit {
   }
 
   deleteProduct(product: ProductDisplay) {
-    const confirmed = confirm(`Are you sure you want to delete "${product.productName}"? This action cannot be undone.`);
-    if (!confirmed) return;
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Product',
+        message: `Are you sure you want to delete product "${product.productName}"? This action cannot be undone.`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
+    });
 
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.performDelete(product);
+      }
+    });
+  }
+
+  private performDelete(product: ProductDisplay): void {
     this.isDeleting = true;
     this.deletingProductId = product.id;
 
@@ -104,7 +122,7 @@ export class ProductComponent implements OnInit {
       next: () => {
         this.isDeleting = false;
         this.deletingProductId = null;
-        this.toastService.success('Success', 'Product deleted successfully');
+        this.toastService.success('Success', 'Product has been deleted successfully');
         this.fetchProducts(); // Refresh the list
       },
       error: (error) => {

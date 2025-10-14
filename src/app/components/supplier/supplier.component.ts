@@ -2,10 +2,12 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { SupplierService } from '../../services/supplier.service';
 import { SupplierApiModel } from '../../models/supplier.model';
 import { ToastService } from '../../services/toast.service';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 export interface Supplier {
   id: number;
@@ -37,7 +39,8 @@ export class SupplierComponent implements OnInit {
   constructor(
     private router: Router,
     private supplierService: SupplierService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -142,17 +145,32 @@ export class SupplierComponent implements OnInit {
   }
 
   deleteSupplier(supplier: Supplier) {
-    const confirmed = confirm(`Are you sure you want to delete "${supplier.supplierName}"? This action cannot be undone.`);
-    if (!confirmed) return;
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Supplier',
+        message: `Are you sure you want to delete supplier "${supplier.supplierName}"? This action cannot be undone.`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
+    });
 
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.performDelete(supplier);
+      }
+    });
+  }
+
+  private performDelete(supplier: Supplier): void {
     this.supplierService.deleteSupplier(supplier.id).subscribe({
       next: () => {
-        this.toastService.success('Success', 'Supplier deleted successfully');
+        this.toastService.success('Success', 'Supplier has been deleted successfully');
         this.fetchSuppliers(); // Refresh the list
       },
       error: (error) => {
         console.error('Failed to delete supplier', error);
-        const message = error?.error?.message || 'Failed to delete supplier';
+        const message = error?.error?.message || 'Failed to delete supplier. Please try again.';
         this.toastService.error('Error', message);
       }
     });
