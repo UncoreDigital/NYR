@@ -780,6 +780,90 @@ select:disabled {
   height: 16px;
 }
 
+/* SKU Input Styling */
+.sku-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.sku-input-container:hover {
+  border-color: #02c3b4;
+}
+
+.sku-input-container:focus-within {
+  border-color: #02c3b4;
+  box-shadow: 0 0 0 3px rgba(2, 195, 180, 0.1);
+}
+
+.sku-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #374151;
+  background: transparent;
+}
+
+.sku-input::placeholder {
+  color: #9ca3af;
+}
+
+.camera-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  border: none;
+  border-left: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #6b7280;
+}
+
+.camera-btn:hover {
+  background: linear-gradient(135deg, #02c3b4 0%, #059669 100%);
+  color: white;
+  transform: scale(1.05);
+}
+
+.camera-btn:active {
+  transform: scale(0.95);
+}
+
+.camera-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* Enhanced form control styling to match SKU inputs */
+.form-control {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: #02c3b4;
+  box-shadow: 0 0 0 3px rgba(2, 195, 180, 0.1);
+  outline: none;
+}
+
+.form-control::placeholder {
+  color: #9ca3af;
+}
+
 /* Table Grid Responsive Design */
 @media (max-width: 768px) {
   .selected-variations-section {
