@@ -48,6 +48,11 @@ import { TransferLocationComponent } from './components/transfer-location/transf
 import { ToastComponent } from './components/toast/toast.component';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
 import { InventoryDetailComponent } from './components/inventory-detail/inventory-detail.component';
+import { AddProductComponent } from './components/product/add-product/add-product.component';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
+import { AddSupplierComponent } from './components/supplier/add-supplier/add-supplier.component';
+import { AddWarehouseComponent } from './components/warehouse/add-warehouse/add-warehouse.component';
+import { AddInventoryComponent } from './components/inventory-warehouse/add-inventory/add-inventory.component';
 
 @NgModule({
   declarations: [
@@ -78,7 +83,11 @@ import { InventoryDetailComponent } from './components/inventory-detail/inventor
     InventoryLocationComponent,
     TransferLocationComponent,
     ToastComponent,
-    InventoryDetailComponent
+    InventoryDetailComponent,
+    AddProductComponent,
+    AddSupplierComponent,
+    AddWarehouseComponent,
+    AddInventoryComponent
   ],
   imports: [
     BrowserModule,
@@ -101,7 +110,8 @@ import { InventoryDetailComponent } from './components/inventory-detail/inventor
     SidebarComponent,
     HeaderComponent,
     FormsModule,
-    SuppliesComponent
+    SuppliesComponent,
+    MatSlideToggle
   ],
   providers: [
     {

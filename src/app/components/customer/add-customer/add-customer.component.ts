@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { HeaderComponent } from '../../header/header.component';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CustomerService } from '../../../services/customer.service';
 import { CreateCustomerRequest, CustomerResponse } from '../../../models/customer.model';
 import { ToastService } from '../../../services/toast.service';
@@ -12,7 +12,7 @@ import { ToastService } from '../../../services/toast.service';
 @Component({
   selector: 'app-add-customer',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatIconModule, SidebarComponent, HeaderComponent],
+  imports: [CommonModule, ReactiveFormsModule, MatIconModule, SidebarComponent, HeaderComponent, RouterModule],
   templateUrl: './add-customer.component.html',
   styleUrl: './add-customer.component.css'
 })

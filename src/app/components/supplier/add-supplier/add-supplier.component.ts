@@ -11,8 +11,6 @@ import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-add-supplier',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatIconModule, SidebarComponent, HeaderComponent, FormsModule],
   templateUrl: './add-supplier.component.html',
   styleUrl: './add-supplier.component.css'
 })

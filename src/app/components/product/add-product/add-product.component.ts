@@ -18,8 +18,6 @@ import { SupplierApiModel } from '../../../models/supplier.model';
 
 @Component({
   selector: 'app-add-product',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatIconModule, SidebarComponent, HeaderComponent, FormsModule, MatSlideToggleModule],
   templateUrl: './add-product.component.html',
   styleUrl: './add-product.component.css'
 })

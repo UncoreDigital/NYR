@@ -13,8 +13,6 @@ export interface Variation {
 
 @Component({
   selector: 'app-add-inventory',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatIconModule, SidebarComponent, HeaderComponent, FormsModule],
   templateUrl: './add-inventory.component.html',
   styleUrl: './add-inventory.component.css'
 })

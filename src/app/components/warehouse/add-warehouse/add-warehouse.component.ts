@@ -12,8 +12,6 @@ import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-add-warehouse',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatIconModule, MatProgressSpinnerModule, SidebarComponent, HeaderComponent, FormsModule],
   templateUrl: './add-warehouse.component.html',
   styleUrl: './add-warehouse.component.css'
 })
