@@ -21,9 +21,15 @@
 
 /* Brand Section */
 .brand {
-  padding: 24px 24px 16px 24px;
+  padding: 19px 16px 16px 16px;
   border-bottom: 1px solid #e5e7eb;
   margin-bottom: 16px;
+}
+
+.brand-container {
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
 }
 
 .brand-logo {
