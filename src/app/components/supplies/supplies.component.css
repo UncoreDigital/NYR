@@ -251,11 +251,35 @@
   margin-bottom: 16px;
 }
 
-.variation-table-container {
+.variation-table-wrapper {
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   overflow: hidden;
+}
+
+.variation-table-container {
+  max-height: 280px; /* Approximately 5 rows (56px per row) */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar for the table */
+.variation-table-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.variation-table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.variation-table-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.variation-table-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
 .variation-table {
@@ -266,6 +290,9 @@
 
 .variation-table thead {
   background-color: #f3f1fd;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .variation-table th {
@@ -392,6 +419,29 @@
   border-radius: 8px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   overflow: hidden;
+  max-height: 280px; /* Show approximately 5 rows */
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Custom scrollbar for Selected Product table */
+.selected-table-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.selected-table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.selected-table-container::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
+  transition: background 0.3s ease;
+}
+
+.selected-table-container::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
 }
 
 .selected-table {
@@ -401,7 +451,10 @@
 }
 
 .selected-table thead {
-  background-color: #f3f1fd;
+  background-color: #f8fafc;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .selected-table th {
