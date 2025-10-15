@@ -329,7 +329,19 @@ export class AddUserComponent implements OnInit {
   }
 
   onCancel() {
+    if (this.isEditMode) {
+      this.router.navigate(['/users']);
+      return;
+    }
     this.userForm.reset();
+    this.selectedRole = null;
+    this.selectedCustomer = null;
+    this.selectedLocation = null;
+    this.roleSearchTerm = '';
+    this.customerSearchTerm = '';
+    this.locationSearchTerm = '';
+    this.pendingDriverAvailabilities = [];
+    this.resetDriverAvailabilityForm();
   }
 
   addAnotherUser() {
@@ -350,28 +362,8 @@ export class AddUserComponent implements OnInit {
     }
 
     if (this.isEditMode && this.userId) {
-      // Edit mode - save directly to database
-      const bulkRequest: DriverAvailabilityBulkRequest = {
-        userId: this.userId,
-        days: this.driverDays,
-        startTime: this.startTime,
-        endTime: this.endTime
-      };
-
-      this.userService.saveDriverAvailability(this.userId, bulkRequest).subscribe({
-        next: (response) => {
-          console.log('Driver availability saved successfully:', response);
-          this.toastService.success('Success', 'Driver availability has been saved successfully');
-          this.driverAvailability = false;
-          // Reload driver availability to reflect changes
-          this.loadDriverAvailability();
-        },
-        error: (error: any) => {
-          console.error('Error saving driver availability:', error);
-          const message = error.error?.message || 'Failed to save driver availability. Please try again.';
-          this.toastService.error('Error', message);
-        }
-      });
+      // Edit mode - create individual availabilities for each selected day
+      this.saveIndividualDriverAvailabilities();
     } else {
       // New user mode - add to pending array
       const newAvailability = {
@@ -385,6 +377,51 @@ export class AddUserComponent implements OnInit {
       this.driverAvailability = false;
       this.resetDriverAvailabilityForm();
     }
+  }
+
+  private saveIndividualDriverAvailabilities() {
+    const selectedDays = Object.keys(this.driverDays).filter(day => this.driverDays[day]);
+
+    if (selectedDays.length === 0) {
+      this.toastService.error('Error', 'No days selected');
+      return;
+    }
+
+    // Create a combined request that includes both existing and new availabilities
+    const combinedDays: { [key: string]: boolean } = {};
+    
+    // Add existing availabilities (preserve them)
+    this.existingDriverAvailabilities.forEach(availability => {
+      combinedDays[availability.dayOfWeek] = true;
+    });
+    
+    // Add new selected days
+    selectedDays.forEach(day => {
+      combinedDays[day] = true;
+    });
+
+    // Use the bulk endpoint with combined data
+    const bulkRequest: DriverAvailabilityBulkRequest = {
+      userId: this.userId!,
+      days: combinedDays,
+      startTime: this.startTime,
+      endTime: this.endTime
+    };
+
+    this.userService.saveDriverAvailability(this.userId!, bulkRequest).subscribe({
+      next: (response) => {
+        console.log('Driver availability saved successfully:', response);
+        this.toastService.success('Success', 'Driver availability has been saved successfully');
+        this.driverAvailability = false;
+        // Reload driver availability to reflect changes
+        this.loadDriverAvailability();
+      },
+      error: (error: any) => {
+        console.error('Error saving driver availability:', error);
+        const message = error.error?.message || 'Failed to save driver availability. Please try again.';
+        this.toastService.error('Error', message);
+      }
+    });
   }
 
   closeDriverAvailability() {

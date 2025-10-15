@@ -199,7 +199,13 @@ export class AddLocationComponent implements OnInit {
   }
 
   onCancel() {
+    if (this.isEditMode) {
+      this.router.navigate(['/location']);
+      return;
+    }
     this.locationForm.reset();
+    this.selectedCustomer = null;
+    this.customerSearchTerm = '';
   }
 
   addAnotherLocation() {

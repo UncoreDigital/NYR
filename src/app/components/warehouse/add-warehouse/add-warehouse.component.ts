@@ -154,6 +154,10 @@ export class AddWarehouseComponent implements OnInit {
   }
 
   onCancel() {
+    if (this.isEditMode) {
+      this.router.navigate(['/warehouse']);
+      return;
+    }
     this.warehouseForm.reset();
   }
 

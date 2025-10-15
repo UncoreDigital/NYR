@@ -52,6 +52,18 @@ export class UserService {
     return this.http.delete(`${this.API_URL}/Users/${userId}/driver-availability/${availabilityId}`);
   }
 
+  createIndividualDriverAvailability(userId: number, availabilityData: any): Observable<any> {
+    // Convert time strings to TimeSpan format for the API
+    const apiPayload = {
+      userId: availabilityData.userId,
+      dayOfWeek: availabilityData.dayOfWeek,
+      startTime: this.convertToTimeSpan(availabilityData.startTime),
+      endTime: this.convertToTimeSpan(availabilityData.endTime)
+    };
+    
+    return this.http.post(`${this.API_URL}/Users/${userId}/driver-availability/individual`, apiPayload);
+  }
+
   private convertToTimeSpan(timeString: string): string {
     // Convert "HH:mm" to "HH:mm:ss" format for TimeSpan
     return timeString + ':00';

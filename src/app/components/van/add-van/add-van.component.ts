@@ -131,6 +131,10 @@ export class AddVanComponent implements OnInit {
   }
 
   onCancel() {
+    if (this.isEditMode) {
+      this.router.navigate(['/van']);
+      return;
+    }
     this.vanForm.reset();
   }
 

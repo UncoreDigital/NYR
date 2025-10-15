@@ -527,4 +527,22 @@ export class AddProductComponent implements OnInit {
     const target = event.target as HTMLInputElement;
     this.supplierSearchTerm = target.value;
   }
+
+  onCancel() {
+    if (this.isEditMode) {
+      this.router.navigate(['/product']);
+      return;
+    }
+    this.productForm.reset();
+    this.imageFile = null;
+    this.imagePreview = null;
+    this.imageUrl = '';
+    this.productVariations = [];
+    this.selectedCategory = null;
+    this.selectedBrand = null;
+    this.selectedSupplier = null;
+    this.categorySearchTerm = '';
+    this.brandSearchTerm = '';
+    this.supplierSearchTerm = '';
+  }
 }
