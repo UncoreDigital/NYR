@@ -209,8 +209,65 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Email Template</label>
-                            <textarea formControlName="emailTemplate" class="form-control" rows="3"
-                                placeholder="Email Template"></textarea>
+                            <div class="rich-text-editor">
+                                <!-- Toolbar -->
+                                <div class="editor-toolbar">
+                                    <div class="toolbar-group">
+                                        <button type="button" class="toolbar-btn" (click)="formatText('bold')" [class.active]="isFormatActive('bold')">
+                                            <mat-icon>format_bold</mat-icon>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" (click)="formatText('italic')" [class.active]="isFormatActive('italic')">
+                                            <mat-icon>format_italic</mat-icon>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" (click)="formatText('underline')" [class.active]="isFormatActive('underline')">
+                                            <mat-icon>format_underlined</mat-icon>
+                                        </button>
+                                    </div>
+                                    <div class="toolbar-separator"></div>
+                                    <div class="toolbar-group">
+                                        <button type="button" class="toolbar-btn" (click)="formatText('justifyLeft')" [class.active]="isFormatActive('justifyLeft')">
+                                            <mat-icon>format_align_left</mat-icon>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" (click)="formatText('justifyCenter')" [class.active]="isFormatActive('justifyCenter')">
+                                            <mat-icon>format_align_center</mat-icon>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" (click)="formatText('justifyRight')" [class.active]="isFormatActive('justifyRight')">
+                                            <mat-icon>format_align_right</mat-icon>
+                                        </button>
+                                    </div>
+                                    <div class="toolbar-separator"></div>
+                                    <div class="toolbar-group">
+                                        <button type="button" class="toolbar-btn" (click)="formatText('insertUnorderedList')">
+                                            <mat-icon>format_list_bulleted</mat-icon>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" (click)="formatText('insertOrderedList')">
+                                            <mat-icon>format_list_numbered</mat-icon>
+                                        </button>
+                                    </div>
+                                    <div class="toolbar-separator"></div>
+                                    <div class="toolbar-group">
+                                        <button type="button" class="toolbar-btn" (click)="insertLink()">
+                                            <mat-icon>link</mat-icon>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" (click)="formatText('removeFormat')">
+                                            <mat-icon>format_clear</mat-icon>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Editor Content -->
+                                <div 
+                                    class="editor-content"
+                                    contenteditable="true"
+                                    (input)="onEditorInput($event)"
+                                    (focus)="onEditorFocus()"
+                                    (blur)="onEditorBlur()"
+                                    (keyup)="updateToolbarState()"
+                                    (mouseup)="updateToolbarState()"
+                                    placeholder="Start typing your email template here..."
+                                    #editorElement>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="form-actions">

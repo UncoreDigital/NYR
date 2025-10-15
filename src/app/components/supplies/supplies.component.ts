@@ -160,6 +160,10 @@ export class SuppliesComponent {
     { id: 'product-4', name: 'Product 4' }
   ];
 
+  // Rich Text Editor properties
+  emailTemplateContent: string = '';
+  editorFocused: boolean = false;
+
   constructor(private fb: FormBuilder, private router: Router) {
     this.suppliesForm = this.fb.group({
       suppliesProduct: ['', Validators.required],
@@ -457,5 +461,97 @@ export class SuppliesComponent {
   onSupplierSearchInput(event: Event) {
     const target = event.target as HTMLInputElement;
     this.supplierSearchTerm = target.value;
+  }
+
+  // Rich Text Editor Methods
+  formatText(command: string, value?: string): void {
+    // Focus the editor first to ensure commands work
+    const editorElement = document.querySelector('.editor-content') as HTMLElement;
+    if (editorElement) {
+      editorElement.focus();
+      document.execCommand(command, false, value);
+      // Don't call updateEditorContent here to avoid cursor reset
+      this.emailTemplateContent = editorElement.innerHTML;
+      this.updateFormControl();
+    }
+  }
+
+  isFormatActive(command: string): boolean {
+    return document.queryCommandState(command);
+  }
+
+  insertLink(): void {
+    const editorElement = document.querySelector('.editor-content') as HTMLElement;
+    if (editorElement) {
+      editorElement.focus();
+      const url = prompt('Enter URL:');
+      if (url) {
+        document.execCommand('createLink', false, url);
+        this.emailTemplateContent = editorElement.innerHTML;
+        this.updateFormControl();
+      }
+    }
+  }
+
+  onEditorInput(event: any): void {
+    // Save cursor position before updating content
+    const selection = window.getSelection();
+    const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+    
+    this.emailTemplateContent = event.target.innerHTML;
+    this.updateFormControl();
+    
+    // Restore cursor position
+    if (range && selection) {
+      setTimeout(() => {
+        try {
+          selection.removeAllRanges();
+          selection.addRange(range);
+        } catch (e) {
+          // Ignore errors if range is invalid
+        }
+      }, 0);
+    }
+  }
+
+  onEditorFocus(): void {
+    this.editorFocused = true;
+  }
+
+  onEditorBlur(): void {
+    this.editorFocused = false;
+    this.updateFormControl();
+  }
+
+  updateToolbarState(): void {
+    // Update toolbar button states based on current selection
+    setTimeout(() => {
+      // This timeout ensures the command state is updated after the DOM changes
+    }, 10);
+  }
+
+  private saveSelection(): Range | null {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      return selection.getRangeAt(0);
+    }
+    return null;
+  }
+
+  private restoreSelection(range: Range | null): void {
+    if (range) {
+      const selection = window.getSelection();
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    }
+  }
+
+  private updateFormControl(): void {
+    // Update the form control with the editor content without affecting cursor
+    this.suppliesForm.patchValue({
+      emailTemplate: this.emailTemplateContent
+    });
   }
 }
