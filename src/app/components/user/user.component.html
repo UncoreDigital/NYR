@@ -25,11 +25,11 @@
             </button>
             <div class="dropdown-divider"></div>
             <mat-select class="select-filter" placeholder="Role" [(value)]="selectedRole" (selectionChange)="onRoleFilterChange()">
-              <mat-option value="">All Roles</mat-option>
-              <mat-option value="admin">Admin</mat-option>
-              <mat-option value="manager">Manager</mat-option>
-              <mat-option value="user">User</mat-option>
-              <mat-option value="driver">Driver</mat-option>
+              <mat-option class="select-option" value="">All Roles</mat-option>
+              <mat-option class="select-option" value="admin">Admin</mat-option>
+              <mat-option class="select-option" value="manager">Manager</mat-option>
+              <mat-option class="select-option" value="user">User</mat-option>
+              <mat-option class="select-option" value="driver">Driver</mat-option>
             </mat-select>
           </div>
           <button class="reset-filter-btn" (click)="resetFilters()">

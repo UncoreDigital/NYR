@@ -26,8 +26,8 @@
                         <div class="dropdown-divider"></div>
                         <mat-select class="select-filter" placeholder="Van Name" [(value)]="selectedVanName"
                             (selectionChange)="onVanNameFilterChange()">
-                            <mat-option value="">Van</mat-option>
-                            <mat-option *ngFor="let vanName of getUniqueVanNames()" [value]="vanName">{{vanName}}</mat-option>
+                            <mat-option class="select-option" value="">Van</mat-option>
+                            <mat-option class="select-option" *ngFor="let vanName of getUniqueVanNames()" [value]="vanName">{{vanName}}</mat-option>
                         </mat-select>
                     </div>
                     <button class="reset-filter-btn" (click)="resetFilters()">

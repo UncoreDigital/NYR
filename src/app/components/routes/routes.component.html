@@ -23,8 +23,8 @@
                         </button>
                         <mat-select class="select-filter" placeholder="Driver" [(value)]="selectedDriver"
                             (selectionChange)="onDriverFilterChange()">
-                            <mat-option value="">Driver</mat-option>
-                            <mat-option *ngFor="let driver of getUniqueDrivers()" [value]="driver">{{driver}}</mat-option>
+                            <mat-option class="select-option" value="">Driver</mat-option>
+                            <mat-option class="select-option" *ngFor="let driver of getUniqueDrivers()" [value]="driver">{{driver}}</mat-option>
                         </mat-select>
                         <div class="dropdown-divider"></div>
                         <input type="date" class="date-input" placeholder="Select Date" style="border: none;"

@@ -25,15 +25,15 @@
                         <div class="dropdown-divider"></div>
                         <mat-select class="select-filter" placeholder="Customer Name" [(value)]="selectedCustomerName"
                             (selectionChange)="onCustomerNameFilterChange()">
-                            <mat-option value="">Customer Name</mat-option>
-                            <mat-option *ngFor="let customer of getUniqueCustomerNames()"
+                            <!-- <mat-option class="select-option" value="">Customer Name</mat-option> -->
+                            <mat-option class="select-option" *ngFor="let customer of getUniqueCustomerNames()"
                                 [value]="customer">{{customer}}</mat-option>
                         </mat-select>
                         <div class="dropdown-divider"></div>
                         <mat-select class="select-filter" placeholder="Location" [(value)]="selectedLocation"
                             (selectionChange)="onLocationFilterChange()">
-                            <mat-option value="">Location</mat-option>
-                            <mat-option *ngFor="let location of getUniqueLocations()"
+                            <mat-option class="select-option" value="">Location</mat-option>
+                            <mat-option class="select-option" *ngFor="let location of getUniqueLocations()"
                                 [value]="location">{{location}}</mat-option>
                         </mat-select>
                     </div>

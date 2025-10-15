@@ -982,3 +982,6 @@ input[type="time"]:disabled {
   background-color: #e5e7eb;
   margin: 0 8px;
 }
+.select-option {
+  font-size: 14px !important;
+}

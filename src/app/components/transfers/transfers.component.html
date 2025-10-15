@@ -24,8 +24,8 @@
             <div class="dropdown-divider"></div>
             <mat-select class="select-filter" placeholder="Status" [(value)]="selectedStatus"
               (selectionChange)="onStatusFilterChange()">
-              <mat-option value="">Status</mat-option>
-              <mat-option *ngFor="let status of getUniqueStatuses()" [value]="status">{{status | titlecase}}</mat-option>
+              <mat-option class="select-option" value="">Status</mat-option>
+              <mat-option class="select-option" *ngFor="let status of getUniqueStatuses()" [value]="status">{{status | titlecase}}</mat-option>
             </mat-select>
           </div>
           <button class="reset-filter-btn" (click)="resetFilters()">

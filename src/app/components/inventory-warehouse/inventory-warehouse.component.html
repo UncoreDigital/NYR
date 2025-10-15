@@ -26,8 +26,8 @@
                         <div class="dropdown-divider"></div>
                         <mat-select class="select-filter" placeholder="Warehouse Name" [(value)]="selectedWarehouseName"
                             (selectionChange)="onWarehouseNameFilterChange()">
-                            <mat-option value="">Warehouse</mat-option>
-                            <mat-option *ngFor="let warehouse of getUniqueWarehouseNames()"
+                            <mat-option class="select-option" value="">Warehouse</mat-option>
+                            <mat-option class="select-option" *ngFor="let warehouse of getUniqueWarehouseNames()"
                                 [value]="warehouse">{{warehouse}}</mat-option>
                         </mat-select>
                     </div>
