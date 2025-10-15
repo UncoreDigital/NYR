@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -29,6 +29,9 @@ export class AddProductComponent implements OnInit {
   brands: Brand[] = [];
   suppliers: SupplierApiModel[] = [];
   variations = ['Variation 1', 'Variation 2'];
+  availableVariations = ['Size', 'Color', 'Material', 'Weight', 'Brand', 'Style', 'Pattern', 'Texture'];
+  selectedVariations: any[] = [];
+  showVariationDropdown = false;
   showInCatalogue = false;
   universal = false;
   imageFile: File | null = null;
@@ -59,6 +62,15 @@ export class AddProductComponent implements OnInit {
   supplierSearchTerm: string = '';
   showSupplierDropdown: boolean = false;
   selectedSupplier: SupplierApiModel | any = null;
+
+  // Variation modal properties
+  selectedValueType: 'dropdown' | 'text' | '' = '';
+  variationOptions: { value: string }[] = [{ value: '' }];
+  textInputConfig = {
+    required: false,
+    placeholder: '',
+    maxLength: null as number | null
+  };
 
   constructor(
     private fb: FormBuilder, 
@@ -383,6 +395,101 @@ export class AddProductComponent implements OnInit {
 
   closeProductAvailability() {
     this.addVariation = false;
+    this.resetVariationModal();
+  }
+
+  // New dynamic variation methods
+  selectValueType(type: 'dropdown' | 'text') {
+    this.selectedValueType = type;
+    if (type === 'dropdown' && this.variationOptions.length === 0) {
+      this.variationOptions = [{ value: '' }];
+    }
+  }
+
+  addVariationOption() {
+    this.variationOptions.push({ value: '' });
+  }
+
+  removeVariationOption(index: number) {
+    if (this.variationOptions.length > 1) {
+      this.variationOptions.splice(index, 1);
+    }
+  }
+
+  applyTemplate(templateType: string) {
+    switch (templateType) {
+      case 'size':
+        this.variationOptions = [
+          { value: 'XS' },
+          { value: 'S' },
+          { value: 'M' },
+          { value: 'L' },
+          { value: 'XL' }
+        ];
+        break;
+      case 'color':
+        this.variationOptions = [
+          { value: 'Red' },
+          { value: 'Blue' },
+          { value: 'Green' },
+          { value: 'Black' },
+          { value: 'White' }
+        ];
+        break;
+      case 'material':
+        this.variationOptions = [
+          { value: 'Cotton' },
+          { value: 'Polyester' },
+          { value: 'Silk' },
+          { value: 'Wool' }
+        ];
+        break;
+    }
+  }
+
+  getValidOptions() {
+    return this.variationOptions.filter(option => option.value.trim() !== '');
+  }
+
+  isVariationValid(): boolean {
+    if (!this.variationNm.trim() || !this.selectedValueType) {
+      return false;
+    }
+    
+    if (this.selectedValueType === 'dropdown') {
+      return this.getValidOptions().length > 0;
+    }
+    
+    return true;
+  }
+
+  saveProductVariation() {
+    if (!this.isVariationValid()) {
+      this.toastService.warning('Validation Error', 'Please fill in all required fields.');
+      return;
+    }
+
+    const variationData = {
+      name: this.variationNm,
+      type: this.selectedValueType,
+      options: this.selectedValueType === 'dropdown' ? this.getValidOptions().map(opt => opt.value) : null,
+      config: this.selectedValueType === 'text' ? this.textInputConfig : null
+    };
+
+    this.productVariations.push(variationData);
+    this.toastService.success('Success', `Variation "${this.variationNm}" created successfully.`);
+    this.closeProductAvailability();
+  }
+
+  resetVariationModal() {
+    this.variationNm = '';
+    this.selectedValueType = '';
+    this.variationOptions = [{ value: '' }];
+    this.textInputConfig = {
+      required: false,
+      placeholder: '',
+      maxLength: null
+    };
   }
 
   onUniversalToggle(event: any) {
@@ -528,6 +635,55 @@ export class AddProductComponent implements OnInit {
     this.supplierSearchTerm = target.value;
   }
 
+  // Multi-select variation methods
+  toggleVariationDropdown() {
+    this.showVariationDropdown = !this.showVariationDropdown;
+  }
+
+  toggleVariationSelection(variation: string) {
+    const existingIndex = this.selectedVariations.findIndex(v => v.name === variation);
+    if (existingIndex > -1) {
+      this.selectedVariations.splice(existingIndex, 1);
+    } else {
+      this.selectedVariations.push({
+        name: variation,
+        mandatory: false
+      });
+    }
+    this.updateVariationFormControl();
+  }
+
+  isVariationSelected(variation: string): boolean {
+    return this.selectedVariations.some(v => v.name === variation);
+  }
+
+  removeSelectedVariation(index: number) {
+    this.selectedVariations.splice(index, 1);
+    this.updateVariationFormControl();
+  }
+
+  updateVariationMandatory(index: number, event: any) {
+    if (this.selectedVariations[index]) {
+      this.selectedVariations[index].mandatory = event.target.checked;
+      this.updateVariationFormControl();
+    }
+  }
+
+  updateVariationFormControl() {
+    const variationString = this.selectedVariations.map(v => 
+      `${v.name}${v.mandatory ? ' (Required)' : ''}`
+    ).join(', ');
+    this.productForm.patchValue({ variation: variationString });
+  }
+
+  // Close dropdown when clicking outside
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: any) {
+    if (!event.target.closest('.multi-select-dropdown')) {
+      this.showVariationDropdown = false;
+    }
+  }
+
   onCancel() {
     if (this.isEditMode) {
       this.router.navigate(['/product']);
@@ -544,5 +700,6 @@ export class AddProductComponent implements OnInit {
     this.categorySearchTerm = '';
     this.brandSearchTerm = '';
     this.supplierSearchTerm = '';
+    this.selectedVariations = [];
   }
 }
