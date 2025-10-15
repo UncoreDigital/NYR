@@ -326,3 +326,77 @@
   outline: 2px solid #02C3B4;
   outline-offset: -2px;
 }
+
+/* Mobile Styles */
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 240px;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 199;
+  display: none;
+}
+
+.mobile-close-btn {
+  display: none;
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #6b7280;
+  margin-left: auto;
+}
+
+.mobile-close-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.mobile-close-btn mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 201;
+  }
+  
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  
+  .sidebar.mobile-open .mobile-overlay {
+    display: block;
+  }
+  
+  .sidebar-content {
+    position: relative;
+    z-index: 202;
+    background: #ffffff;
+  }
+  
+  .mobile-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .brand-container {
+    justify-content: space-between;
+  }
+  
+  .nav-item-content,
+  .settings-header-content,
+  .submenu-item,
+  .settings-item {
+    position: relative;
+    z-index: 203;
+  }
+}

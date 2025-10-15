@@ -16,4 +16,10 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  toggleMobileMenu(): void {
+    // Emit event to communicate with sidebar
+    const event = new CustomEvent('toggleMobileMenu');
+    window.dispatchEvent(event);
+  }
+
 }

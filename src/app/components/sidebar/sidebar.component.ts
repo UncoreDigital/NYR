@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
 export class SidebarComponent implements OnInit {
   isInventoryOpen = false;
   isSettingsOpen = false;
+  isMobileMenuOpen = false;
 
   menuItems = [
     { icon: 'home', label: 'Dashboard', route: '/dashboard', active: false },
@@ -44,12 +45,32 @@ export class SidebarComponent implements OnInit {
 
   ngOnInit(): void {
     this.setActiveMenuItem();
+    // Listen for window resize to close mobile menu on desktop
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        this.isMobileMenuOpen = false;
+      }
+    });
+    // Listen for toggle event from header
+    window.addEventListener('toggleMobileMenu', () => {
+      this.toggleMobileMenu();
+    });
+  }
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen = false;
   }
 
   navigate(route: string): void {
     if (route) {
       this.router.navigate([route]);
       this.setActiveMenuItem();
+      // Close mobile menu after navigation
+      this.closeMobileMenu();
     }
   }
 

@@ -1,9 +1,15 @@
-<div class="sidebar">
+<div class="sidebar" [class.mobile-open]="isMobileMenuOpen">
+  <!-- Mobile Overlay -->
+  <div class="mobile-overlay" *ngIf="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
+  
   <div class="sidebar-content">
     <!-- Brand Logo -->
     <div class="brand">
       <div class="brand-container">
         <img src="assets/nyr_logo.png" alt="NYR Logo" class="brand-logo">
+        <button class="mobile-close-btn" (click)="closeMobileMenu()">
+          <mat-icon>close</mat-icon>
+        </button>
       </div>
     </div>
     
