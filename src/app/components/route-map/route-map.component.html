@@ -1,0 +1,167 @@
+<div class="page-layout">
+    <app-sidebar></app-sidebar>
+    <div class="main-content">
+        <app-header></app-header>
+        <div class="content">
+            <!-- Breadcrumb -->
+             <div class="breadcrumb flex items-center space-x-2 text-gray-600">
+                <a routerLink="/routes" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Routes
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <a class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    {{routeData?.driverName}}
+                </a>
+            </div>
+
+            <!-- Route Header -->
+            <div class="route-header">
+                <div class="route-title">
+                    <h1>Route A | {{ routeData?.driverName }}</h1>
+                </div>
+                <div class="route-actions">
+                    <button class="btn btn-outline" (click)="goBack()">
+                        Back to Routes
+                    </button>
+                </div>
+            </div>
+
+            <!-- Route Content -->
+            <div class="route-content">
+                <!-- Map Section -->
+                <div class="map-section">
+                    <div class="map-container">
+                        <div id="map" class="route-map"></div>
+                        <!-- <div class="map-overlay">
+                            <div class="route-progress">
+                                <div class="progress-item">
+                                    <mat-icon>schedule</mat-icon>
+                                    <span>{{ getTotalTime() }}</span>
+                                </div>
+                                <div class="progress-item">
+                                    <mat-icon>straighten</mat-icon>
+                                    <span>{{ routeData?.distance || '5.1 miles' }}</span>
+                                </div>
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+
+                <!-- Route Details Section -->
+                <div class="details-section">
+                    <div class="route-info-card">
+                        <h3>Route Information</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>Start Point</label>
+                                <span>{{ routeData?.startPoint || 'Warehouse 1' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Delivery Date</label>
+                                <span>{{ routeData?.shippingDate || '20/06/2025' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Total Stops</label>
+                                <span>{{ routeData?.totalStops || 3 }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Route Distance</label>
+                                <span>{{ routeData?.distance || '5.1 miles' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stops List -->
+                    <div class="stops-section">
+                        <h3>Route Stops</h3>
+                        <div class="stops-list">
+                            <div class="stop-item" 
+                                 *ngFor="let stop of routeStops; let i = index"
+                                 [class.completed]="stop.status === 'completed'"
+                                 [class.in-transit]="stop.status === 'in-transit'"
+                                 [class.pending]="stop.status === 'pending'">
+                                <div style="color: #02c3b4; font-weight: 500;">
+                                    <span>Stop {{ i + 1 }}</span>
+                                </div>
+                                <div class="stop-details">
+                                    <div class="stop-location">{{ stop.location }}</div>
+                                    <div class="stop-eta">ETA {{ stop.eta }}</div>
+                                    <div class="stop-items" *ngIf="stop.items">{{ stop.items }} items</div>
+                                </div>
+                                <div class="stop-status">
+                                    <span class="status-badge" [class]="stop.status">
+                                        {{ stop.status | titlecase }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add Stop Button -->
+                    <div class="add-stop-section">
+                        <button class="btn btn-primary add-stop-btn" (click)="openAddStopModal()">
+                            Add Stop
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Stop Modal -->
+<div class="modal-backdrop" *ngIf="showAddStopModal" (click)="closeAddStopModal()">
+    <div class="add-stop-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Select Customers</h3>
+            <button class="close-btn" (click)="closeAddStopModal()">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
+        
+        <div class="modal-content">
+            <div class="customer-list">
+                <div class="customer-header">
+                    <div class="select-all-container">
+                        <input type="checkbox" 
+                               id="selectAll"
+                               [checked]="areAllCustomersSelected()"
+                               [indeterminate]="isSomeCustomersSelected()"
+                               (change)="toggleAllCustomers($event)">
+                        <label for="selectAll">CUSTOMER NAME</label>
+                    </div>
+                    <div class="status-header">STATUS</div>
+                </div>
+                
+                <div class="customer-items">
+                    <div class="customer-item" *ngFor="let customer of availableCustomers; let i = index">
+                        <div class="customer-info">
+                            <input type="checkbox" 
+                                   [id]="'customer-' + i"
+                                   [(ngModel)]="customer.selected"
+                                   (change)="onCustomerSelectionChange()">
+                            <label [for]="'customer-' + i" class="customer-name">
+                                {{ customer.name }}
+                            </label>
+                        </div>
+                        <div class="customer-status">
+                            <span class="status-badge" [class]="customer.status.toLowerCase().toLowerCase().split(' ').join('-')">
+                                {{ customer.status }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn btn-outline" (click)="closeAddStopModal()">Cancel</button>
+            <button class="btn btn-primary" 
+                    (click)="addSelectedCustomersToStops()"
+                    [disabled]="!hasSelectedCustomers()">
+                Create
+            </button>
+        </div>
+    </div>
+</div>
