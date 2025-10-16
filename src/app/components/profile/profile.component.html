@@ -9,43 +9,108 @@
         <span class="breadcrumb-item active">Profile</span>
       </div>
 
-      <div class="profile-card">
+      <div class="profile-card" *ngIf="user; else loadingTemplate">
         <div class="profile-header">
           <img class="avatar" src="assets/loginImg.png" alt="avatar" />
-          <span class="avatar-badge"><mat-icon class="breadcrumb-separator active">edit_square</mat-icon></span>
+          <span class="avatar-badge" (click)="toggleEdit()">
+            <mat-icon class="breadcrumb-separator active">edit_square</mat-icon>
+          </span>
         </div>
 
-        <div class="field">
-          <label>Name</label>
-          <div class="input-with-icon">
-            <input type="text" [value]="name" />
-            <button type="button" aria-label="edit"><mat-icon>edit_square</mat-icon></button>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group" style="flex:1;">
-            <label>Phone Number</label>
+        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+          <div class="field">
+            <label>Name</label>
             <div class="input-with-icon">
-              <input type="text" [value]="phone" />
-              <button type="button" aria-label="edit"><mat-icon>edit_square</mat-icon></button>
+              <input 
+                type="text" 
+                formControlName="name"
+                [readonly]="!isEditing"
+                [class.editing]="isEditing" />
+              <button 
+                type="button" 
+                (click)="toggleEdit()"
+                aria-label="edit"
+                *ngIf="!isEditing">
+                <mat-icon>edit_square</mat-icon>
+              </button>
+            </div>
+            <div *ngIf="profileForm.get('name')?.invalid && profileForm.get('name')?.touched" class="error-message">
+              Name is required and must be at least 2 characters
             </div>
           </div>
-          <div class="form-group" style="flex:1;">
-            <label>Email</label>
-            <div class="input-with-icon">
-              <input type="email" [value]="email" />
-              <button type="button" aria-label="edit"><mat-icon>edit_square</mat-icon></button>
+
+          <div class="form-row">
+            <div class="form-group" style="flex:1;">
+              <label>Phone Number</label>
+              <div class="input-with-icon">
+                <input 
+                  type="text" 
+                  formControlName="phoneNumber"
+                  [readonly]="!isEditing"
+                  [class.editing]="isEditing" />
+                <button 
+                  type="button" 
+                  (click)="toggleEdit()"
+                  aria-label="edit"
+                  *ngIf="!isEditing">
+                  <mat-icon>edit_square</mat-icon>
+                </button>
+              </div>
+              <div *ngIf="profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched" class="error-message">
+                Please enter a valid phone number
+              </div>
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label>Email</label>
+              <div class="input-with-icon">
+                <input 
+                  type="email" 
+                  formControlName="email"
+                  [readonly]="!isEditing"
+                  [class.editing]="isEditing" />
+                <button 
+                  type="button" 
+                  (click)="toggleEdit()"
+                  aria-label="edit"
+                  *ngIf="!isEditing">
+                  <mat-icon>edit_square</mat-icon>
+                </button>
+              </div>
+              <div *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched" class="error-message">
+                Please enter a valid email address
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="actions">
-          <button class="btn btn-primary">Done</button>
-        </div>
+          
+
+         
+
+          <div class="actions" *ngIf="isEditing">
+            <button 
+              type="button" 
+              class="btn btn-secondary" 
+              (click)="cancelEdit()"
+              [disabled]="isLoading">
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="!profileForm.valid || isLoading">
+              <span *ngIf="!isLoading">Save Changes</span>
+              <span *ngIf="isLoading">Saving...</span>
+            </button>
+          </div>
+        </form>
       </div>
+
+      <ng-template #loadingTemplate>
+        <div class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>Loading profile...</p>
+        </div>
+      </ng-template>
     </div>
   </div>
 </div>
-
-<p>profile works!</p>

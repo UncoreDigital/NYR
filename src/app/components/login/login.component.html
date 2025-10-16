@@ -43,8 +43,9 @@
             <label for="remember">Remember Password</label>
           </div>
           
-          <button type="submit" class="btn btn-primary btn-full" [disabled]="!loginForm.valid">
-            Sign In
+          <button type="submit" class="btn btn-primary btn-full" [disabled]="!loginForm.valid || isLoading">
+            <span *ngIf="!isLoading">Sign In</span>
+            <span *ngIf="isLoading">Signing In...</span>
           </button>
         </form>
         

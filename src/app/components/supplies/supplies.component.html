@@ -20,7 +20,26 @@
                                     <mat-icon class="product-multiselect-arrow" [class.rotated]="isProductDropdownOpen">keyboard_arrow_down</mat-icon>
                                 </div>
                                 <div class="product-multiselect-options" *ngIf="isProductDropdownOpen">
-                                    <div class="product-multiselect-option" *ngFor="let product of products" 
+                                    <div class="search-wrapper">
+                                        <mat-icon class="search-icon">search</mat-icon>
+                                        <input 
+                                            type="text" 
+                                            class="search-input" 
+                                            placeholder="Search products..."
+                                            [value]="productSearchTerm"
+                                            (input)="onProductSearchInput($event); filterProducts()"
+                                            (click)="$event.stopPropagation()"
+                                        >
+                                        <button 
+                                            *ngIf="productSearchTerm" 
+                                            type="button" 
+                                            class="clear-button"
+                                            (click)="clearProductSearch(); $event.stopPropagation()"
+                                        >
+                                            <mat-icon>close</mat-icon>
+                                        </button>
+                                    </div>
+                                    <div class="product-multiselect-option" *ngFor="let product of getFilteredProducts()" 
                                          (click)="toggleProduct(product.id)">
                                         <input type="checkbox" 
                                                [checked]="isProductSelected(product.id)"
@@ -28,17 +47,50 @@
                                                class="product-multiselect-checkbox">
                                         <span class="product-multiselect-option-text">{{ product.name }}</span>
                                     </div>
+                                    <div *ngIf="getFilteredProducts().length === 0" class="no-results">
+                                        No products found
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Request Supplier</label>
-                            <select formControlName="suppliesName" class="form-control">
-                                <option value="" disabled selected>Request Supplier</option>
-                                <option value="supplier1">Supplier 1</option>
-                                <option value="supplier2">Supplier 2</option>
-                                <option value="supplier3">Supplier 3</option>
-                            </select>
+                            <div class="custom-select-container">
+                                <div class="search-wrapper" (click)="showSupplierDropdown = true">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        placeholder="Request Supplier"
+                                        [value]="supplierSearchTerm"
+                                        (input)="onSupplierSearchInput($event); filterSuppliers()"
+                                        (focus)="showSupplierDropdown = true"
+                                        (blur)="hideSupplierDropdown()"
+                                        [readonly]="selectedSupplier ? true : false"
+                                    >
+                                    <button 
+                                        *ngIf="selectedSupplier" 
+                                        type="button" 
+                                        class="clear-button"
+                                        (click)="clearSupplier(); $event.stopPropagation()"
+                                    >
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showSupplierDropdown && !selectedSupplier">
+                                    <div 
+                                        class="dropdown-item" 
+                                        *ngFor="let supplier of getFilteredSuppliers()"
+                                        (click)="selectSupplier(supplier)"
+                                        [class.selected]="selectedSupplier?.value === supplier.value"
+                                    >
+                                        {{ supplier.name }}
+                                    </div>
+                                    <div *ngIf="getFilteredSuppliers().length === 0" class="no-results">
+                                        No suppliers found
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="form-row">
@@ -51,8 +103,9 @@
                     <!-- All Variation List Table -->
                     <div class="variation-section">
                         <h3 class="variation-title">All Variation list</h3>
-                        <div class="variation-table-container">
-                            <table class="variation-table">
+                        <div class="variation-table-wrapper">
+                            <div class="variation-table-container">
+                                <table class="variation-table">
                                 <thead>
                                     <tr>
                                         <th>Product Name</th>
@@ -104,6 +157,7 @@
                                     </tr>
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
 
@@ -157,8 +211,65 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Email Template</label>
-                            <textarea formControlName="emailTemplate" class="form-control" rows="3"
-                                placeholder="Email Template"></textarea>
+                            <div class="rich-text-editor">
+                                <!-- Toolbar -->
+                                <div class="editor-toolbar">
+                                    <div class="toolbar-group">
+                                        <button type="button" class="toolbar-btn" (click)="formatText('bold')" [class.active]="isFormatActive('bold')">
+                                            <mat-icon>format_bold</mat-icon>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" (click)="formatText('italic')" [class.active]="isFormatActive('italic')">
+                                            <mat-icon>format_italic</mat-icon>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" (click)="formatText('underline')" [class.active]="isFormatActive('underline')">
+                                            <mat-icon>format_underlined</mat-icon>
+                                        </button>
+                                    </div>
+                                    <div class="toolbar-separator"></div>
+                                    <div class="toolbar-group">
+                                        <button type="button" class="toolbar-btn" (click)="formatText('justifyLeft')" [class.active]="isFormatActive('justifyLeft')">
+                                            <mat-icon>format_align_left</mat-icon>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" (click)="formatText('justifyCenter')" [class.active]="isFormatActive('justifyCenter')">
+                                            <mat-icon>format_align_center</mat-icon>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" (click)="formatText('justifyRight')" [class.active]="isFormatActive('justifyRight')">
+                                            <mat-icon>format_align_right</mat-icon>
+                                        </button>
+                                    </div>
+                                    <div class="toolbar-separator"></div>
+                                    <div class="toolbar-group">
+                                        <button type="button" class="toolbar-btn" (click)="formatText('insertUnorderedList')">
+                                            <mat-icon>format_list_bulleted</mat-icon>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" (click)="formatText('insertOrderedList')">
+                                            <mat-icon>format_list_numbered</mat-icon>
+                                        </button>
+                                    </div>
+                                    <div class="toolbar-separator"></div>
+                                    <div class="toolbar-group">
+                                        <button type="button" class="toolbar-btn" (click)="insertLink()">
+                                            <mat-icon>link</mat-icon>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" (click)="formatText('removeFormat')">
+                                            <mat-icon>format_clear</mat-icon>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Editor Content -->
+                                <div 
+                                    class="editor-content"
+                                    contenteditable="true"
+                                    (input)="onEditorInput($event)"
+                                    (focus)="onEditorFocus()"
+                                    (blur)="onEditorBlur()"
+                                    (keyup)="updateToolbarState()"
+                                    (mouseup)="updateToolbarState()"
+                                    placeholder="Start typing your email template here..."
+                                    #editorElement>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="form-actions">

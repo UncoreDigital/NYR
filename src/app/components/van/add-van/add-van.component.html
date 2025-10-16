@@ -6,7 +6,7 @@
 
             <!-- Breadcrumb -->
             <div class="breadcrumb flex items-center space-x-2 text-gray-600">
-                <a class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                <a routerLink="/van" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
                     Settings
                 </a>
                 <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
@@ -17,14 +17,14 @@
                 <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
 
                 <span class="breadcrumb-item text-gray-800 font-semibold active">
-                    Add Van
+                    {{ isEditMode ? 'Edit Van' : 'Add Van' }}
                 </span>
             </div>
 
 
             <!-- Page Header -->
             <div class="page-header">
-                <h1>Add Van</h1>
+                <h1>{{ isEditMode ? 'Edit Van' : 'Add Van' }}</h1>
 
             </div>
 
@@ -46,8 +46,12 @@
                     </div>
                    
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Save</button>
-                        <button type="reset" class="btn btn-outline">Cancel</button>
+                        <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+                            <mat-spinner *ngIf="isSaving" diameter="20" class="inline-spinner"></mat-spinner>
+                            <span *ngIf="!isSaving">Save</span>
+                            <span *ngIf="isSaving">Saving...</span>
+                        </button>
+                        <button type="button" class="btn btn-outline" [disabled]="isSaving" (click)="onCancel()">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -60,10 +64,10 @@
             <mat-icon>check_circle</mat-icon>
         </div>
         <div class="modal-message">
-            <h2>Van has been successfully added.</h2>
+            <h2>Van has been successfully {{ isEditMode ? 'updated' : 'added' }}.</h2>
         </div>
         <div class="modal-actions">
-            <button class="btn btn-primary" (click)="addAnotherVan()">Add Another Van</button>
+            <button class="btn btn-primary" (click)="addAnotherVan()" *ngIf="!isEditMode">Add Another Van</button>
             <button class="btn btn-outline" (click)="goToVansList()">Go to Vans List</button>
         </div>
     </div>

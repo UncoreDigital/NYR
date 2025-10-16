@@ -26,6 +26,10 @@ export class InventoryWarehouseComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
+  filteredWarehouses: inventoryWarehouse[] = [];
+  selectedWarehouseName = '';
+  searchTerm = '';
+
   inventoryWarehouse: inventoryWarehouse[] = [
     { warehouseName: 'Warehouse 1', warehouseAddress: '123 Main St', city: 'New York', state: 'NY', zipCode: '10001', country: 'USA', id: 1 },
     { warehouseName: 'Warehouse 2', warehouseAddress: '456 Elm St', city: 'Los Angeles', state: 'CA', zipCode: '90001', country: 'USA', id: 2 },
@@ -39,7 +43,8 @@ export class InventoryWarehouseComponent implements OnInit {
   constructor(private router: Router) { }
 
   ngOnInit(): void {
-    this.dataSource.data = this.inventoryWarehouse;
+    this.filteredWarehouses = [...this.inventoryWarehouse];
+    this.applyFilters();
   }
 
   ngAfterViewInit() {
@@ -48,8 +53,48 @@ export class InventoryWarehouseComponent implements OnInit {
   }
 
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.searchTerm = (event.target as HTMLInputElement).value;
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    let filtered = [...this.inventoryWarehouse];
+
+    // Apply warehouse name filter
+    if (this.selectedWarehouseName) {
+      filtered = filtered.filter(warehouse => 
+        warehouse.warehouseName === this.selectedWarehouseName
+      );
+    }
+
+    // Apply search filter
+    if (this.searchTerm) {
+      const searchLower = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(warehouse =>
+        warehouse.warehouseName.toLowerCase().includes(searchLower) ||
+        warehouse.warehouseAddress.toLowerCase().includes(searchLower) ||
+        warehouse.city.toLowerCase().includes(searchLower) ||
+        warehouse.state.toLowerCase().includes(searchLower) ||
+        warehouse.zipCode.toLowerCase().includes(searchLower)
+      );
+    }
+
+    this.filteredWarehouses = filtered;
+    this.dataSource.data = this.filteredWarehouses;
+  }
+
+  onWarehouseNameFilterChange() {
+    this.applyFilters();
+  }
+
+  getUniqueWarehouseNames(): string[] {
+    return [...new Set(this.inventoryWarehouse.map(warehouse => warehouse.warehouseName))].sort();
+  }
+
+  resetFilters() {
+    this.selectedWarehouseName = '';
+    this.searchTerm = '';
+    this.applyFilters();
   }
 
   addInventory() {

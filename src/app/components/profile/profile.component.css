@@ -83,3 +83,106 @@
 .avatar-badge mat-icon {
   color: white;
 }
+
+/* Form styling */
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.form-group {
+  flex: 1;
+}
+
+.form-group label {
+  font-size: 14px;
+  color: #111827;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* Input states */
+.input-with-icon input[readonly] {
+  background-color: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.input-with-icon input.editing {
+  background-color: #fff;
+  color: #111827;
+  cursor: text;
+}
+
+/* Readonly fields */
+.readonly-field {
+  padding: 12px;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Error messages */
+.error-message {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Loading state */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid #02C3B4;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Button states */
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  margin-right: 12px;
+  cursor: pointer;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #4b5563;
+}
+
+/* Avatar badge clickable */
+.avatar-badge {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.avatar-badge:hover {
+  background-color: #01a39a;
+}

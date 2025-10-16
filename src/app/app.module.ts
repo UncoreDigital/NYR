@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
@@ -10,6 +11,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSelectModule } from '@angular/material/select';
 import { AppRoutingModule } from './app-routing.module';
@@ -21,7 +24,11 @@ import { CustomerComponent } from './components/customer/customer.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { HeaderComponent } from './components/header/header.component';
 import { LocationComponent } from './components/location/location.component';
+import { AddLocationComponent } from './components/location/add-location/add-location.component';
+import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
+import { AddUserComponent } from './components/user/add-user/add-user.component';
 import { UserComponent } from './components/user/user.component';
+import { AddVanComponent } from './components/van/add-van/add-van.component';
 import { SupplierComponent } from './components/supplier/supplier.component';
 import { VanComponent } from './components/van/van.component';
 import { WarehouseComponent } from './components/warehouse/warehouse.component';
@@ -38,7 +45,14 @@ import { InventoryVanComponent } from './components/inventory-van/inventory-van.
 import { TransferVanComponent } from './components/transfer-van/transfer-van.component';
 import { InventoryLocationComponent } from './components/inventory-location/inventory-location.component';
 import { TransferLocationComponent } from './components/transfer-location/transfer-location.component';
+import { ToastComponent } from './components/toast/toast.component';
+import { JwtInterceptor } from './interceptors/jwt.interceptor';
 import { InventoryDetailComponent } from './components/inventory-detail/inventory-detail.component';
+import { AddProductComponent } from './components/product/add-product/add-product.component';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
+import { AddSupplierComponent } from './components/supplier/add-supplier/add-supplier.component';
+import { AddWarehouseComponent } from './components/warehouse/add-warehouse/add-warehouse.component';
+import { AddInventoryComponent } from './components/inventory-warehouse/add-inventory/add-inventory.component';
 
 @NgModule({
   declarations: [
@@ -48,7 +62,11 @@ import { InventoryDetailComponent } from './components/inventory-detail/inventor
     DashboardComponent,
     CustomerComponent,
     LocationComponent,
+    AddLocationComponent,
+    ConfirmDialogComponent,
+    AddUserComponent,
     UserComponent,
+    AddVanComponent,
     SupplierComponent,
     VanComponent,
     WarehouseComponent,
@@ -64,13 +82,19 @@ import { InventoryDetailComponent } from './components/inventory-detail/inventor
     TransferVanComponent,
     InventoryLocationComponent,
     TransferLocationComponent,
-    InventoryDetailComponent
+    ToastComponent,
+    InventoryDetailComponent,
+    AddProductComponent,
+    AddSupplierComponent,
+    AddWarehouseComponent,
+    AddInventoryComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     ReactiveFormsModule,
+    HttpClientModule,
     MatIconModule,
     MatButtonModule,
     MatInputModule,
@@ -79,13 +103,23 @@ import { InventoryDetailComponent } from './components/inventory-detail/inventor
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
+    MatProgressSpinnerModule,
+    MatDialogModule,
     MatTooltipModule,
     MatSelectModule,
     SidebarComponent,
     HeaderComponent,
-    FormsModule
+    FormsModule,
+    SuppliesComponent,
+    MatSlideToggle
   ],
-  providers: [],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: JwtInterceptor,
+      multi: true
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -1,16 +1,36 @@
 <header class="header">
   <div class="header-content">
-    <div class="logo">
-      <!-- <img src="assets/nyr_logo.png" alt="NYR Logo" class="nyr-logo"> -->
+    <div class="header-left">
+      <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <div class="logo">
+        <!-- <img src="assets/nyr_logo.png" alt="NYR Logo" class="nyr-logo"> -->
+      </div>
     </div>
     
     <div class="header-actions">
       <button class="notification-btn">
         <mat-icon>notifications</mat-icon>
       </button>
-      <div class="user-profile">
+      <div class="user-profile" (click)="toggleUserMenu()" [class.active]="showUserMenu">
         <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100" 
              alt="User" class="user-avatar">
+        <mat-icon class="dropdown-arrow">keyboard_arrow_down</mat-icon>
+        
+        <!-- User Dropdown Menu -->
+        <div class="user-dropdown" *ngIf="showUserMenu" (click)="$event.stopPropagation()">
+          <ul class="dropdown-menu">
+            <li class="dropdown-item" (click)="viewProfile()">
+              <mat-icon>person</mat-icon>
+              <span>Profile</span>
+            </li>
+            <li class="dropdown-item logout" (click)="logout()">
+              <mat-icon>logout</mat-icon>
+              <span>Logout</span>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>

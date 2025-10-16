@@ -44,13 +44,16 @@ export class InventoryLocationComponent implements OnInit {
     }
   ];
 
-  selectedVan: string = '';
-  searchValue: string = '';
+  filteredLocations: inventoryLocation[] = [];
+  selectedCustomerName = '';
+  selectedLocation = '';
+  searchTerm = '';
 
   constructor(private router: Router) { }
 
   ngOnInit(): void {
-    this.dataSource.data = this.inventoryLocation;
+    this.filteredLocations = [...this.inventoryLocation];
+    this.applyFilters();
   }
 
   ngAfterViewInit() {
@@ -59,24 +62,63 @@ export class InventoryLocationComponent implements OnInit {
   }
 
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-    this.searchValue = filterValue;
+    this.searchTerm = (event.target as HTMLInputElement).value;
+    this.applyFilters();
   }
 
-  onVanFilterChange(value: string) {
-    this.selectedVan = value;
-    if (value === '') {
-      this.dataSource.filter = '';
-    } else {
-      this.dataSource.filter = value.trim().toLowerCase();
+  applyFilters() {
+    let filtered = [...this.inventoryLocation];
+
+    // Apply customer name filter
+    if (this.selectedCustomerName) {
+      filtered = filtered.filter(location => 
+        location.customer === this.selectedCustomerName
+      );
     }
+
+    // Apply location filter
+    if (this.selectedLocation) {
+      filtered = filtered.filter(location => 
+        location.location === this.selectedLocation
+      );
+    }
+
+    // Apply search filter
+    if (this.searchTerm) {
+      const searchLower = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(location =>
+        location.location.toLowerCase().includes(searchLower) ||
+        location.customer.toLowerCase().includes(searchLower) ||
+        location.contactPerson.toLowerCase().includes(searchLower) ||
+        location.locationNumber.toLowerCase().includes(searchLower)
+      );
+    }
+
+    this.filteredLocations = filtered;
+    this.dataSource.data = this.filteredLocations;
+  }
+
+  onCustomerNameFilterChange() {
+    this.applyFilters();
+  }
+
+  onLocationFilterChange() {
+    this.applyFilters();
+  }
+
+  getUniqueCustomerNames(): string[] {
+    return [...new Set(this.inventoryLocation.map(location => location.customer))].sort();
+  }
+
+  getUniqueLocations(): string[] {
+    return [...new Set(this.inventoryLocation.map(location => location.location))].sort();
   }
 
   resetFilters() {
-    this.selectedVan = '';
-    this.searchValue = '';
-    this.dataSource.filter = '';
+    this.selectedCustomerName = '';
+    this.selectedLocation = '';
+    this.searchTerm = '';
+    this.applyFilters();
   }
 
   transferToVan() {

@@ -2,44 +2,74 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { LocationService } from '../../services/location.service';
+import { LocationResponse } from '../../models/location.model';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 export interface Location {
+  id: number;
   locationName: string;
   customerName: string;
   contactPerson: string;
   phoneNumber: string;
   locationAddress: string;
 }
+
 @Component({
   selector: 'app-location',
   templateUrl: './location.component.html',
   styleUrl: './location.component.css'
 })
-
-export class LocationComponent implements OnInit{
+export class LocationComponent implements OnInit {
   displayedColumns: string[] = ['locationName', 'customerName', 'contactPerson', 'phoneNumber', 'locationAddress', 'actions'];
   dataSource = new MatTableDataSource<Location>();
+  
+  isLoading = false;
+  errorMessage = '';
+  locations: Location[] = [];
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  locations: Location[] = [
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-    { locationName: 'New York', customerName: 'Greenway Medical', contactPerson: 'John Deo', phoneNumber: '123456789', locationAddress: "230 Hilltop Blvd, New York" },
-  ];
-
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private locationService: LocationService,
+    private dialog: MatDialog
+  ) { }
 
   ngOnInit(): void {
-    this.dataSource.data = this.locations;
+    this.loadLocations();
+  }
+
+  loadLocations(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+    
+    this.locationService.getLocations().subscribe({
+      next: (apiLocations: LocationResponse[]) => {
+        this.locations = this.mapApiResponseToLocation(apiLocations);
+        this.dataSource.data = this.locations;
+        this.isLoading = false;
+      },
+      error: (error: any) => {
+        console.error('Error loading locations:', error);
+        this.errorMessage = 'Failed to load locations. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private mapApiResponseToLocation(apiLocations: LocationResponse[]): Location[] {
+    return apiLocations.map(apiLocation => ({
+      id: apiLocation.id,
+      locationName: apiLocation.locationName,
+      customerName: apiLocation.customerName,
+      contactPerson: apiLocation.contactPerson,
+      phoneNumber: apiLocation.locationPhone,
+      locationAddress: `${apiLocation.addressLine1}${apiLocation.addressLine2 ? ', ' + apiLocation.addressLine2 : ''}, ${apiLocation.city}, ${apiLocation.state} ${apiLocation.zipCode}`
+    }));
   }
 
   ngAfterViewInit() {
@@ -63,9 +93,41 @@ export class LocationComponent implements OnInit{
 
   editLocation(location: Location) {
     console.log('Edit Location:', location);
+    this.router.navigate(['/location/edit', location.id]);
   }
 
   deleteLocation(location: Location) {
     console.log('Delete Location:', location);
+    
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Location',
+        message: `Are you sure you want to delete the location "${location.locationName}"? This action cannot be undone.`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.isLoading = true;
+        this.errorMessage = '';
+        
+        this.locationService.deleteLocation(location.id).subscribe({
+          next: () => {
+            console.log('Location deleted successfully');
+            this.isLoading = false;
+            // Reload the locations list
+            this.loadLocations();
+          },
+          error: (error: any) => {
+            console.error('Error deleting location:', error);
+            this.errorMessage = 'Failed to delete location. Please try again.';
+            this.isLoading = false;
+          }
+        });
+      }
+    });
   }
 }

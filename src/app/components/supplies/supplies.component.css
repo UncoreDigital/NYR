@@ -251,11 +251,35 @@
   margin-bottom: 16px;
 }
 
-.variation-table-container {
+.variation-table-wrapper {
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   overflow: hidden;
+}
+
+.variation-table-container {
+  max-height: 280px; /* Approximately 5 rows (56px per row) */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar for the table */
+.variation-table-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.variation-table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.variation-table-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.variation-table-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
 .variation-table {
@@ -266,6 +290,9 @@
 
 .variation-table thead {
   background-color: #f3f1fd;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .variation-table th {
@@ -392,6 +419,29 @@
   border-radius: 8px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   overflow: hidden;
+  max-height: 280px; /* Show approximately 5 rows */
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Custom scrollbar for Selected Product table */
+.selected-table-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.selected-table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.selected-table-container::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
+  transition: background 0.3s ease;
+}
+
+.selected-table-container::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
 }
 
 .selected-table {
@@ -401,7 +451,10 @@
 }
 
 .selected-table thead {
-  background-color: #f3f1fd;
+  background-color: #f8fafc;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .selected-table th {
@@ -558,5 +611,148 @@
     font-size: 12px !important;
     width: 12px !important;
     height: 12px !important;
+  }
+}
+
+/* Rich Text Editor Styles */
+.rich-text-editor {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.2s;
+}
+
+.toolbar-btn:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.toolbar-btn.active {
+  background: #02c3b4;
+  color: white;
+}
+
+.toolbar-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 24px;
+  background: #d1d5db;
+  margin: 0 4px;
+}
+
+.editor-content {
+  min-height: 200px;
+  max-height: 400px;
+  padding: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #374151;
+  overflow-y: auto;
+  outline: none;
+  cursor: text;
+}
+
+.editor-content:focus {
+  box-shadow: inset 0 0 0 1px #02c3b4;
+}
+
+.editor-content:empty:before {
+  content: attr(placeholder);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.editor-content p {
+  margin: 0 0 16px 0;
+}
+
+.editor-content p:last-child {
+  margin-bottom: 0;
+}
+
+.editor-content ul,
+.editor-content ol {
+  margin: 0 0 16px 0;
+  padding-left: 24px;
+}
+
+.editor-content li {
+  margin-bottom: 4px;
+}
+
+.editor-content a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.editor-content strong {
+  font-weight: 600;
+}
+
+.editor-content em {
+  font-style: italic;
+}
+
+.editor-content u {
+  text-decoration: underline;
+}
+
+/* Responsive Rich Text Editor */
+@media (max-width: 768px) {
+  .editor-toolbar {
+    padding: 6px 8px;
+    gap: 4px;
+  }
+  
+  .toolbar-btn {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .toolbar-btn mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+  
+  .editor-content {
+    padding: 12px;
+    font-size: 14px;
   }
 }

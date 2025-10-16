@@ -18,17 +18,57 @@
 
       <!-- Search Bar -->
       <div class="search-section">
+        <div class="filter-container">
+          <div class="filter-group">
+            <button mat-icon-button style="height: 24px; width: 18px;">
+              <img class="imgFilter" src="assets/filter.png" alt="Filter" />
+            </button>
+            <div class="dropdown-divider"></div>
+            <mat-select class="select-filter" placeholder="Role" [(value)]="selectedRole" (selectionChange)="onRoleFilterChange()">
+              <mat-option class="select-option" value="">All Roles</mat-option>
+              <mat-option class="select-option" value="admin">Admin</mat-option>
+              <mat-option class="select-option" value="manager">Manager</mat-option>
+              <mat-option class="select-option" value="user">User</mat-option>
+              <mat-option class="select-option" value="driver">Driver</mat-option>
+            </mat-select>
+          </div>
+          <button class="reset-filter-btn" (click)="resetFilters()">
+            <mat-icon>refresh</mat-icon>
+            Reset Filter
+          </button>
+          <!-- <mat-icon class="search-icon">search</mat-icon>
+          <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)"> -->
+        </div>
         <div class="search-container">
           <mat-icon class="search-icon">search</mat-icon>
-          <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)">
+          <input type="text" 
+                 placeholder="Search" 
+                 class="search-input" 
+                 [(ngModel)]="searchTerm"
+                 (keyup)="applyFilter($event)">
         </div>
-        <button class="btn btn-primary" (click)="addUser()">
-          Add User
-        </button>
+        <div style="margin-left: auto;">
+          <button class="btn btn-primary" (click)="addUser()">
+            Add User
+          </button>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="error-message">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage }}</span>
+        <button class="btn btn-secondary" (click)="loadUsers()">Retry</button>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading users...</p>
       </div>
 
       <!-- User Table -->
-      <div class="table-container">
+      <div class="table-container" *ngIf="!isLoading">
         <table mat-table [dataSource]="dataSource" matSort class="customer-table">
           <!-- Company Name Column -->
           <ng-container matColumnDef="role">
@@ -59,13 +99,14 @@
             <th mat-header-cell *matHeaderCellDef>ACTION</th>
             <td mat-cell *matCellDef="let user">
               <div class="action-group">
-                <button class="group-btn edit" (click)="viewUser(user)" title="View">
+                <button class="group-btn edit" (click)="editUser(user)" title="Edit" *ngIf="!isAdmin(user)">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <span class="group-divider"></span>
-                <button class="group-btn delete" (click)="deleteUser(user)" title="Delete">
+                <span class="group-divider" *ngIf="!isAdmin(user)"></span>
+                <button class="group-btn delete" (click)="deleteUser(user)" title="Delete" *ngIf="!isAdmin(user)">
                   <mat-icon>delete</mat-icon>
                 </button>
+                <span *ngIf="isAdmin(user)" class="admin-text">Admin User</span>
               </div>
             </td>
           </ng-container>

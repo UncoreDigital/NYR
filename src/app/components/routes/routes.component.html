@@ -11,20 +11,42 @@
             <!-- Page Header -->
             <div class="page-header">
                 <h1>Routes</h1>
-
+            
             </div>
 
-            <!-- Search Bar -->
+            <!-- Routes Header with Filter and Search -->
             <div class="search-section">
+                <div class="filter-container">
+                    <div class="filter-group">
+                        <button mat-icon-button style="height: 24px; width: 18px;">
+                            <img class="imgFilter" src="assets/filter.png" alt="Filter" />
+                        </button>
+                        <mat-select class="select-filter" placeholder="Driver" [(value)]="selectedDriver"
+                            (selectionChange)="onDriverFilterChange()">
+                            <mat-option class="select-option" value="">Driver</mat-option>
+                            <mat-option class="select-option" *ngFor="let driver of getUniqueDrivers()" [value]="driver">{{driver}}</mat-option>
+                        </mat-select>
+                        <div class="dropdown-divider"></div>
+                        <input type="date" class="date-input" placeholder="Select Date" style="border: none;"
+                            [(ngModel)]="selectedDate" (change)="onDateFilterChange()">
+                    </div>
+                    <button class="reset-filter-btn" (click)="resetFilters()">
+                        <mat-icon>refresh</mat-icon>
+                        Reset Filter
+                    </button>
+                </div>
                 <div class="search-container">
                     <mat-icon class="search-icon">search</mat-icon>
-                    <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)">
+                    <input type="text" placeholder="Search" class="search-input" [(ngModel)]="searchTerm"
+                        (keyup)="applyFilter($event)">
                 </div>
-                <button class="btn btn-primary" (click)="createRoute()">
-                    Create Routes
-                </button>
+                <div style="margin-left: auto;">
+                    <button class="btn btn-primary" (click)="createRoute()">
+                        Create Routes
+                    </button>
+                </div>
             </div>
-
+                    
             <!-- Van Table -->
             <div class="table-container">
                 <table mat-table [dataSource]="dataSource" matSort class="customer-table">
@@ -66,6 +88,5 @@
                 <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons class="table-paginator">
                 </mat-paginator>
             </div>
-        </div>
-    </div>
+        
 </div>

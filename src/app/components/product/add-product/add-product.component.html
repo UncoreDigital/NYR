@@ -5,12 +5,12 @@
         <div class="content">
             <!-- Breadcrumb -->
             <div class="breadcrumb flex items-center space-x-2 text-gray-600">
-                <a class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                <a routerLink="/product" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
                     Settings
                 </a>
                 <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
 
-                <a routerLink="/van" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                <a routerLink="/product" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
                     Product
                 </a>
                 <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
@@ -22,11 +22,27 @@
 
             <!-- Page Header -->
             <div class="page-header">
-                <h1>Add New Product</h1>
+                <h1>{{ isEditMode ? 'Edit Product' : 'Add New Product' }}</h1>
             </div>
 
             <div class="table-container">
-                <form [formGroup]="productForm" class="user-form" (ngSubmit)="onSubmit()">
+                <!-- Loading Overlay -->
+                <div *ngIf="isLoading" class="loading-overlay">
+                    <div class="loading-content">
+                        <div class="loading-spinner-large"></div>
+                        <p>{{ isEditMode ? 'Updating product...' : 'Adding product...' }}</p>
+                    </div>
+                </div>
+
+                <!-- Product Loading Overlay -->
+                <div *ngIf="isLoadingProduct" class="loading-overlay">
+                    <div class="loading-content">
+                        <div class="loading-spinner-large"></div>
+                        <p>Loading product...</p>
+                    </div>
+                </div>
+                
+                <form [formGroup]="productForm" class="user-form" (ngSubmit)="onSubmit()" [class.loading]="isLoading">
                     <div style="display:flex; gap:32px;">
                         <!-- Left Column -->
                         <div style="flex:2;">
@@ -44,13 +60,32 @@
                         <!-- Right Column: Upload Image -->
                         <div style="flex:1;">
                             <label style="font-weight:500;">Upload Image</label>
-                            <div
-                                style="border:1.5px dashed #d1d5db; border-radius:12px; min-height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-top:8px;">
-                                <button type="button"
-                                    style="background:none; border:none; display:flex; flex-direction:column; align-items:center; color:#02C3B4; cursor:pointer;">
-                                    <mat-icon style="font-size:36px; width: auto; height: auto;">cloud_upload</mat-icon>
-                                    <span>Browse</span>
+                            
+                            <!-- Image Preview -->
+                            <div *ngIf="imagePreview" class="image-preview-container">
+                                <img [src]="imagePreview" alt="Product Preview" class="image-preview">
+                                <button type="button" class="remove-image-btn" (click)="removeImage()" title="Remove Image">
+                                    <mat-icon>close</mat-icon>
                                 </button>
+                            </div>
+                            
+                            <!-- Upload Area -->
+                            <div *ngIf="!imagePreview" 
+                                class="upload-area" 
+                                [class.uploading]="isUploadingImage"
+                                (click)="fileInput.click()">
+                                <input #fileInput type="file" accept="image/*" (change)="onImageSelected($event)" style="display: none;">
+                                
+                                <div *ngIf="!isUploadingImage" class="upload-content">
+                                    <mat-icon class="upload-icon" style="height: fit-content; width: fit-content;">cloud_upload</mat-icon>
+                                    <span class="upload-text">Click to browse or drag & drop</span>
+                                    <span class="upload-hint">Supports: JPEG, PNG, GIF, WebP (Max 5MB)</span>
+                                </div>
+                                
+                                <div *ngIf="isUploadingImage" class="upload-loading">
+                                    <div class="upload-spinner"></div>
+                                    <span>Processing image...</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -58,22 +93,20 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Barcode (SKU)</label>
-                            <div style="position:relative;">
-                                <input type="text" formControlName="sku1" class="form-control"
+                            <div class="sku-input-container">
+                                <input type="text" formControlName="sku1" class="sku-input"
                                     placeholder="Enter SKU" />
-                                <button type="button"
-                                    style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none;">
+                                <button type="button" class="camera-btn" title="Scan barcode with camera">
                                     <mat-icon>photo_camera</mat-icon>
                                 </button>
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Barcode (SKU #2)</label>
-                            <div style="position:relative;">
-                                <input type="text" class="form-control" formControlName="sku2"
+                            <div class="sku-input-container">
+                                <input type="text" class="sku-input" formControlName="sku2"
                                     placeholder="Enter SKU" />
-                                <button type="button"
-                                    style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none;">
+                                <button type="button" class="camera-btn" title="Scan barcode with camera">
                                     <mat-icon>photo_camera</mat-icon>
                                 </button>
                             </div>
@@ -83,22 +116,20 @@
                     <div class="form-row">
                         <div class="form-group" style="flex:1;">
                             <label>Barcode (SKU #3)</label>
-                            <div style="position:relative;">
-                                <input type="text" class="form-control" formControlName="sku3"
+                            <div class="sku-input-container">
+                                <input type="text" class="sku-input" formControlName="sku3"
                                     placeholder="Enter SKU" />
-                                <button type="button"
-                                    style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none;">
+                                <button type="button" class="camera-btn" title="Scan barcode with camera">
                                     <mat-icon>photo_camera</mat-icon>
                                 </button>
                             </div>
                         </div>
                         <div class="form-group" style="flex:1;">
                             <label>Barcode (SKU #4)</label>
-                            <div style="position:relative;">
-                                <input type="text" class="form-control" formControlName="sku4"
+                            <div class="sku-input-container">
+                                <input type="text" class="sku-input" formControlName="sku4"
                                     placeholder="Enter SKU" />
-                                <button type="button"
-                                    style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none;">
+                                <button type="button" class="camera-btn" title="Scan barcode with camera">
                                     <mat-icon>photo_camera</mat-icon>
                                 </button>
                             </div>
@@ -108,25 +139,141 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Category</label>
-                            <select class="form-control" formControlName="category">
-                                <option value="" disabled selected>Select a Category</option>
-                                <option>Select Category</option>
-                            </select>
+                            <div class="custom-select-container" *ngIf="!isLoadingDropdowns">
+                                <div class="search-wrapper" (click)="showCategoryDropdown = true">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        placeholder="Select a Category"
+                                        [value]="categorySearchTerm"
+                                        (input)="onCategorySearchInput($event); filterCategories()"
+                                        (focus)="showCategoryDropdown = true"
+                                        (blur)="hideCategoryDropdown()"
+                                        [readonly]="selectedCategory ? true : false"
+                                    >
+                                    <button 
+                                        *ngIf="selectedCategory" 
+                                        type="button" 
+                                        class="clear-button"
+                                        (click)="clearCategory(); $event.stopPropagation()"
+                                    >
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showCategoryDropdown && !selectedCategory">
+                                    <div 
+                                        class="dropdown-item" 
+                                        *ngFor="let category of getFilteredCategories()"
+                                        (click)="selectCategory(category)"
+                                        [class.selected]="selectedCategory?.id === category.id"
+                                    >
+                                        {{ category.name }}
+                                    </div>
+                                    <div *ngIf="getFilteredCategories().length === 0" class="no-results">
+                                        No categories found
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="isLoadingDropdowns" class="dropdown-loading">
+                                <span class="loading-text">Loading categories...</span>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Brand</label>
-                            <select class="form-control" formControlName="brand">
-                                <option>Select Brand</option>
-                            </select>
+                            <div class="custom-select-container" *ngIf="!isLoadingDropdowns">
+                                <div class="search-wrapper" (click)="showBrandDropdown = true">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        placeholder="Select a Brand"
+                                        [value]="brandSearchTerm"
+                                        (input)="onBrandSearchInput($event); filterBrands()"
+                                        (focus)="showBrandDropdown = true"
+                                        (blur)="hideBrandDropdown()"
+                                        [readonly]="selectedBrand ? true : false"
+                                    >
+                                    <button 
+                                        *ngIf="selectedBrand" 
+                                        type="button" 
+                                        class="clear-button"
+                                        (click)="clearBrand(); $event.stopPropagation()"
+                                    >
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showBrandDropdown && !selectedBrand">
+                                    <div 
+                                        class="dropdown-item" 
+                                        *ngFor="let brand of getFilteredBrands()"
+                                        (click)="selectBrand(brand)"
+                                        [class.selected]="selectedBrand?.id === brand.id"
+                                    >
+                                        {{ brand.name }}
+                                    </div>
+                                    <div *ngIf="getFilteredBrands().length === 0" class="no-results">
+                                        No brands found
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="isLoadingDropdowns" class="dropdown-loading">
+                                <span class="loading-text">Loading brands...</span>
+                            </div>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group" style="flex:1;">
                             <label>Supplier</label>
-                            <select class="form-control" formControlName="supplier">
-                                <option>John, Smith</option>
-                            </select>
+                            <div class="custom-select-container" *ngIf="!isLoadingDropdowns">
+                                <div class="search-wrapper" (click)="showSupplierDropdown = true">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        placeholder="Select a Supplier"
+                                        [value]="supplierSearchTerm"
+                                        (input)="onSupplierSearchInput($event); filterSuppliers()"
+                                        (focus)="showSupplierDropdown = true"
+                                        (blur)="hideSupplierDropdown()"
+                                        [readonly]="selectedSupplier ? true : false"
+                                    >
+                                    <button 
+                                        *ngIf="selectedSupplier" 
+                                        type="button" 
+                                        class="clear-button"
+                                        (click)="clearSupplier(); $event.stopPropagation()"
+                                    >
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showSupplierDropdown && !selectedSupplier">
+                                    <div 
+                                        class="dropdown-item supplier-item" 
+                                        *ngFor="let supplier of getFilteredSuppliers()"
+                                        (click)="selectSupplier(supplier)"
+                                        [class.selected]="selectedSupplier?.id === supplier.id"
+                                    >
+                                        <div class="supplier-main-info">
+                                            <div class="supplier-name">{{ supplier.name }}</div>
+                                            <div class="supplier-contact" *ngIf="supplier.contactPerson">
+                                                Contact: {{ supplier.contactPerson }}
+                                            </div>
+                                        </div>
+                                        <div class="supplier-details" *ngIf="supplier.email || supplier.phoneNumber">
+                                            <div class="supplier-email" *ngIf="supplier.email">{{ supplier.email }}</div>
+                                            <div class="supplier-phone" *ngIf="supplier.phoneNumber">{{ supplier.phoneNumber }}</div>
+                                        </div>
+                                    </div>
+                                    <div *ngIf="getFilteredSuppliers().length === 0" class="no-results">
+                                        No suppliers found
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="isLoadingDropdowns" class="dropdown-loading">
+                                <span class="loading-text">Loading suppliers...</span>
+                            </div>
                         </div>
                         <div class="form-group" style="flex:1;">
                             <label>Price</label>
@@ -147,12 +294,25 @@
                     <div class="form-row" *ngIf="!universal">
                         <div class="form-group" style="flex:1;">
                             <label>Add Variation</label>
-                            <select class="form-control" formControlName="variation">
-                                <option>Select Variation</option>
-                                <option>Size</option>
-                                <option>Color</option>
-                                <option>Test</option>
-                            </select>
+                            <div class="multi-select-dropdown" [class.active]="showVariationDropdown">
+                                <div class="multi-select-trigger" (click)="toggleVariationDropdown()">
+                                    <span class="selected-text">
+                                        <span *ngIf="selectedVariations.length === 0" class="placeholder">Select Variation</span>
+                                        <span *ngIf="selectedVariations.length === 1">{{ selectedVariations[0] }}</span>
+                                        <span *ngIf="selectedVariations.length > 1">{{ selectedVariations.length }} variations selected</span>
+                                    </span>
+                                    <mat-icon class="dropdown-arrow" [class.rotated]="showVariationDropdown">expand_more</mat-icon>
+                                </div>
+                                <div class="multi-select-dropdown-menu" *ngIf="showVariationDropdown">
+                                    <div class="multi-select-option" *ngFor="let variation of availableVariations" 
+                                         (click)="toggleVariationSelection(variation)">
+                                        <input type="checkbox" 
+                                               [checked]="isVariationSelected(variation)"
+                                               (click)="$event.stopPropagation()">
+                                        <span>{{ variation }}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group" style="flex:1;">
                             <label>&nbsp;</label>
@@ -161,11 +321,68 @@
                                 <mat-icon>add</mat-icon>
                             </button>
                         </div>
+                    </div>
 
+                    <!-- Selected Variations Table Grid -->
+                    <div class="selected-variations-section" *ngIf="selectedVariations.length > 0 && !universal">
+                        <div class="section-header">
+                            <h3>Selected Variations</h3>
+                            <p>Configure mandatory settings for each selected variation</p>
+                        </div>
+                        <div class="variations-table-container">
+                            <table class="variations-table">
+                                <thead>
+                                    <tr>
+                                        <th class="variation-name-header">Variation Name</th>
+                                        <th class="mandatory-header">Mandatory Selection</th>
+                                        <th class="status-header">Status</th>
+                                        <th class="actions-header">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="variation-row" *ngFor="let variation of selectedVariations; let i = index">
+                                        <td class="variation-name-cell">
+                                            <div class="variation-name">
+                                                <mat-icon class="variation-icon">category</mat-icon>
+                                                <span class="variation-text">{{ variation.name }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="mandatory-cell">
+                                            <label class="checkbox-container">
+                                                <input type="checkbox" 
+                                                       [(ngModel)]="variation.mandatory"
+                                                       (change)="updateVariationMandatory(i, $event)"
+                                                       class="mandatory-checkbox">
+                                                <span class="checkmark"></span>
+                                                <span class="checkbox-label">Customer must select this variation</span>
+                                            </label>
+                                        </td>
+                                        <td class="status-cell">
+                                            <div class="status-badge" [class.mandatory]="variation.mandatory">
+                                                <mat-icon>{{ variation.mandatory ? 'lock' : 'lock_open' }}</mat-icon>
+                                                <span>{{ variation.mandatory ? 'Required' : 'Optional' }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="actions-cell">
+                                            <button type="button" 
+                                                    class="remove-btn" 
+                                                    (click)="removeSelectedVariation(i)" 
+                                                    title="Remove variation">
+                                                <mat-icon>delete</mat-icon>
+                                                Remove
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Add Product</button>
-                        <button type="button" class="btn btn-outline">Cancel</button>
+                        <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+                            <span *ngIf="isLoading" class="loading-spinner"></span>
+                            {{ isLoading ? (isEditMode ? 'Updating Product...' : 'Adding Product...') : (isEditMode ? 'Update Product' : 'Add Product') }}
+                        </button>
+                        <button type="button" class="btn btn-outline" [disabled]="isLoading" (click)="onCancel()">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -173,18 +390,151 @@
     </div>
 </div>
 <div class="modal-backdrop" id="addVariation" *ngIf="addVariation">
-    <div class="modal-success">
-        <h2 style="text-align:left; font-size:1.2rem; font-weight:600; margin-bottom:24px;">Add Variation
-        </h2>
-        <div class="form-row">
-            <div class="form-group" style="flex:1;">
-                <label style="text-align: left;">Variation Name</label>
-                <input type="text" [(ngModel)]="variationNm" class="form-control" placeholder="Enter Variation Name" />
-            </div>
+    <div class="variation-modal">
+        <div class="variation-header">
+            <h2>Add Variation</h2>
+            <button type="button" class="close-btn" (click)="closeProductAvailability()">
+                <mat-icon>close</mat-icon>
+            </button>
         </div>
-        <div style="display:flex; gap:18px; justify-content:center;">
-            <button class="btn btn-primary" (click)="saveProductAvailability()">Done</button>
-            <button class="btn btn-outline" (click)="closeProductAvailability()">Cancel</button>
+        
+        <div class="variation-content">
+            <!-- Variation Name -->
+            <div class="form-group">
+                <label>Variation Name <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="variationNm" class="form-control" 
+                       placeholder="e.g., Size, Color, Material, etc." />
+            </div>
+
+            <!-- Value Type Selection -->
+            <div class="form-group">
+                <label>Value Type <span class="required">*</span></label>
+                <div class="value-type-options">
+                    <div class="value-type-option" 
+                         [class.active]="selectedValueType === 'dropdown'"
+                         (click)="selectValueType('dropdown')">
+                        <mat-icon>arrow_drop_down</mat-icon>
+                        <div class="option-content">
+                            <div class="option-title">Dropdown Options</div>
+                            <div class="option-desc">Predefined set of options (e.g., S, M, L, XL)</div>
+                        </div>
+                    </div>
+                    <div class="value-type-option" 
+                         [class.active]="selectedValueType === 'text'"
+                         (click)="selectValueType('text')">
+                        <mat-icon>text_fields</mat-icon>
+                        <div class="option-content">
+                            <div class="option-title">Text Input</div>
+                            <div class="option-desc">Free text entry for each variation</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dropdown Options Configuration -->
+            <div *ngIf="selectedValueType === 'dropdown'" class="dropdown-config">
+                <div class="form-group">
+                    <label>Variation Options</label>
+                    <div class="options-container">
+                        <div class="option-input-row" *ngFor="let option of variationOptions; let i = index">
+                            <input type="text" 
+                                   [(ngModel)]="option.value" 
+                                   class="form-control option-input"
+                                   [placeholder]="'Option ' + (i + 1)">
+                            <button type="button" 
+                                    class="remove-option-btn" 
+                                    (click)="removeVariationOption(i)"
+                                    [disabled]="variationOptions.length <= 1">
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                        </div>
+                        <button type="button" 
+                                class="add-option-btn" 
+                                (click)="addVariationOption()">
+                            <mat-icon>add</mat-icon>
+                            Add Option
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Templates -->
+                <div class="form-group">
+                    <label>Quick Templates</label>
+                    <div class="template-buttons">
+                        <button type="button" class="template-btn" (click)="applyTemplate('size')">
+                            Sizes (XS, S, M, L, XL)
+                        </button>
+                        <button type="button" class="template-btn" (click)="applyTemplate('color')">
+                            Colors (Red, Blue, Green, Black, White)
+                        </button>
+                        <button type="button" class="template-btn" (click)="applyTemplate('material')">
+                            Materials (Cotton, Polyester, Silk, Wool)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Text Input Configuration -->
+            <div *ngIf="selectedValueType === 'text'" class="text-config">
+                <div class="form-group">
+                    <label>Input Configuration</label>
+                    <div class="text-options">
+                        <div class="checkbox-option">
+                            <input type="checkbox" 
+                                   id="required" 
+                                   [(ngModel)]="textInputConfig.required">
+                            <label for="required">Required field</label>
+                        </div>
+                        <div class="input-group">
+                            <label>Placeholder Text</label>
+                            <input type="text" 
+                                   [(ngModel)]="textInputConfig.placeholder" 
+                                   class="form-control"
+                                   placeholder="Enter placeholder text">
+                        </div>
+                        <div class="input-group">
+                            <label>Maximum Length</label>
+                            <input type="number" 
+                                   [(ngModel)]="textInputConfig.maxLength" 
+                                   class="form-control"
+                                   placeholder="Optional (e.g., 50)"
+                                   min="1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview Section -->
+            <!-- <div class="preview-section" *ngIf="selectedValueType">
+                <label>Preview</label>
+                <div class="preview-container">
+                    <div class="preview-label">{{ variationNm || 'Variation Name' }}</div>
+                    
+                    <select *ngIf="selectedValueType === 'dropdown'" class="form-control preview-select" disabled>
+                        <option>Select {{ variationNm || 'variation' }}</option>
+                        <option *ngFor="let option of getValidOptions()">{{ option.value }}</option>
+                    </select>
+                    
+                    <input *ngIf="selectedValueType === 'text'" 
+                           type="text" 
+                           class="form-control preview-input" 
+                           [placeholder]="textInputConfig.placeholder || 'Enter ' + (variationNm || 'variation')"
+                           [attr.maxlength]="textInputConfig.maxLength"
+                           disabled>
+                </div>
+            </div> -->
+        </div>
+
+        <div class="variation-footer">
+            <button type="button" 
+                    class="btn btn-primary" 
+                    (click)="saveProductVariation()"
+                    [disabled]="!isVariationValid()">
+                Create Variation
+            </button>
+            <button type="button" class="btn btn-outline" (click)="closeProductAvailability()">
+                Cancel
+            </button>
         </div>
     </div>
 </div>
@@ -194,10 +544,10 @@
             <mat-icon>check_circle</mat-icon>
         </div>
         <div class="modal-message">
-            <h2>Product has been successfully added.</h2>
+            <h2>Product has been successfully {{ isEditMode ? 'updated' : 'added' }}.</h2>
         </div>
         <div class="modal-actions">
-            <button class="btn btn-primary" (click)="addAnotherProduct()">Add Another Product</button>
+            <button *ngIf="!isEditMode" class="btn btn-primary" (click)="addAnotherProduct()">Add Another Product</button>
             <button class="btn btn-outline" (click)="goToProductsList()">Go to Products List</button>
         </div>
     </div>

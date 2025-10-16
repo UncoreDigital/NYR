@@ -4,20 +4,32 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { HeaderComponent } from '../../header/header.component';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { CustomerService } from '../../../services/customer.service';
+import { CreateCustomerRequest, CustomerResponse } from '../../../models/customer.model';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-add-customer',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatIconModule, SidebarComponent, HeaderComponent],
+  imports: [CommonModule, ReactiveFormsModule, MatIconModule, SidebarComponent, HeaderComponent, RouterModule],
   templateUrl: './add-customer.component.html',
   styleUrl: './add-customer.component.css'
 })
 export class AddCustomerComponent {
   customerForm: FormGroup;
   showSuccess = false;
+  isSaving = false;
+  isEditMode = false;
+  customerId: number | null = null;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private route: ActivatedRoute,
+    private customerService: CustomerService,
+    private toastService: ToastService
+  ) {
     this.customerForm = this.fb.group({
       companyName: ['', Validators.required],
       dba: [''],
@@ -36,20 +48,120 @@ export class AddCustomerComponent {
       email: ['', [Validators.required, Validators.email]],
       website: ['']
     });
+
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (idParam) {
+      this.isEditMode = true;
+      this.customerId = Number(idParam);
+      this.loadCustomer(this.customerId);
+    }
+  }
+
+  private loadCustomer(id: number): void {
+    this.isSaving = true; // reuse as loader
+    this.customerService.getCustomerById(id).subscribe({
+      next: (c: CustomerResponse) => {
+        // Split contactName into first/last if possible (UI has two fields)
+        const [firstName, ...rest] = (c.contactName || '').split(' ');
+        const lastName = rest.join(' ').trim();
+        this.customerForm.patchValue({
+          companyName: c.companyName,
+          dba: c.dba,
+          accountNumber: c.accountNumber,
+          address1: c.addressLine1,
+          address2: c.addressLine2,
+          city: c.city,
+          state: c.state,
+          zip: c.zipCode,
+          contactName: firstName,
+          contactLastName: lastName,
+          jobTitle: c.jobTitle,
+          businessPhone: c.businessPhone,
+          mobilePhone: c.mobilePhone,
+          faxNumber: c.faxNumber,
+          email: c.email,
+          website: c.website
+        });
+        this.isSaving = false;
+      },
+      error: (error) => {
+        this.isSaving = false;
+        this.toastService.error('Error', 'Failed to load customer');
+        this.router.navigate(['/customer']);
+      }
+    });
   }
 
   onSubmit() {
-    this.showSuccess = true;
-    if (this.customerForm.valid) {
-      // Handle form submission (e.g., send to API)
-      console.log('Customer Data:', this.customerForm.value);
-      this.showSuccess = true;
-    } else {
+    if (this.customerForm.invalid || this.isSaving) {
       this.customerForm.markAllAsTouched();
+      return;
+    }
+
+    const form = this.customerForm.value;
+
+    const basePayload: CreateCustomerRequest = {
+      companyName: form.companyName || '',
+      dba: form.dba || '',
+      accountNumber: form.accountNumber || '',
+      addressLine1: form.address1 || '',
+      addressLine2: form.address2 || '',
+      city: form.city || '',
+      state: form.state || '',
+      zipCode: form.zip || '',
+      contactName: [form.contactName, form.contactLastName].filter(Boolean).join(' ').trim(),
+      jobTitle: form.jobTitle || '',
+      businessPhone: form.businessPhone || '',
+      mobilePhone: form.mobilePhone || '',
+      faxNumber: form.faxNumber || '',
+      email: form.email || '',
+      website: form.website || ''
+    };
+
+    this.isSaving = true;
+    if (this.isEditMode && this.customerId !== null) {
+      const updatePayload: CustomerResponse = {
+        id: this.customerId,
+        ...basePayload,
+        isActive: true,
+        createdAt: new Date().toISOString()
+      } as unknown as CustomerResponse;
+
+      this.toastService.info('Saving', 'Updating customer...');
+      this.customerService.updateCustomer(this.customerId, updatePayload).subscribe({
+        next: () => {
+          this.isSaving = false;
+          this.toastService.success('Success', 'Customer has been updated');
+          this.router.navigate(['/customer']);
+        },
+        error: (error) => {
+          this.isSaving = false;
+          const message = error?.error?.message || 'Failed to update customer';
+          this.toastService.error('Error', message);
+        }
+      });
+    } else {
+      this.toastService.info('Saving', 'Creating customer...');
+      this.customerService.createCustomer(basePayload).subscribe({
+        next: () => {
+          this.isSaving = false;
+          this.showSuccess = true;
+          this.toastService.success('Success', 'Customer has been created');
+        },
+        error: (error) => {
+          this.isSaving = false;
+          const message = error?.error?.message || 'Failed to create customer';
+          this.toastService.error('Error', message);
+        }
+      });
     }
   }
 
   onCancel() {
+    if (this.isEditMode) {
+      this.router.navigate(['/customer']);
+      return;
+    }
     this.customerForm.reset();
   }
 

@@ -6,7 +6,7 @@
 
             <!-- Breadcrumb -->
             <div class="breadcrumb flex items-center space-x-2 text-gray-600">
-                <a class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                <a routerLink="/customer" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
                     Settings
                 </a>
                 <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
@@ -111,7 +111,7 @@
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">Save</button>
-                        <button type="button" class="btn btn-outline">Cancel</button>
+                        <button type="button" class="btn btn-outline" (click)="onCancel()">Cancel</button>
                     </div>
                 </form>
             </div>

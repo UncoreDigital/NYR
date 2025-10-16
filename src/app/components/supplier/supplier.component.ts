@@ -2,12 +2,18 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { SupplierService } from '../../services/supplier.service';
+import { SupplierApiModel } from '../../models/supplier.model';
+import { ToastService } from '../../services/toast.service';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 export interface Supplier {
+  id: number;
   supplierName: string;
   phoneNumber: string;
-  status: boolean;
+  status: string;
   email: string;
 }
 
@@ -23,20 +29,22 @@ export class SupplierComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  suppliers: Supplier[] = [
-    { supplierName: 'FastExpress Pvt Ltd', phoneNumber: '123456789', email: 'loepark@gmail.com', status: true },
-    { supplierName: 'FastExpress Pvt Ltd', phoneNumber: '123456789', email: 'loepark@gmail.com', status: true },
-    { supplierName: 'FastExpress Pvt Ltd', phoneNumber: '123456789', email: 'loepark@gmail.com', status: true },
-    { supplierName: 'FastExpress Pvt Ltd', phoneNumber: '123456789', email: 'loepark@gmail.com', status: true },
-    { supplierName: 'FastExpress Pvt Ltd', phoneNumber: '123456789', email: 'loepark@gmail.com', status: true },
-    { supplierName: 'FastExpress Pvt Ltd', phoneNumber: '123456789', email: 'loepark@gmail.com', status: true },
-    { supplierName: 'FastExpress Pvt Ltd', phoneNumber: '123456789', email: 'loepark@gmail.com', status: true },
-  ];
+  isLoading = false;
+  suppliers: Supplier[] = [];
+  filteredSuppliers: Supplier[] = [];
+  selectedStatus = '';
+  selectedSupplierName = '';
+  searchTerm = '';
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private supplierService: SupplierService,
+    private toastService: ToastService,
+    private dialog: MatDialog
+  ) { }
 
   ngOnInit(): void {
-    this.dataSource.data = this.suppliers;
+    this.fetchSuppliers();
   }
 
   ngAfterViewInit() {
@@ -44,25 +52,127 @@ export class SupplierComponent implements OnInit {
     this.dataSource.sort = this.sort;
   }
 
+  fetchSuppliers(): void {
+    this.isLoading = true;
+    this.supplierService.getSuppliers().subscribe({
+      next: (suppliers: SupplierApiModel[]) => {
+        const mapped: Supplier[] = suppliers.map(s => ({
+          id: s.id,
+          supplierName: s.name,
+          phoneNumber: s.phoneNumber,
+          email: s.email,
+          status: s.isActive ? 'Active' : 'Inactive'
+        }));
+        this.suppliers = mapped;
+        this.filteredSuppliers = [...this.suppliers];
+        this.applyFilters();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Failed to load suppliers', error);
+        this.toastService.error('Error', 'Failed to load suppliers');
+        this.isLoading = false;
+      }
+    });
+  }
+
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.searchTerm = (event.target as HTMLInputElement).value;
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    let filtered = [...this.suppliers];
+
+    // Apply supplier name filter
+    if (this.selectedSupplierName) {
+      filtered = filtered.filter(supplier => 
+        supplier.supplierName === this.selectedSupplierName
+      );
+    }
+
+    // Apply status filter
+    if (this.selectedStatus) {
+      filtered = filtered.filter(supplier => 
+        supplier.status.toLowerCase() === this.selectedStatus.toLowerCase()
+      );
+    }
+
+    // Apply search filter
+    if (this.searchTerm) {
+      const searchLower = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(supplier =>
+        supplier.supplierName.toLowerCase().includes(searchLower) ||
+        supplier.email.toLowerCase().includes(searchLower) ||
+        supplier.phoneNumber.toLowerCase().includes(searchLower) ||
+        supplier.status.toLowerCase().includes(searchLower)
+      );
+    }
+
+    this.filteredSuppliers = filtered;
+    this.dataSource.data = this.filteredSuppliers;
+  }
+
+  onSupplierNameFilterChange() {
+    this.applyFilters();
+  }
+
+  onStatusFilterChange() {
+    this.applyFilters();
+  }
+
+  getUniqueSupplierNames(): string[] {
+    return [...new Set(this.suppliers.map(supplier => supplier.supplierName))].sort();
+  }
+
+  resetFilters() {
+    this.selectedStatus = '';
+    this.selectedSupplierName = '';
+    this.searchTerm = '';
+    this.applyFilters();
   }
 
   addSupplier() {
-    console.log('Add Supplier clicked');
     this.router.navigate(['/supplier/add']);
   }
 
   viewSupplier(supplier: Supplier) {
-    console.log('View Supplier:', supplier);
+    // placeholder for view action
   }
 
   editSupplier(supplier: Supplier) {
-    console.log('Edit Supplier:', supplier);
+    this.router.navigate(['/supplier/edit', supplier.id]);
   }
 
   deleteSupplier(supplier: Supplier) {
-    console.log('Delete Supplier:', supplier);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Supplier',
+        message: `Are you sure you want to delete supplier "${supplier.supplierName}"? This action cannot be undone.`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.performDelete(supplier);
+      }
+    });
+  }
+
+  private performDelete(supplier: Supplier): void {
+    this.supplierService.deleteSupplier(supplier.id).subscribe({
+      next: () => {
+        this.toastService.success('Success', 'Supplier has been deleted successfully');
+        this.fetchSuppliers(); // Refresh the list
+      },
+      error: (error) => {
+        console.error('Failed to delete supplier', error);
+        const message = error?.error?.message || 'Failed to delete supplier. Please try again.';
+        this.toastService.error('Error', message);
+      }
+    });
   }
 }

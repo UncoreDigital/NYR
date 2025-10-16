@@ -31,13 +31,15 @@ export class InventoryVanComponent implements OnInit {
     { vanName: 'Van 5', vanNumber: 'CD-CL-321', driverName: 'Lisa Brown', id: 5 },
   ];
 
-  selectedVan: string = '';
-  searchValue: string = '';
+  filteredVans: Van[] = [];
+  selectedVanName = '';
+  searchTerm = '';
 
   constructor(private router: Router) { }
 
   ngOnInit(): void {
-    this.dataSource.data = this.vans;
+    this.filteredVans = [...this.vans];
+    this.applyFilters();
   }
 
   ngAfterViewInit() {
@@ -46,24 +48,46 @@ export class InventoryVanComponent implements OnInit {
   }
 
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-    this.searchValue = filterValue;
+    this.searchTerm = (event.target as HTMLInputElement).value;
+    this.applyFilters();
   }
 
-  onVanFilterChange(value: string) {
-    this.selectedVan = value;
-    if (value === '') {
-      this.dataSource.filter = '';
-    } else {
-      this.dataSource.filter = value.trim().toLowerCase();
+  applyFilters() {
+    let filtered = [...this.vans];
+
+    // Apply van name filter
+    if (this.selectedVanName) {
+      filtered = filtered.filter(van => 
+        van.vanName === this.selectedVanName
+      );
     }
+
+    // Apply search filter
+    if (this.searchTerm) {
+      const searchLower = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(van =>
+        van.vanName.toLowerCase().includes(searchLower) ||
+        van.vanNumber.toLowerCase().includes(searchLower) ||
+        van.driverName.toLowerCase().includes(searchLower)
+      );
+    }
+
+    this.filteredVans = filtered;
+    this.dataSource.data = this.filteredVans;
+  }
+
+  onVanNameFilterChange() {
+    this.applyFilters();
+  }
+
+  getUniqueVanNames(): string[] {
+    return [...new Set(this.vans.map(van => van.vanName))].sort();
   }
 
   resetFilters() {
-    this.selectedVan = '';
-    this.searchValue = '';
-    this.dataSource.filter = '';
+    this.selectedVanName = '';
+    this.searchTerm = '';
+    this.applyFilters();
   }
 
   transferToVan() {

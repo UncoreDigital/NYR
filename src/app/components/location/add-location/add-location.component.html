@@ -6,7 +6,7 @@
 
             <!-- Breadcrumb -->
             <div class="breadcrumb flex items-center space-x-2 text-gray-600">
-                <a class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                <a routerLink="/location" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
                     Settings
                 </a>
                 <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
@@ -17,23 +17,70 @@
                 <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
 
                 <span class="breadcrumb-item text-gray-800 font-semibold active">
-                    Add Location
+                    {{ isEditMode ? 'Edit Location' : 'Add Location' }}
                 </span>
             </div>
 
 
             <!-- Page Header -->
             <div class="page-header">
-                <h1>Add Location</h1>
-
+                <h1>{{ isEditMode ? 'Edit Location' : 'Add Location' }}</h1>
             </div>
 
-            <div class="table-container">
+            <!-- Error Message -->
+            <div *ngIf="errorMessage" class="error-message">
+                <mat-icon>error</mat-icon>
+                <span>{{ errorMessage }}</span>
+                <button class="btn btn-secondary" (click)="loadCustomers()" *ngIf="customers.length === 0">Retry</button>
+            </div>
+
+            <!-- Loading Spinner for Customers -->
+            <div *ngIf="isLoading" class="loading-container">
+                <mat-spinner diameter="50"></mat-spinner>
+                <p>Loading customers...</p>
+            </div>
+
+            <div class="table-container" *ngIf="!isLoading">
                 <form [formGroup]="locationForm" class="user-form" (ngSubmit)="onSubmit()">
                     <div class="form-row">
                         <div class="form-group">
                             <label>Customer Name</label>
-                            <input formControlName="customerName" type="text" placeholder="Enter Customer name" />
+                            <div class="custom-select-container">
+                                <div class="search-wrapper" (click)="showCustomerDropdown = true">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        placeholder="Select Customer"
+                                        [value]="customerSearchTerm"
+                                        (input)="onSearchInput($event); filterCustomers()"
+                                        (focus)="showCustomerDropdown = true"
+                                        (blur)="hideCustomerDropdown()"
+                                        [readonly]="selectedCustomer ? true : false"
+                                    >
+                                    <button 
+                                        *ngIf="selectedCustomer" 
+                                        type="button" 
+                                        class="clear-button"
+                                        (click)="clearCustomer(); $event.stopPropagation()"
+                                    >
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showCustomerDropdown && !selectedCustomer">
+                                    <div 
+                                        class="dropdown-item" 
+                                        *ngFor="let customer of getFilteredCustomers()"
+                                        (click)="selectCustomer(customer)"
+                                        [class.selected]="selectedCustomer?.id === customer.id"
+                                    >
+                                        {{ customer.companyName }}
+                                    </div>
+                                    <div *ngIf="getFilteredCustomers().length === 0" class="no-results">
+                                        No customers found
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Location Name</label>
@@ -109,8 +156,12 @@
                         </div>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Save</button>
-                        <button type="button" class="btn btn-outline">Cancel</button>
+                        <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+                            <mat-spinner *ngIf="isSaving" diameter="20" class="inline-spinner"></mat-spinner>
+                            <span *ngIf="!isSaving">Save</span>
+                            <span *ngIf="isSaving">Saving...</span>
+                        </button>
+                        <button type="button" class="btn btn-outline" [disabled]="isSaving" (click)="onCancel()">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -123,10 +174,10 @@
             <mat-icon>check_circle</mat-icon>
         </div>
         <div class="modal-message">
-            <h2>Location has been successfully added.</h2>
+            <h2>Location has been successfully {{ isEditMode ? 'updated' : 'added' }}.</h2>
         </div>
         <div class="modal-actions">
-            <button class="btn btn-primary" (click)="addAnotherLocation()">Add Another Location</button>
+            <button class="btn btn-primary" (click)="addAnotherLocation()" *ngIf="!isEditMode">Add Another Location</button>
             <button class="btn btn-outline" (click)="goToLocationsList()">Go to Locations List</button>
         </div>
     </div>

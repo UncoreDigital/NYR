@@ -47,6 +47,20 @@ export class CreateRouteComponent implements OnInit {
   selectedDriverOption: string = 'preAssigned';
   showCreateModal: boolean = false;
 
+  // Driver dropdown properties
+  driverSearchTerm: string = '';
+  showDriverDropdown: boolean = false;
+  selectedDriverObj: any = null;
+  
+  // Driver data array
+  driverOptions = [
+    { value: 'driver1', name: 'Driver 1' },
+    { value: 'driver2', name: 'Driver 2' },
+    { value: 'driver3', name: 'Driver 3' },
+    { value: 'driver4', name: 'Driver 4' },
+    { value: 'driver5', name: 'Driver 5' }
+  ];
+
   constructor(private router: Router) { }
 
   ngOnInit(): void {
@@ -143,5 +157,42 @@ export class CreateRouteComponent implements OnInit {
   onDriverOptionChange(event: any) {
     this.selectedDriverOption = event.target.value;
     this.selectedDriver = '';
+  }
+
+  // Driver dropdown methods
+  getFilteredDrivers() {
+    if (!this.driverSearchTerm.trim()) {
+      return this.driverOptions;
+    }
+    return this.driverOptions.filter(driver => 
+      driver.name.toLowerCase().includes(this.driverSearchTerm.toLowerCase())
+    );
+  }
+
+  filterDrivers() {
+    // Automatically show dropdown when user starts typing
+    if (!this.showDriverDropdown) {
+      this.showDriverDropdown = true;
+    }
+  }
+
+  selectDriver(driver: any) {
+    this.selectedDriverObj = driver;
+    this.selectedDriver = driver.id;
+    this.driverSearchTerm = driver.name;
+    this.showDriverDropdown = false;
+  }
+
+  hideDriverDropdown() {
+    setTimeout(() => {
+      this.showDriverDropdown = false;
+    }, 150);
+  }
+
+  clearDriver() {
+    this.selectedDriver = '';
+    this.selectedDriverObj = null;
+    this.driverSearchTerm = '';
+    this.showDriverDropdown = false;
   }
 }

@@ -30,9 +30,22 @@
           Add Van
         </button>
       </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="error-message">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage }}</span>
+        <button class="btn btn-secondary" (click)="loadVans()">Retry</button>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading vans...</p>
+      </div>
       
       <!-- Van Table -->
-      <div class="table-container">
+      <div class="table-container" *ngIf="!isLoading">
         <table mat-table [dataSource]="dataSource" matSort class="customer-table">
           <!-- Company Name Column -->
           <ng-container matColumnDef="vanName">
@@ -51,7 +64,7 @@
             <th mat-header-cell *matHeaderCellDef>ACTION</th>
             <td mat-cell *matCellDef="let van">
               <div class="action-group">
-                <button class="group-btn edit" (click)="viewVan(van)" title="View">
+                <button class="group-btn edit" (click)="editVan(van)" title="Edit">
                   <mat-icon>edit</mat-icon>
                 </button>
                 <span class="group-divider"></span>

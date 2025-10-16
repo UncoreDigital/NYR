@@ -13,18 +13,38 @@
             <!-- Page Header -->
             <div class="page-header">
                 <h1>Vans</h1>
-
+            
             </div>
-
-            <!-- Search Bar -->
+            
+            <!-- Van Header with Filter and Search -->
             <div class="search-section">
+                <div class="filter-container">
+                    <div class="filter-group">
+                        <button mat-icon-button style="height: 24px; width: 18px;">
+                            <img class="imgFilter" src="assets/filter.png" alt="Filter" />
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <mat-select class="select-filter" placeholder="Van Name" [(value)]="selectedVanName"
+                            (selectionChange)="onVanNameFilterChange()">
+                            <mat-option class="select-option" value="">Van</mat-option>
+                            <mat-option class="select-option" *ngFor="let vanName of getUniqueVanNames()" [value]="vanName">{{vanName}}</mat-option>
+                        </mat-select>
+                    </div>
+                    <button class="reset-filter-btn" (click)="resetFilters()">
+                        <mat-icon>refresh</mat-icon>
+                        Reset Filter
+                    </button>
+                </div>
                 <div class="search-container">
                     <mat-icon class="search-icon">search</mat-icon>
-                    <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)">
+                    <input type="text" placeholder="Search" class="search-input" [(ngModel)]="searchTerm"
+                        (keyup)="applyFilter($event)">
                 </div>
-                <button class="btn btn-primary" (click)="transferToVan()">
-                    Transfer To Van
-                </button>
+                <div style="margin-left: auto;">
+                    <button class="btn btn-primary" (click)="transferToVan()">
+                        Transfer To Van
+                    </button>
+                </div>
             </div>
 
             <div class="table-container">
