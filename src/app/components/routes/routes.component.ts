@@ -120,5 +120,15 @@ export class RoutesComponent implements OnInit {
   }
 
   viewMap(route: Routes) {
+    // Navigate to route map page with route data
+    this.router.navigate(['/route-map'], {
+      state: { routeData: route },
+      queryParams: {
+        driverName: route.driverName,
+        totalStops: route.totalStops,
+        shippingDate: route.shippingDate,
+        status: route.status
+      }
+    });
   }
 }

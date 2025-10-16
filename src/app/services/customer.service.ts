@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CreateCustomerRequest, CustomerResponse } from '../models/customer.model';
+import { environment } from 'environment';
 
 export interface CustomerApiModel {
   id: number;
@@ -26,7 +27,7 @@ export interface CustomerApiModel {
 
 @Injectable({ providedIn: 'root' })
 export class CustomerService {
-  private readonly API_URL = 'https://localhost:53255/api';
+  private readonly API_URL = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 

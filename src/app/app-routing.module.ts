@@ -24,6 +24,7 @@ import { TransferDetailComponent } from './components/transferDetail/transfer-de
 import { RoutesComponent } from './components/routes/routes.component';
 import { CreateRouteComponent } from './components/create-route/create-route.component';
 import { RouteDetailComponent } from './components/route-detail/route-detail.component';
+import { RouteMapComponent } from './components/route-map/route-map.component';
 import { InventoryWarehouseComponent } from './components/inventory-warehouse/inventory-warehouse.component';
 import { AddInventoryComponent } from './components/inventory-warehouse/add-inventory/add-inventory.component';
 import { InventoryVanComponent } from './components/inventory-van/inventory-van.component';
@@ -184,6 +185,11 @@ const routes: Routes = [
   { 
     path: 'route-detail', 
     component: RouteDetailComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'route-map', 
+    component: RouteMapComponent, 
     canActivate: [AuthGuard] 
   },
   { 

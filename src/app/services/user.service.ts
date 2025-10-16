@@ -3,12 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UserResponse, User, CreateUserRequest, UpdateUserRequest } from '../models/user.model';
 import { DriverAvailability, DriverAvailabilityBulkRequest } from '../models/driver-availability.model';
+import { environment } from 'environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private readonly API_URL = 'https://localhost:53255/api';
+  private readonly API_URL = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
