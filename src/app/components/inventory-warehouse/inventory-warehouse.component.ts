@@ -3,6 +3,8 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
+import { WarehouseInventoryService } from '../../services/warehouse-inventory.service';
+import { WarehouseListResponse } from '../../models/warehouse-inventory.model';
 
 export interface inventoryWarehouse {
   warehouseName: string;
@@ -29,22 +31,41 @@ export class InventoryWarehouseComponent implements OnInit {
   filteredWarehouses: inventoryWarehouse[] = [];
   selectedWarehouseName = '';
   searchTerm = '';
+  loading = false;
 
-  inventoryWarehouse: inventoryWarehouse[] = [
-    { warehouseName: 'Warehouse 1', warehouseAddress: '123 Main St', city: 'New York', state: 'NY', zipCode: '10001', country: 'USA', id: 1 },
-    { warehouseName: 'Warehouse 2', warehouseAddress: '456 Elm St', city: 'Los Angeles', state: 'CA', zipCode: '90001', country: 'USA', id: 2 },
-    { warehouseName: 'Warehouse 3', warehouseAddress: '789 Oak St', city: 'Chicago', state: 'IL', zipCode: '60601', country: 'USA', id: 3 },
-    { warehouseName: 'Warehouse 4', warehouseAddress: '101 Pine St', city: 'Houston', state: 'TX', zipCode: '77001', country: 'USA', id: 4 },
-    { warehouseName: 'Warehouse 5', warehouseAddress: '202 Maple St', city: 'Phoenix', state: 'AZ', zipCode: '85001', country: 'USA', id: 5 },
-    { warehouseName: 'Warehouse 6', warehouseAddress: '303 Cedar St', city: 'Philadelphia', state: 'PA', zipCode: '19019', country: 'USA', id: 6 },
-    { warehouseName: 'Warehouse 7', warehouseAddress: '404 Birch St', city: 'San Antonio', state: 'TX', zipCode: '78201', country: 'USA', id: 7 },  
-  ];
+  inventoryWarehouse: inventoryWarehouse[] = [];
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private warehouseInventoryService: WarehouseInventoryService
+  ) { }
 
   ngOnInit(): void {
-    this.filteredWarehouses = [...this.inventoryWarehouse];
-    this.applyFilters();
+    this.loadWarehouses();
+  }
+
+  loadWarehouses(): void {
+    this.loading = true;
+    this.warehouseInventoryService.getWarehouseList().subscribe({
+      next: (warehouses: WarehouseListResponse[]) => {
+        this.inventoryWarehouse = warehouses.map(warehouse => ({
+          id: warehouse.id,
+          warehouseName: warehouse.name,
+          warehouseAddress: warehouse.addressLine1,
+          city: warehouse.city,
+          state: warehouse.state,
+          zipCode: warehouse.zipCode,
+          country: 'USA' // Default country
+        }));
+        this.filteredWarehouses = [...this.inventoryWarehouse];
+        this.dataSource.data = this.filteredWarehouses;
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading warehouses:', error);
+        this.loading = false;
+      }
+    });
   }
 
   ngAfterViewInit() {

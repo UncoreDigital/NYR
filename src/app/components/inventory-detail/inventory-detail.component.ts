@@ -3,6 +3,8 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
+import { WarehouseInventoryService } from '../../services/warehouse-inventory.service';
+import { WarehouseInventoryDetailResponse } from '../../models/warehouse-inventory.model';
 
 export interface inventoryLocation {
   productName: string,
@@ -25,54 +27,34 @@ export class InventoryDetailComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  inventoryLocation: inventoryLocation[] = [
-    {
-      productName: 'Pneumatic Walking Boot',
-      skucode: 'MD-001',
-      size: 'L',
-      side: 'Universal',
-      colour: 'Black',
-      quantity: 12,
-    },
-    {
-      productName: 'Pneumatic Walking Boot',
-      skucode: 'MD-001',
-      size: 'M',
-      side: 'Universal',
-      colour: 'Black',
-      quantity: 12,
-    },
-    {
-      productName: 'Pneumatic Walking Boot',
-      skucode: 'MD-001',
-      size: 'S',
-      side: 'Universal',
-      colour: 'Black',
-      quantity: 12,
-    }
-  ];
-
+  inventoryLocation: inventoryLocation[] = [];
   selectedVan: string = '';
   searchValue: string = '';
+  loading = false;
   // Navigation context
   sourceContext: string = '';
   sourceTitle: string = '';
   breadcrumbItems: any[] = [];
+  warehouseId: number | null = null;
 
-  constructor(private router: Router, private route: ActivatedRoute) { }
+  constructor(
+    private router: Router, 
+    private route: ActivatedRoute,
+    private warehouseInventoryService: WarehouseInventoryService
+  ) { }
 
   ngOnInit(): void {
     // Initialize with default values
     this.sourceContext = 'warehouse';
     this.sourceTitle = 'Avetis';
     this.setupBreadcrumb();
-    this.dataSource.data = this.inventoryLocation;
     
     // Override with query params if provided
     this.route.queryParams.subscribe((params: any) => {
       if (Object.keys(params).length > 0) {
         this.sourceContext = params['context'] || 'warehouse';
         this.sourceTitle = params['title'] || 'Inventory Details';
+        this.warehouseId = params['id'] ? parseInt(params['id']) : null;
         this.setupBreadcrumb();
         this.loadInventoryData();
       }
@@ -111,9 +93,30 @@ export class InventoryDetailComponent implements OnInit {
   }
 
   loadInventoryData(): void {
-    // In real application, load data based on context and ID
-    // For now, use the existing inventory data
-    this.dataSource.data = this.inventoryLocation;
+    if (this.warehouseId) {
+      this.loading = true;
+      this.warehouseInventoryService.getWarehouseInventoryDetails(this.warehouseId).subscribe({
+        next: (inventoryDetails: WarehouseInventoryDetailResponse[]) => {
+          this.inventoryLocation = inventoryDetails.map(item => ({
+            productName: item.productName,
+            skucode: item.productSKU,
+            size: item.variationType === 'Size' ? item.variationValue : '',
+            side: item.variationType === 'Side' ? item.variationValue : 'Universal',
+            colour: item.variationType === 'Color' ? item.variationValue : '',
+            quantity: item.quantity
+          }));
+          this.dataSource.data = this.inventoryLocation;
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading inventory details:', error);
+          this.loading = false;
+        }
+      });
+    } else {
+      // Fallback to empty data
+      this.dataSource.data = [];
+    }
   }
 
 

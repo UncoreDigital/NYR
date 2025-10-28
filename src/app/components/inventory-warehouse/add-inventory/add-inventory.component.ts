@@ -5,8 +5,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import { HeaderComponent } from '../../header/header.component';
 import { SidebarComponent } from '../../sidebar/sidebar.component';
+import { WarehouseInventoryService } from '../../../services/warehouse-inventory.service';
+import { WarehouseService } from '../../../services/warehouse.service';
+import { ProductService } from '../../../services/product.service';
+import { AddInventoryRequest } from '../../../models/warehouse-inventory.model';
+import { WarehouseResponse } from '../../../models/warehouse.model';
+import { ProductApiModel } from '../../../models/product.model';
 
 export interface Variation {
+  id?: number;
   name: string;
   value: string;
 }
@@ -20,17 +27,7 @@ export class AddInventoryComponent implements OnInit {
   inventoryForm: FormGroup;
   
   // All available variations (mock data) - now with empty values for user input
-  allVariations: Variation[] = [
-    { name: 'Size', value: '' },
-    { name: 'Color', value: '' },
-    { name: 'Material', value: '' },
-    { name: 'Weight', value: '' },
-    { name: 'Style', value: '' },
-    { name: 'Brand', value: '' },
-    { name: 'Model', value: '' },
-    { name: 'Category', value: '' }
-  ];
-
+  allVariations: Variation[] = [];
   filteredVariations: Variation[] = [];
   selectedVariations: Variation[] = [];
   searchTerm: string = '';
@@ -44,27 +41,21 @@ export class AddInventoryComponent implements OnInit {
   showProductDropdown: boolean = false;
   
   // Selected items
-  selectedWarehouse: any = null;
-  selectedProduct: any = null;
+  selectedWarehouse: WarehouseResponse | null = null;
+  selectedProduct: ProductApiModel | null = null;
   
   // Data arrays for dropdowns
-  warehouses = [
-    { value: 'warehouse1', name: 'WareHouse 1' },
-    { value: 'avetis', name: 'Avetis' },
-    { value: 'uncore', name: 'Uncore' },
-    { value: 'warehouse2', name: 'WareHouse 2' },
-    { value: 'warehouse3', name: 'WareHouse 3' }
-  ];
-  
-  products = [
-    { value: 'product1', name: 'Product 1' },
-    { value: 'product2', name: 'Product 2' },
-    { value: 'product3', name: 'Product 3' },
-    { value: 'product4', name: 'Product 4' },
-    { value: 'product5', name: 'Product 5' }
-  ];
+  warehouses: WarehouseResponse[] = [];
+  products: ProductApiModel[] = [];
+  loading = false;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder, 
+    private router: Router,
+    private warehouseInventoryService: WarehouseInventoryService,
+    private warehouseService: WarehouseService,
+    private productService: ProductService
+  ) {
     this.inventoryForm = this.fb.group({
       warehouseName: ['', Validators.required],
       prodcut: ['', Validators.required],
@@ -73,6 +64,45 @@ export class AddInventoryComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadWarehouses();
+    this.loadProducts();
+    this.loadProductVariations();
+  }
+
+  loadWarehouses(): void {
+    this.warehouseService.getWarehouses().subscribe({
+      next: (warehouses) => {
+        this.warehouses = warehouses;
+      },
+      error: (error) => {
+        console.error('Error loading warehouses:', error);
+      }
+    });
+  }
+
+  loadProducts(): void {
+    this.productService.getProducts().subscribe({
+      next: (products) => {
+        this.products = products;
+      },
+      error: (error) => {
+        console.error('Error loading products:', error);
+      }
+    });
+  }
+
+  loadProductVariations(): void {
+    // Mock variations for now - in real implementation, this would come from ProductVariation API
+    this.allVariations = [
+      { name: 'Size', value: '' },
+      { name: 'Color', value: '' },
+      { name: 'Material', value: '' },
+      { name: 'Weight', value: '' },
+      { name: 'Style', value: '' },
+      { name: 'Brand', value: '' },
+      { name: 'Model', value: '' },
+      { name: 'Category', value: '' }
+    ];
     this.filteredVariations = [...this.allVariations];
   }
 
@@ -137,17 +167,17 @@ export class AddInventoryComponent implements OnInit {
     // Trigger filtering when user types
   }
   
-  selectWarehouse(warehouse: any) {
+  selectWarehouse(warehouse: WarehouseResponse) {
     this.selectedWarehouse = warehouse;
     this.warehouseSearchTerm = warehouse.name;
-    this.inventoryForm.patchValue({ warehouseName: warehouse.value });
+    this.inventoryForm.patchValue({ warehouseName: warehouse.id });
     this.showWarehouseDropdown = false;
   }
   
-  selectProduct(product: any) {
+  selectProduct(product: ProductApiModel) {
     this.selectedProduct = product;
     this.productSearchTerm = product.name;
-    this.inventoryForm.patchValue({ prodcut: product.value });
+    this.inventoryForm.patchValue({ prodcut: product.id });
     this.showProductDropdown = false;
   }
   
@@ -178,13 +208,32 @@ export class AddInventoryComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.inventoryForm.valid && this.selectedVariations.length > 0) {
-      const formData = {
-        ...this.inventoryForm.value,
-        variations: this.selectedVariations
+    if (this.inventoryForm.valid && this.selectedVariations.length > 0 && this.selectedWarehouse && this.selectedProduct) {
+      this.loading = true;
+      
+      // For now, we'll use the first selected variation as the product variation
+      // In a real implementation, you'd need to create or find the product variation
+      const firstVariation = this.selectedVariations[0];
+      
+      const addInventoryRequest: AddInventoryRequest = {
+        warehouseId: this.selectedWarehouse.id,
+        productId: this.selectedProduct.id,
+        productVariationId: 1, // This should be the actual variation ID from the API
+        quantity: parseInt(this.inventoryForm.value.quantity),
+        notes: `Variations: ${this.selectedVariations.map(v => `${v.name}: ${v.value}`).join(', ')}`
       };
-      console.log('Form submitted:', formData);
-      // Add your submission logic here
+
+      this.warehouseInventoryService.addInventory(addInventoryRequest).subscribe({
+        next: (response) => {
+          console.log('Inventory added successfully:', response);
+          this.loading = false;
+          this.router.navigate(['/warehouse']);
+        },
+        error: (error) => {
+          console.error('Error adding inventory:', error);
+          this.loading = false;
+        }
+      });
     } else {
       console.log('Form is invalid or no variations selected');
     }
