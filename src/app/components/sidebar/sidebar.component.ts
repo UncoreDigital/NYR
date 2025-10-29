@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
 export class SidebarComponent implements OnInit {
   isInventoryOpen = false;
   isSettingsOpen = false;
+  isRoutesOpen = false;
   isMobileMenuOpen = false;
 
   menuItems = [
@@ -28,6 +29,11 @@ export class SidebarComponent implements OnInit {
     { icon: 'warehouse', label: 'Warehouse', route: '/inwarehouse', active: false },
     { icon: 'local_shipping', label: 'Vans', route: '/invans', active: false },
     { icon: 'location_on', label: 'Locations', route: '/inlocation', active: false },
+  ];
+
+  routesItems = [
+    { icon: 'list', label: 'All Routes', route: '/routes', active: false },
+    { icon: 'add_road', label: 'Create New Route', route: '/crate-route', active: false },
   ];
 
   settingsItems = [
@@ -76,17 +82,28 @@ export class SidebarComponent implements OnInit {
 
   toggleInventory(): void {
     this.isInventoryOpen = !this.isInventoryOpen;
-    // Close settings when opening inventory
+    // Close other menus when opening inventory
     if (this.isInventoryOpen) {
       this.isSettingsOpen = false;
+      this.isRoutesOpen = false;
     }
   }
 
   toggleSettings(): void {
     this.isSettingsOpen = !this.isSettingsOpen;
-    // Close inventory when opening settings
+    // Close other menus when opening settings
     if (this.isSettingsOpen) {
       this.isInventoryOpen = false;
+      this.isRoutesOpen = false;
+    }
+  }
+
+  toggleRoutes(): void {
+    this.isRoutesOpen = !this.isRoutesOpen;
+    // Close other menus when opening routes
+    if (this.isRoutesOpen) {
+      this.isInventoryOpen = false;
+      this.isSettingsOpen = false;
     }
   }
 
@@ -96,6 +113,7 @@ export class SidebarComponent implements OnInit {
     // Reset all active states
     this.menuItems.forEach(item => item.active = false);
     this.inventoryItems.forEach(item => item.active = false);
+    this.routesItems.forEach(item => item.active = false);
     this.settingsItems.forEach(item => item.active = false);
 
     // Check inventory items first
@@ -113,6 +131,25 @@ export class SidebarComponent implements OnInit {
       }
       // Keep inventory menu open
       this.isInventoryOpen = true;
+      return;
+    }
+
+    // Check routes items
+    const activeRoutesItem = this.routesItems.find(item => 
+      currentUrl.includes(item.route) || 
+      (item.route === '/routes' && currentUrl === '/routes') ||
+      (item.route === '/crate-route' && currentUrl.includes('/crate-route'))
+    );
+
+    if (activeRoutesItem) {
+      activeRoutesItem.active = true;
+      // Find and activate the routes parent menu
+      const routesMenuItem = this.menuItems.find(item => item.label === 'Routes');
+      if (routesMenuItem) {
+        routesMenuItem.active = true;
+      }
+      // Keep routes menu open
+      this.isRoutesOpen = true;
       return;
     }
 
