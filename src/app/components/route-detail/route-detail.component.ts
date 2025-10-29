@@ -35,7 +35,7 @@ export interface Customer {
   styleUrl: './route-detail.component.css'
 })
 export class RouteDetailComponent implements OnInit {
-  displayedColumns: string[] = ['stop', 'deliveryDate', 'location', 'inventoryItem', 'shippingItem', 'actions'];
+  displayedColumns: string[] = ['stop', 'location', 'inventoryItem', 'shippingItem', 'actions'];
   dataSource = new MatTableDataSource<routeDetail>();
 
   // Modal properties
@@ -63,6 +63,12 @@ export class RouteDetailComponent implements OnInit {
     { stop: 'Stop 12', deliveryDate: '2023-10-12', location: 'Jacksonville, FL', inventoryItem: '5 Items', shippingItem: '2 Items' },
   ];
   showRouteDetail = false;
+
+  // Route summary properties
+  totalStops = 3;
+  totalDistance = '20 Miles';
+  totalTime = '1.5 Hrs';
+  deliveryDate = 'Oct 30, 2025';
 
   constructor(private router: Router) { }
 
