@@ -188,7 +188,7 @@ export class TransfersComponent implements OnInit {
 
   saveFollowUp() {
     this.showFollowUpModal = false;
-    this.router.navigate(['/routes']);
+    this.router.navigate(['/transfers']);
   }
 
   transferDetail(iconName: string) {
