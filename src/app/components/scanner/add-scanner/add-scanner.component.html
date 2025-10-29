@@ -1,0 +1,115 @@
+<div class="page-layout">
+    <app-sidebar></app-sidebar>
+    <div class="main-content">
+        <app-header></app-header>
+        <div class="content">
+
+            <!-- Breadcrumb -->
+            <div class="breadcrumb flex items-center space-x-2 text-gray-600">
+                <a routerLink="/scanner" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Settings
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <a routerLink="/scanner" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Scanner
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <span class="breadcrumb-item text-gray-800 font-semibold active">
+                    {{ isEditMode ? 'Edit Scanner' : 'Add Scanner' }}
+                </span>
+            </div>
+
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>{{ isEditMode ? 'Edit Scanner' : 'Add Scanner' }}</h1>
+            </div>
+
+            <!-- Loading Spinner for Edit Mode -->
+            <div *ngIf="isLoading" class="loading-container">
+                <mat-spinner diameter="50"></mat-spinner>
+                <p>Loading scanner data...</p>
+            </div>
+
+            <div class="table-container" *ngIf="!isLoading">
+                <form [formGroup]="scannerForm" class="user-form" (ngSubmit)="onSubmit()">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Scanner Id*</label>
+                            <input formControlName="scannerId" type="text" placeholder="Enter Scanner Id" />
+                            <div *ngIf="scannerForm.get('scannerId')?.invalid && scannerForm.get('scannerId')?.touched"
+                                class="error-message">
+                                Scanner Id is required
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Scanner Name*</label>
+                            <input formControlName="scannerName" type="text" placeholder="Enter Scanner Name" />
+                            <div *ngIf="scannerForm.get('scannerName')?.invalid && scannerForm.get('scannerName')?.touched"
+                                class="error-message">
+                                Scanner Name is required
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Select Location</label>
+                            <div class="custom-select-container">
+                                <div class="search-wrapper">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input type="text" class="search-input" [(ngModel)]="locationSearchTerm"
+                                        [ngModelOptions]="{standalone: true}"
+                                        placeholder="Search and Select Location..."
+                                        (focus)="showLocationDropdown = true" (blur)="hideLocationDropdown()"
+                                        (input)="filterLocations()">
+                                    <button type="button" class="clear-button" *ngIf="selectedLocation"
+                                        (click)="clearLocation()" title="Clear selection">
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list"
+                                    *ngIf="showLocationDropdown && getFilteredLocations().length > 0">
+                                    <div class="dropdown-item" *ngFor="let location of getFilteredLocations()"
+                                        (mousedown)="selectLocation(location)"
+                                        [class.selected]="selectedLocation?.value === location.value">
+                                        {{location.name}}
+                                    </div>
+                                </div>
+                                <div class="dropdown-list"
+                                    *ngIf="showLocationDropdown && getFilteredLocations().length === 0">
+                                    <div class="dropdown-item no-results">No locations found</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+                            <span *ngIf="!isSaving">Save</span>
+                            <span *ngIf="isSaving">Saving...</span>
+                        </button>
+                        <button type="reset" class="btn btn-outline" [disabled]="isSaving"
+                            (click)="onCancel()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop" *ngIf="showSuccess">
+    <div class="modal-success">
+        <div class="modal-icon">
+            <mat-icon>check_circle</mat-icon>
+        </div>
+        <div class="modal-message">
+            <h2>Scanner has been successfully {{ isEditMode ? 'updated' : 'added' }}.</h2>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" (click)="addAnotherScanner()" *ngIf="!isEditMode">Add Another
+                Scanner</button>
+            <button class="btn btn-outline" (click)="goToScannersList()">Go to Scanners List</button>
+        </div>
+    </div>
+</div>

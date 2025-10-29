@@ -34,6 +34,8 @@ import { TransferLocationComponent } from './components/transfer-location/transf
 import { AuthGuard } from './guards/auth.guard';
 import { RoleGuard } from './guards/role.guard';
 import { InventoryDetailComponent } from './components/inventory-detail/inventory-detail.component';
+import { ScannerComponent } from './components/scanner/scanner.component';
+import { AddScannerComponent } from './components/scanner/add-scanner/add-scanner.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -226,7 +228,21 @@ const routes: Routes = [
     component: InventoryDetailComponent,
     canActivate: [AuthGuard] 
   },
-
+  { 
+    path: 'scanner', 
+    component: ScannerComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'scanner/add', 
+    component: AddScannerComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'scanner/edit/:id', 
+    component: AddScannerComponent, 
+    canActivate: [AuthGuard] 
+  },
   { path: '**', redirectTo: '/login' }
 ];
 

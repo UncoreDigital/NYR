@@ -53,6 +53,8 @@ import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { AddSupplierComponent } from './components/supplier/add-supplier/add-supplier.component';
 import { AddWarehouseComponent } from './components/warehouse/add-warehouse/add-warehouse.component';
 import { AddInventoryComponent } from './components/inventory-warehouse/add-inventory/add-inventory.component';
+import { ScannerComponent } from './components/scanner/scanner.component';
+import { AddScannerComponent } from './components/scanner/add-scanner/add-scanner.component';
 
 @NgModule({
   declarations: [
@@ -87,7 +89,9 @@ import { AddInventoryComponent } from './components/inventory-warehouse/add-inve
     AddProductComponent,
     AddSupplierComponent,
     AddWarehouseComponent,
-    AddInventoryComponent
+    AddInventoryComponent,
+    ScannerComponent,
+    AddScannerComponent
   ],
   imports: [
     BrowserModule,

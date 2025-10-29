@@ -44,7 +44,8 @@ export class SidebarComponent implements OnInit {
     { icon: 'group', label: 'Users', route: '/users', active: false },
     { icon: 'business', label: 'Supplier', route: '/supplier', active: false },
     { icon: 'local_shipping', label: 'Van', route: '/van', active: false },
-    { icon: 'warehouse', label: 'Warehouse', route: '/warehouse', active: false }
+    { icon: 'warehouse', label: 'Warehouse', route: '/warehouse', active: false },
+    { icon: 'scanner', label: 'Scanner', route: '/scanner', active: false }
   ];
 
   constructor(private router: Router) {}
