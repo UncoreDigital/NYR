@@ -194,10 +194,10 @@ export class CreateRouteComponent implements OnInit {
     this.isAllSelected = false;
   }
 
-  onDriverOptionChange(event: any) {
-    this.selectedDriverOption = event.target.value;
-    this.selectedDriver = '';
-  }
+  // onDriverOptionChange(event: any) {
+  //   this.selectedDriverOption = event.target.value;
+  //   this.selectedDriver = '';
+  // }
 
   // Driver dropdown methods
   getFilteredDrivers() {
