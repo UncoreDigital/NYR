@@ -18,10 +18,28 @@
 
             <!-- Search Bar -->
             <div class="search-section">
-                <div class="search-container">
+                <div class="filter-container">
+                    <div class="filter-group">
+                        <button mat-icon-button style="height: 24px; width: 18px;">
+                            <img class="imgFilter" src="./assets/filter.png" alt="Filter" />
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <mat-select class="select-filter" placeholder="Driver Name" [(value)]="selectedDriverName"
+                            (selectionChange)="onWarehouseNameFilterChange()">
+                            <mat-option class="select-option" value="">Driver</mat-option>
+                            <mat-option class="select-option" *ngFor="let driver of getFilteredDrivers()"
+                                [value]="driver.name">{{driver.name}}</mat-option>
+                        </mat-select>
+                    </div>
+                    <button class="reset-filter-btn" (click)="resetFilters()">
+                        <mat-icon>refresh</mat-icon>
+                        Reset Filter
+                    </button>
+                </div>
+                <!-- <div class="search-container">
                     <mat-icon class="search-icon">search</mat-icon>
                     <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)">
-                </div>
+                </div> -->
                 <button class="btn btn-primary" (click)="createRoute()">
                     Create
                 </button>
@@ -30,7 +48,7 @@
             <!-- Van Table -->
             <div class="table-container">
                 <table mat-table [dataSource]="dataSource" matSort class="customer-table">
-                    <ng-container matColumnDef="select">
+                    <!-- <ng-container matColumnDef="select">
                         <th mat-header-cell *matHeaderCellDef>
                             <input type="checkbox" class="checkbox-select-all" [checked]="isAllSelectedCheckbox()"
                                 (change)="masterToggle()">
@@ -39,22 +57,27 @@
                             <input type="checkbox" class="checkbox-row" [checked]="isRowSelected(route)"
                                 (change)="toggleRowSelection(route)">
                         </td>
-                    </ng-container>
+                    </ng-container> -->
 
                     <ng-container matColumnDef="locationName">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>DRIVER NAME</th>
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>LOCATION NAME</th>
                         <td mat-cell *matCellDef="let route">{{route.locationName}}</td>
                     </ng-container>
 
                     <ng-container matColumnDef="locationAddress">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>TOTAL STOPS</th>
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>LOCATION ADDRESS</th>
                         <td mat-cell *matCellDef="let route">{{route.locationAddress}}</td>
                     </ng-container>
 
-                    <ng-container matColumnDef="driverName">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>SHIPPING DATE</th>
-                        <td mat-cell *matCellDef="let route">{{route.driverName}}</td>
+                    <ng-container matColumnDef="totalStops">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>TOTAL STOPS</th>
+                        <td mat-cell *matCellDef="let route">{{route.totalStops}}</td>
                     </ng-container>
+
+                    <!-- <ng-container matColumnDef="driverName">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>SHIPPING DATE</th>
+                        <td mat-cell *matCellDef="let route">{{route.shippingDate}}</td>
+                    </ng-container> -->
 
                     <ng-container matColumnDef="status">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header>STATUS</th>
@@ -86,8 +109,9 @@
             <div class="driver-assignment-section">
                 <div class="radio-group" style="margin-bottom: 20px;">
                     <label class="radio-option mr-15">
-                        <input type="radio" name="driverAssignment" value="preAssigned" (change)="onDriverOptionChange($event)"
-                            [(ngModel)]="selectedDriverOption" class="radio-input mr-2">
+                        <input type="radio" name="driverAssignment" value="preAssigned"
+                            (change)="onDriverOptionChange($event)" [(ngModel)]="selectedDriverOption"
+                            class="radio-input mr-2">
                         <span class="radio-label">Pre Assigned Drivers</span>
                     </label>
 
@@ -106,26 +130,18 @@
                     <div class="custom-select-container">
                         <div class="search-wrapper">
                             <mat-icon class="search-icon">search</mat-icon>
-                            <input type="text" 
-                                   class="search-input" 
-                                   [(ngModel)]="driverSearchTerm" 
-                                   placeholder="Search and select driver..."
-                                   (focus)="showDriverDropdown = true"
-                                   (blur)="hideDriverDropdown()"
-                                   (input)="filterDrivers()">
-                            <button type="button" 
-                                    class="clear-button" 
-                                    *ngIf="selectedDriverObj"
-                                    (click)="clearDriver()"
-                                    title="Clear selection">
+                            <input type="text" class="search-input" [(ngModel)]="driverSearchTerm"
+                                placeholder="Search and select driver..." (focus)="showDriverDropdown = true"
+                                (blur)="hideDriverDropdown()" (input)="filterDrivers()">
+                            <button type="button" class="clear-button" *ngIf="selectedDriverObj" (click)="clearDriver()"
+                                title="Clear selection">
                                 <mat-icon>close</mat-icon>
                             </button>
                         </div>
                         <div class="dropdown-list" *ngIf="showDriverDropdown && getFilteredDrivers().length > 0">
-                            <div class="dropdown-item" 
-                                 *ngFor="let driver of getFilteredDrivers()"
-                                 (mousedown)="selectDriver(driver)"
-                                 [class.selected]="selectedDriverObj?.value === driver.value">
+                            <div class="dropdown-item" *ngFor="let driver of getFilteredDrivers()"
+                                (mousedown)="selectDriver(driver)"
+                                [class.selected]="selectedDriverObj?.value === driver.value">
                                 {{driver.name}}
                             </div>
                         </div>

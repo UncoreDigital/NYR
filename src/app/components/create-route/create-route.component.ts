@@ -11,6 +11,7 @@ export interface CreateRoutes {
   driverName: string;
   status: string;
   selected?: boolean;
+  shippingDate: string;
 }
 
 @Component({
@@ -19,7 +20,7 @@ export interface CreateRoutes {
   styleUrl: './create-route.component.css'
 })
 export class CreateRouteComponent implements OnInit {
-  displayedColumns: string[] = ['select', 'locationName', 'locationAddress', 'driverName', 'status'];
+  displayedColumns: string[] = ['locationName', 'locationAddress', 'status'];
   dataSource = new MatTableDataSource<CreateRoutes>();
   selectedItems: CreateRoutes[] = [];
   isAllSelected = false;
@@ -28,22 +29,22 @@ export class CreateRouteComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   createRoutes: CreateRoutes[] = [
-    { id: 1, locationName: 'Location A', locationAddress: '123 Main St, Cityville', driverName: 'John Doe', status: 'Low Inventory' },
-    { id: 2, locationName: 'Location B', locationAddress: '456 Oak St, Townsville', driverName: 'Jane Smith', status: 'Restock Requested' },
-    { id: 3, locationName: 'Location C', locationAddress: '789 Pine St, Villageville', driverName: 'Mike Johnson', status: 'Follow Up' },
-    { id: 4, locationName: 'Location D', locationAddress: '101 Maple St, Hamletville', driverName: 'Emily Davis', status: 'Low Inventory' },
-    { id: 5, locationName: 'Location E', locationAddress: '202 Birch St, Boroughville', driverName: 'David Wilson', status: 'Restock Requested' },
-    { id: 6, locationName: 'Location F', locationAddress: '303 Cedar St, Metropolis', driverName: 'Sarah Brown', status: 'Restock Requested' },
-    { id: 7, locationName: 'Location G', locationAddress: '404 Spruce St, Capital City', driverName: 'Chris Lee', status: 'Low Inventory' },
-    { id: 8, locationName: 'Location H', locationAddress: '505 Elm St, Smalltown', driverName: 'Anna White', status: 'Low Inventory' },
-    { id: 9, locationName: 'Location I', locationAddress: '606 Willow St, Bigcity', driverName: 'Tom Harris', status: 'Restock  Requested' },
-    { id: 10, locationName: 'Location J', locationAddress: '707 Ash St, Uptown', driverName: 'Laura Martin', status: 'Low Inventory' },
-    { id: 11, locationName: 'Location K', locationAddress: '808 Chestnut St, Downtown', driverName: 'James Clark', status: 'Follow Up' },
-    { id: 12, locationName: 'Location L', locationAddress: '909 Walnut St, Riverside', driverName: 'Olivia Lewis', status: 'Follow Up' },
+    { id: 1, shippingDate: '2023-10-01', locationName: 'Location A', locationAddress: '123 Main St, Cityville', driverName: 'John Doe', status: 'Low Inventory' },
+    { id: 2, shippingDate: '2023-10-02', locationName: 'Location B', locationAddress: '456 Oak St, Townsville', driverName: 'Jane Smith', status: 'Restock Requested' },
+    { id: 3, shippingDate: '2023-10-03', locationName: 'Location C', locationAddress: '789 Pine St, Villageville', driverName: 'Mike Johnson', status: 'Follow Up' },
+    { id: 4, shippingDate: '2023-10-04', locationName: 'Location D', locationAddress: '101 Maple St, Hamletville', driverName: 'Emily Davis', status: 'Low Inventory' },
+    { id: 5, shippingDate: '2023-10-05', locationName: 'Location E', locationAddress: '202 Birch St, Boroughville', driverName: 'David Wilson', status: 'Restock Requested' },
+    { id: 6, shippingDate: '2023-10-06', locationName: 'Location F', locationAddress: '303 Cedar St, Metropolis', driverName: 'Sarah Brown', status: 'Restock Requested' },
+    { id: 7, shippingDate: '2023-10-07', locationName: 'Location G', locationAddress: '404 Spruce St, Capital City', driverName: 'Chris Lee', status: 'Low Inventory' },
+    { id: 8, shippingDate: '2023-10-08', locationName: 'Location H', locationAddress: '505 Elm St, Smalltown', driverName: 'Anna White', status: 'Low Inventory' },
+    { id: 9, shippingDate: '2023-10-09', locationName: 'Location I', locationAddress: '606 Willow St, Bigcity', driverName: 'Tom Harris', status: 'Restock  Requested' },
+    { id: 10, shippingDate: '2023-10-10', locationName: 'Location J', locationAddress: '707 Ash St, Uptown', driverName: 'Laura Martin', status: 'Low Inventory' },
+    { id: 11, shippingDate: '2023-10-11', locationName: 'Location K', locationAddress: '808 Chestnut St, Downtown', driverName: 'James Clark', status: 'Follow Up' },
+    { id: 12, shippingDate: '2023-10-12', locationName: 'Location L', locationAddress: '909 Walnut St, Riverside', driverName: 'Olivia Lewis', status: 'Follow Up' },
   ];
   selectedDate: string = new Date().toISOString().split('T')[0];
   selectedDriver: string = '';
-  drivers: string[] = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Emily Davis', 'David Wilson'];
+  // drivers: string[] = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Emily Davis', 'David Wilson'];
   selectedDriverOption: string = 'preAssigned';
   showCreateModal: boolean = false;
 
@@ -51,20 +52,28 @@ export class CreateRouteComponent implements OnInit {
   driverSearchTerm: string = '';
   showDriverDropdown: boolean = false;
   selectedDriverObj: any = null;
-  
+  selectedDriverName: any = "";
+  selectedWarehouseName: string = '';
+  searchTerm: string = '';
+
   // Driver data array
   driverOptions = [
-    { value: 'driver1', name: 'Driver 1' },
-    { value: 'driver2', name: 'Driver 2' },
-    { value: 'driver3', name: 'Driver 3' },
-    { value: 'driver4', name: 'Driver 4' },
-    { value: 'driver5', name: 'Driver 5' }
+    { value: 'John Doe', name: 'John Doe' },
+    { value: 'Jane Smith', name: 'Jane Smith' },
+    { value: 'Mike Johnson', name: 'Mike Johnson' },
+    { value: 'Emily Davis', name: 'Emily Davis' },
+    { value: 'David Wilson', name: 'David Wilson' }
   ];
+
+  // Unique warehouse names for filter
+  warehouseNames: string[] = ['Warehouse A', 'Warehouse B', 'Warehouse C', 'Warehouse D'];
 
   constructor(private router: Router) { }
 
   ngOnInit(): void {
     this.dataSource.data = this.createRoutes;
+    this.selectedDriverName = this.driverOptions?.[0].value;
+    this.applyFilter();
   }
 
   ngAfterViewInit() {
@@ -72,9 +81,40 @@ export class CreateRouteComponent implements OnInit {
     this.dataSource.sort = this.sort;
   }
 
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
+  applyFilter(event?: Event) {
+    let filterValue = '';
+    if (event) {
+      filterValue = (event.target as HTMLInputElement).value;
+      this.searchTerm = filterValue;
+    } else {
+      filterValue = this.selectedDriverName || '';
+    }
     this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.applyWarehouseFilter();
+  }
+
+  applyWarehouseFilter() {
+    let filteredData = this.createRoutes;
+    
+    // Apply warehouse name filter
+    if (this.selectedWarehouseName) {
+      filteredData = filteredData.filter(route => 
+        route.locationName.toLowerCase().includes(this.selectedWarehouseName.toLowerCase())
+      );
+    }
+    
+    // Apply search term filter
+    if (this.searchTerm) {
+      const searchLower = this.searchTerm.toLowerCase();
+      filteredData = filteredData.filter(route =>
+        route.locationName.toLowerCase().includes(searchLower) ||
+        route.locationAddress.toLowerCase().includes(searchLower) ||
+        route.driverName.toLowerCase().includes(searchLower) ||
+        route.status.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    this.dataSource.data = filteredData;
   }
 
   createRoute() {
@@ -119,7 +159,7 @@ export class CreateRouteComponent implements OnInit {
 
   masterToggle() {
     this.isAllSelected = this.isAllSelectedCheckbox();
-    
+
     if (this.isAllSelected) {
       this.selectedItems = [];
     } else {
@@ -164,7 +204,7 @@ export class CreateRouteComponent implements OnInit {
     if (!this.driverSearchTerm.trim()) {
       return this.driverOptions;
     }
-    return this.driverOptions.filter(driver => 
+    return this.driverOptions.filter(driver =>
       driver.name.toLowerCase().includes(this.driverSearchTerm.toLowerCase())
     );
   }
@@ -194,5 +234,22 @@ export class CreateRouteComponent implements OnInit {
     this.selectedDriverObj = null;
     this.driverSearchTerm = '';
     this.showDriverDropdown = false;
+  }
+
+  resetFilters() {
+    this.selectedWarehouseName = '';
+    this.searchTerm = '';
+    this.selectedDriverName = '';
+    this.dataSource.data = this.createRoutes;
+    this.dataSource.filter = '';
+  }
+
+  getUniqueWarehouseNames(): string[] {
+    return this.warehouseNames;
+  }
+
+  onWarehouseNameFilterChange() {
+    this.selectedWarehouseName = this.selectedDriverName;
+    this.applyWarehouseFilter();
   }
 }
