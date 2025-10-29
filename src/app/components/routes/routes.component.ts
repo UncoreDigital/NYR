@@ -115,10 +115,6 @@ export class RoutesComponent implements OnInit {
     this.applyFilters();
   }
 
-  createRoute() {
-    this.router.navigate(['/crate-route']);
-  }
-
   viewMap(route: Routes) {
     // Navigate to route map page with route data
     this.router.navigate(['/route-map'], {
