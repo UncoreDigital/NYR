@@ -18,8 +18,8 @@ export class SidebarComponent implements OnInit {
   menuItems = [
     { icon: 'home', label: 'Dashboard', route: '/dashboard', active: false },
     { icon: 'inventory_2', label: 'Inventory', route: '/inventory', active: false },
-    { icon: 'route', label: 'Routes', route: '/routes', active: false },
     { icon: 'swap_horiz', label: 'Transfers', route: '/transfers', active: false },
+    { icon: 'route', label: 'Routes', route: '/routes', active: false },
     // { icon: 'analytics', label: 'Tracking & Analytics', route: '/analytics', active: false },
     { icon: 'inventory', label: 'Supplies', route: '/supplies', active: false },
   ];
