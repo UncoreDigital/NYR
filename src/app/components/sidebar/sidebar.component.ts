@@ -32,8 +32,8 @@ export class SidebarComponent implements OnInit {
   ];
 
   routesItems = [
-    { icon: 'list', label: 'All Routes', route: '/routes', active: false },
     { icon: 'add_road', label: 'Create New Route', route: '/crate-route', active: false },
+    { icon: 'list', label: 'All Routes', route: '/routes', active: false },
   ];
 
   settingsItems = [
