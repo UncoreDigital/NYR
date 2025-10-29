@@ -24,18 +24,18 @@ export class RoutesComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   routes: Routes[] = [
-    { driverName: 'John Doe', totalStops: '5', shippingDate: '2023-10-01', status: 'In Transit' },
-    { driverName: 'Jane Smith', totalStops: '3', shippingDate: '2023-10-02', status: 'Delivered' },
-    { driverName: 'Mike Johnson', totalStops: '4', shippingDate: '2023-10-03', status: 'Pending' },
-    { driverName: 'Emily Davis', totalStops: '6', shippingDate: '2023-10-04', status: 'In Transit' },
-    { driverName: 'David Wilson', totalStops: '2', shippingDate: '2023-10-05', status: 'Delivered' },
-    { driverName: 'Sarah Brown', totalStops: '7', shippingDate: '2023-10-06', status: 'Pending' },
-    { driverName: 'Chris Lee', totalStops: '5', shippingDate: '2023-10-07', status: 'In Transit' },
-    { driverName: 'Anna White', totalStops: '4', shippingDate: '2023-10-08', status: 'Delivered' },
-    { driverName: 'Tom Harris', totalStops: '3', shippingDate: '2023-10-09', status: 'Pending' },
-    { driverName: 'Laura Martin', totalStops: '6', shippingDate: '2023-10-10', status: 'In Transit' },
-    { driverName: 'James Clark', totalStops: '2', shippingDate: '2023-10-11', status: 'Delivered' },
-    { driverName: 'Olivia Lewis', totalStops: '5', shippingDate: '2023-10-12', status: 'Pending' },
+    { driverName: 'John Doe', totalStops: '5', shippingDate: '2023-10-01', status: 'In Progress' },
+    { driverName: 'Jane Smith', totalStops: '3', shippingDate: '2023-10-02', status: 'Completed' },
+    { driverName: 'Mike Johnson', totalStops: '4', shippingDate: '2023-10-03', status: 'Not Started' },
+    { driverName: 'Emily Davis', totalStops: '6', shippingDate: '2023-10-04', status: 'In Progress' },
+    { driverName: 'David Wilson', totalStops: '2', shippingDate: '2023-10-05', status: 'Completed' },
+    { driverName: 'Sarah Brown', totalStops: '7', shippingDate: '2023-10-06', status: 'Not Started' },
+    { driverName: 'Chris Lee', totalStops: '5', shippingDate: '2023-10-07', status: 'In Progress' },
+    { driverName: 'Anna White', totalStops: '4', shippingDate: '2023-10-08', status: 'Completed' },
+    { driverName: 'Tom Harris', totalStops: '3', shippingDate: '2023-10-09', status: 'Not Started' },
+    { driverName: 'Laura Martin', totalStops: '6', shippingDate: '2023-10-10', status: 'In Progress' },
+    { driverName: 'James Clark', totalStops: '2', shippingDate: '2023-10-11', status: 'Completed' },
+    { driverName: 'Olivia Lewis', totalStops: '5', shippingDate: '2023-10-12', status: 'Not Started' },
   ];
 
   filteredRoutes: Routes[] = [];
@@ -126,5 +126,32 @@ export class RoutesComponent implements OnInit {
         status: route.status
       }
     });
+  }
+
+   getStatusClass(status: string): string {
+    const classMap: { [key: string]: string } = {
+      'Completed': 'status-delivered',
+      'In Progress': 'status-in-transit',
+      'Not Started': 'status-default'};
+    return classMap[status] || 'status-default';
+  }
+
+  getStatusIcon(status: string): string {
+    const iconMap: { [key: string]: string } = {
+      'Completed ': 'visibility',
+      'in-transit': 'visibility',
+      'Not Started': ''
+    };
+    return iconMap[status] || '';
+  }
+
+  
+  // Status methods
+  getStatusDisplayText(status: string): string {
+    const statusMap: { [key: string]: string } = {
+      'delivered': 'Completed',
+      'in-transit': 'In Progress',
+      'Not Started': 'Not Started'};
+    return statusMap[status] || status;
   }
 }
