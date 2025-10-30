@@ -285,12 +285,14 @@ body {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 16px;
+  /* padding: 16px; */
+  padding: 8px;
   border-bottom: 1px solid #e5e7eb;
 }
 
 .customer-table td {
-  padding: 16px;
+  padding: 8px;
+  /* padding: 16px; */
   border-bottom: 1px solid #f3f4f6;
   color: #374151;
   font-size: 14px;
@@ -984,4 +986,7 @@ input[type="time"]:disabled {
 }
 .select-option {
   font-size: 14px !important;
+}
+.mat-mdc-paginator-container {
+  min-height: 0px !important;
 }
