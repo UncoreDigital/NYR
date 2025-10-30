@@ -1,7 +1,10 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { CommonModule } from '@angular/common';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 
@@ -74,7 +77,8 @@ export class RouteDetailComponent implements OnInit {
   // Properties for received data from create-route
   selectedLocations: any[] = [];
   routeCreationData: any = {};
-
+  // View toggle properties
+  currentView: 'table' | 'map' = 'table';
   constructor(private router: Router, private location: Location) { }
 
   ngOnInit(): void {
@@ -268,6 +272,11 @@ export class RouteDetailComponent implements OnInit {
 
   closeRouteDetail() {
     this.showRouteDetail = false;
+  }
+
+  // View toggle methods
+  switchView(view: 'table' | 'map') {
+    this.currentView = view;
   }
 
 }

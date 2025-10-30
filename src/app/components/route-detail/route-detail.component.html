@@ -77,6 +77,26 @@
                         </div>
                     </div>
                 </div>
+                <div class="view-toggle-section">
+                    <div class="toggle-buttons">
+                        <button 
+                            class="toggle-btn" 
+                            [class.active]="currentView === 'table'" 
+                            (click)="switchView('table')"
+                            matTooltip="Table View"
+                            matTooltipPosition="below">
+                            <mat-icon>table_view</mat-icon>
+                        </button>
+                        <button 
+                            class="toggle-btn" 
+                            [class.active]="currentView === 'map'" 
+                            (click)="switchView('map')"
+                            matTooltip="Map View"
+                            matTooltipPosition="below">
+                            <mat-icon>map</mat-icon>
+                        </button>
+                    </div>
+                </div>
                 <div class="button-group">
                     <!-- <button class="btn btn-primary mr-15 viewIcon" title="View" (click)="openRouteDetail()">
                         <mat-icon>visibility</mat-icon>
@@ -86,7 +106,7 @@
                 </div>
             </div>
 
-            <div class="table-container">
+            <div class="table-container" *ngIf="currentView === 'table'">
                 <table mat-table [dataSource]="dataSource" matSort class="customer-table">
                     <ng-container matColumnDef="stop">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header>STOP</th>
@@ -136,6 +156,11 @@
                 <!-- Paginator -->
                 <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons class="table-paginator">
                 </mat-paginator>
+            </div>
+
+            <!-- Map View -->
+            <div class="map-container" *ngIf="currentView === 'map'">
+                <app-route-map></app-route-map>
             </div>
         </div>
     </div>
