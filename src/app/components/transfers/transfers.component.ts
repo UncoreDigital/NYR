@@ -28,7 +28,7 @@ export class TransfersComponent implements OnInit {
     { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '17 Jun 2025', driver: 'Nick Danil', status: 'delivered' },
     { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '17 Jun 2025', driver: 'Nick Danil', status: 'delivered' },
     { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '17 Jun 2025', driver: 'Nick Danil', status: 'in-transit' },
-    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'follow-up' },
+    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'follow-up-requested' },
     { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'follow-up-completed' },
     { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'follow-up-completed' },
     { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'driver-assigned' },
@@ -153,7 +153,7 @@ export class TransfersComponent implements OnInit {
     const statusMap: { [key: string]: string } = {
       'delivered': 'Delivered',
       'in-transit': 'In transit',
-      'follow-up': 'Follow up',
+      'follow-up-requested': 'Follow up requested',
       'follow-up-completed': 'Follow up completed',
       'driver-assigned': 'Driver Assigned'
     };
