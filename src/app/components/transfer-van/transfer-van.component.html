@@ -6,19 +6,27 @@
 
             <!-- Breadcrumb -->
             <div class="breadcrumb flex items-center space-x-2 text-gray-600">
-                <!-- <a routerLink="/invans" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
-                    Inventory
-                </a>
-                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon> -->
+                <!-- Breadcrumb when coming from Transfers -->
+                <ng-container *ngIf="isFromTransfers">
+                    <a routerLink="/transfers" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                        Transfers
+                    </a>
+                    <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+                    <span class="breadcrumb-item text-gray-800 font-semibold active">
+                        Transfer To Van
+                    </span>
+                </ng-container>
 
-                <a routerLink="/invans" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
-                    Vans
-                </a>
-                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
-
-                <span class="breadcrumb-item text-gray-800 font-semibold active">
-                    Transfer To Van
-                </span>
+                <!-- Default breadcrumb when coming from Vans or other pages -->
+                <ng-container *ngIf="!isFromTransfers">
+                    <a routerLink="/invans" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                        Vans
+                    </a>
+                    <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+                    <span class="breadcrumb-item text-gray-800 font-semibold active">
+                        Transfer To Van
+                    </span>
+                </ng-container>
             </div>
 
 

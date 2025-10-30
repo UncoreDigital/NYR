@@ -1,13 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-transfer-van',
   templateUrl: './transfer-van.component.html',
   styleUrl: './transfer-van.component.css'
 })
-export class TransferVanComponent {
+export class TransferVanComponent implements OnInit {
   vanForm: FormGroup;
   startTime: string = '';
   endTime: string = '';
@@ -16,6 +16,9 @@ export class TransferVanComponent {
   scannedItems: Array<{ index: number; productName: string; sku: string } > = [];
   manualAdjustmentCount: number = 1;
   scanReason: string = '';
+
+  // Navigation state
+  isFromTransfers: boolean = false;
 
   // Search terms for dropdowns
   vanSearchTerm: string = '';
@@ -46,7 +49,7 @@ export class TransferVanComponent {
     { value: 'product5', name: 'Product 5' }
   ];
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(private fb: FormBuilder, private router: Router, private route: ActivatedRoute) {
     this.selectedTransferOption = 'scan';
     this.vanForm = this.fb.group({
       van: ['', Validators.required],
@@ -60,6 +63,15 @@ export class TransferVanComponent {
       { index: 2, productName: 'Cervical Collar', sku: 'MD-001' },
       { index: 3, productName: 'Cervical Collar', sku: 'MD-001' }
     ];
+  }
+
+  ngOnInit() {
+    // Check query parameters to determine navigation source
+    this.route.queryParams.subscribe(params => {
+      if (params['from'] === 'transfers') {
+        this.isFromTransfers = true;
+      }
+    });
   }
 
   onSubmit() {

@@ -198,7 +198,7 @@ export class TransfersComponent implements OnInit {
   }
 
   transferToVan() {
-    this.router.navigate(['/tovan']);
+    this.router.navigate(['/tovan'], { queryParams: { from: 'transfers' } });
   }
 
   transferToLocation() {
