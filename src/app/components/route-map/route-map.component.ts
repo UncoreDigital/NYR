@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, Input } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -27,6 +27,7 @@ export interface Customer {
   styleUrl: './route-map.component.css'
 })
 export class RouteMapComponent implements OnInit, AfterViewInit {
+  @Input() showFullLayout: boolean = true; // Default to true for standalone usage
   routeData: any = null;
   showAddStopModal = false;
   
