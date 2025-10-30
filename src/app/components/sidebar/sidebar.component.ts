@@ -31,11 +31,6 @@ export class SidebarComponent implements OnInit {
     { icon: 'location_on', label: 'Locations', route: '/inlocation', active: false },
   ];
 
-  routesItems = [
-    { icon: 'add_road', label: 'Create New Route', route: '/crate-route', active: false },
-    { icon: 'list', label: 'All Routes', route: '/routes', active: false },
-  ];
-
   settingsItems = [
     { icon: 'person', label: 'Profile', route: '/profile', active: false },
     { icon: 'people', label: 'Customer', route: '/customer', active: false },
@@ -114,7 +109,6 @@ export class SidebarComponent implements OnInit {
     // Reset all active states
     this.menuItems.forEach(item => item.active = false);
     this.inventoryItems.forEach(item => item.active = false);
-    this.routesItems.forEach(item => item.active = false);
     this.settingsItems.forEach(item => item.active = false);
 
     // Check inventory items first
@@ -138,23 +132,6 @@ export class SidebarComponent implements OnInit {
     }
 
     // Check routes items
-    const activeRoutesItem = this.routesItems.find(item => 
-      currentUrl.includes(item.route) || 
-      (item.route === '/routes' && currentUrl === '/routes') ||
-      (item.route === '/crate-route' && currentUrl.includes('/crate-route'))
-    );
-
-    if (activeRoutesItem) {
-      activeRoutesItem.active = true;
-      // Find and activate the routes parent menu
-      const routesMenuItem = this.menuItems.find(item => item.label === 'Routes');
-      if (routesMenuItem) {
-        routesMenuItem.active = true;
-      }
-      // Keep routes menu open
-      this.isRoutesOpen = true;
-      return;
-    }
 
     // Check settings items
     const activeSettingsItem = this.settingsItems.find(item => 

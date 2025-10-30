@@ -18,7 +18,7 @@
       <ul class="nav-list">
         <!-- Regular Menu Items -->
         <ng-container *ngFor="let item of menuItems">
-          <li *ngIf="item.label !== 'Inventory' && item.label !== 'Routes'" class="nav-item" 
+          <li *ngIf="item.label !== 'Inventory'" class="nav-item" 
               [class.active]="item.active"
               (click)="navigate(item.route)">
             <div class="nav-item-content">
@@ -56,30 +56,6 @@
           </li>
 
           <!-- Routes Section with Submenu -->
-          <li *ngIf="item.label === 'Routes'" class="nav-item routes-item" 
-              [class.active]="item.active">
-            <div class="nav-item-content" (click)="toggleRoutes()">
-              <div class="nav-icon">
-                <mat-icon>{{item.icon}}</mat-icon>
-              </div>
-              <span class="nav-label">{{item.label}}</span>
-              <mat-icon class="expand-icon">
-                {{ isRoutesOpen ? 'expand_more' : 'chevron_right' }}
-              </mat-icon>
-            </div>
-            
-            <!-- Routes Submenu with Animation -->
-            <div class="submenu-container" [class.expanded]="isRoutesOpen">
-              <ul class="submenu">
-                <li *ngFor="let subItem of routesItems" 
-                    class="submenu-item" 
-                    [class.active]="subItem.active"
-                    (click)="navigate(subItem.route)">
-                  <span class="submenu-label">{{subItem.label}}</span>
-                </li>
-              </ul>
-            </div>
-          </li>
         </ng-container>
       </ul>
     </nav>

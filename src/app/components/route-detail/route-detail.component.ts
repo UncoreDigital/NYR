@@ -14,6 +14,8 @@ export interface routeDetail {
   location: string;
   inventoryItem: string;
   shippingItem: string;
+  eta?: string;
+  deliveryTime?: string;
 }
 
 export interface ProductDetail {
@@ -39,8 +41,15 @@ export interface Customer {
   styleUrl: './route-detail.component.css'
 })
 export class RouteDetailComponent implements OnInit {
-  displayedColumns: string[] = ['stop', 'location', 'inventoryItem', 'shippingItem', 'actions'];
+  baseColumns: string[] = ['stop', 'location', 'inventoryItem', 'shippingItem', 'eta', 'deliveryTime'];
   dataSource = new MatTableDataSource<routeDetail>();
+
+  // Dynamic displayedColumns getter
+  get displayedColumns(): string[] {
+    return this.shouldShowActionButtons() 
+      ? [...this.baseColumns, 'actions'] 
+      : this.baseColumns;
+  }
 
   // Modal properties
   showModal = false;
@@ -61,10 +70,10 @@ export class RouteDetailComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   routeDetail: routeDetail[] = [
-    { stop: 'Stop 1', deliveryDate: '2023-10-01', location: 'New York, NY', inventoryItem: '2 Items', shippingItem: '2 Items' },
-    { stop: 'Stop 2', deliveryDate: '2023-10-02', location: 'Los Angeles, CA', inventoryItem: '3 Items', shippingItem: '4 Items' },
-    { stop: 'Stop 3', deliveryDate: '2023-10-03', location: 'Chicago, IL', inventoryItem: '4 Items', shippingItem: '3 Items' },
-    { stop: 'Stop 12', deliveryDate: '2023-10-12', location: 'Jacksonville, FL', inventoryItem: '5 Items', shippingItem: '2 Items' },
+    { stop: 'Stop 1', deliveryDate: '2023-10-01', location: 'New York, NY', inventoryItem: '2 Items', shippingItem: '2 Items', eta: '10 AM', deliveryTime: '12 PM' },
+    { stop: 'Stop 2', deliveryDate: '2023-10-02', location: 'Los Angeles, CA', inventoryItem: '3 Items', shippingItem: '4 Items', eta: '11 AM', deliveryTime: '2 PM' },
+    { stop: 'Stop 3', deliveryDate: '2023-10-03', location: 'Chicago, IL', inventoryItem: '4 Items', shippingItem: '3 Items', eta: '12 PM', deliveryTime: '5 PM' },
+    { stop: 'Stop 12', deliveryDate: '2023-10-12', location: 'Jacksonville, FL', inventoryItem: '5 Items', shippingItem: '2 Items', eta: '1 PM', deliveryTime: '1 PM' },
   ];
   showRouteDetail = false;
 
@@ -79,13 +88,16 @@ export class RouteDetailComponent implements OnInit {
   routeCreationData: any = {};
   // View toggle properties
   currentView: 'table' | 'map' = 'table';
+  // Route status for conditional button display
+  routeStatus: string = '';
   constructor(private router: Router, private location: Location) { }
 
   ngOnInit(): void {
-    // Check if data was passed from create-route navigation using history.state
+    // Check if data was passed from navigation using history.state
     const state = history.state;
     console.log('Navigation state:', state);
     
+    // Check if data comes from create-route (selectedLocations)
     if (state && state.selectedLocations) {
       this.selectedLocations = state.selectedLocations || [];
       this.routeCreationData = state.routeData || {};
@@ -95,7 +107,19 @@ export class RouteDetailComponent implements OnInit {
       
       // Convert selected locations to route detail format
       this.convertSelectedLocationsToRouteDetail();
-    } else {
+    } 
+    // Check if data comes from routes table (routeData)
+    else if (state && state.routeData) {
+      const routeData = state.routeData;
+      this.routeStatus = routeData.status || '';
+      
+      console.log('Received route data from routes table:', routeData);
+      console.log('Route status:', this.routeStatus);
+      
+      // Use default data but update with received route info
+      this.dataSource.data = this.routeDetail;
+    } 
+    else {
       // Fallback to default data if no navigation state
       console.log('No navigation state found, using default data');
       this.dataSource.data = this.routeDetail;
@@ -272,6 +296,11 @@ export class RouteDetailComponent implements OnInit {
 
   closeRouteDetail() {
     this.showRouteDetail = false;
+  }
+
+  // Method to check if action buttons should be shown (only for Draft status)
+  shouldShowActionButtons(): boolean {
+    return this.routeStatus === 'Draft' || this.routeStatus === '';
   }
 
   // View toggle methods
