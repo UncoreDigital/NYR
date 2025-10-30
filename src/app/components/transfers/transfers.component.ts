@@ -202,7 +202,7 @@ export class TransfersComponent implements OnInit {
   }
 
   transferToLocation() {
-    this.router.navigate(['/tolocation']);
+    this.router.navigate(['/tolocation'], { queryParams: { from: 'transfers' } });
   }
 
   getTooltipText(): string {

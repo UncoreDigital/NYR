@@ -115,7 +115,7 @@ export class SidebarComponent implements OnInit {
     const activeInventoryItem = this.inventoryItems.find(item => 
       currentUrl.includes(item.route) || 
       (item.route === '/warehouse' && (currentUrl.includes('/warehouse') || currentUrl.includes('/add-inventory'))) ||
-      (item.route === '/inlocation' && currentUrl.includes('/tolocation')) || // Transfer to location is part of locations
+      (item.route === '/inlocation' && currentUrl.includes('/tolocation') && !currentUrl.includes('?from')) || // Transfer to location is part of locations
       (item.route === '/invans' && !currentUrl.includes('?from') && currentUrl.includes('/tovan')) // Transfer to van is part of vans
     );
 
@@ -132,7 +132,7 @@ export class SidebarComponent implements OnInit {
     }
 
     // Check transfers items
-    const activeTransfersItem = currentUrl.includes('/tovan?from') ? this.menuItems.find(item => item.label === 'Transfers') : null;
+    const activeTransfersItem = (currentUrl.includes('/tovan?from') || currentUrl.includes('/tolocation?from')) ? this.menuItems.find(item => item.label === 'Transfers') : null;
 
     if (activeTransfersItem) {
       activeTransfersItem.active = true;
