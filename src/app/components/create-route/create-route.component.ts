@@ -12,6 +12,7 @@ export interface CreateRoutes {
   status: string;
   selected?: boolean;
   shippingDate: string;
+  totalStops?: number;
 }
 
 @Component({
@@ -20,13 +21,16 @@ export interface CreateRoutes {
   styleUrl: './create-route.component.css'
 })
 export class CreateRouteComponent implements OnInit {
-  displayedColumns: string[] = ['locationName', 'locationAddress', 'status'];
-  dataSource = new MatTableDataSource<CreateRoutes>();
+  displayedColumns: string[] = ['locationName', 'locationAddress', 'status', 'actions'];
+  leftDataSource = new MatTableDataSource<CreateRoutes>();
+  rightDataSource = new MatTableDataSource<CreateRoutes>();
   selectedItems: CreateRoutes[] = [];
   isAllSelected = false;
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild('leftPaginator') leftPaginator!: MatPaginator;
+  @ViewChild('rightPaginator') rightPaginator!: MatPaginator;
+  @ViewChild('leftSort') leftSort!: MatSort;
+  @ViewChild('rightSort') rightSort!: MatSort;
 
   createRoutes: CreateRoutes[] = [
     { id: 1, shippingDate: '2023-10-01', locationName: 'Location A', locationAddress: '123 Main St, Cityville', driverName: 'John Doe', status: 'Low Inventory' },
@@ -71,14 +75,18 @@ export class CreateRouteComponent implements OnInit {
   constructor(private router: Router) { }
 
   ngOnInit(): void {
-    this.dataSource.data = this.createRoutes;
+    // Initialize left grid with all data (available locations), right grid empty (selected locations)
+    this.leftDataSource.data = [...this.createRoutes];
+    this.rightDataSource.data = [];
     this.selectedDriverName = this.driverOptions?.[0].value;
     this.applyFilter();
   }
 
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+    this.leftDataSource.paginator = this.leftPaginator;
+    this.leftDataSource.sort = this.leftSort;
+    this.rightDataSource.paginator = this.rightPaginator;
+    this.rightDataSource.sort = this.rightSort;
   }
 
   applyFilter(event?: Event) {
@@ -89,36 +97,52 @@ export class CreateRouteComponent implements OnInit {
     } else {
       filterValue = this.selectedDriverName || '';
     }
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    const filter = filterValue.trim().toLowerCase();
+    this.leftDataSource.filter = filter;
+    this.rightDataSource.filter = filter;
     this.applyWarehouseFilter();
   }
 
   applyWarehouseFilter() {
-    let filteredData = this.createRoutes;
+    let leftFilteredData = [...this.leftDataSource.data];
+    let rightFilteredData = [...this.rightDataSource.data];
     
-    // Apply warehouse name filter
-    if (this.selectedWarehouseName) {
-      filteredData = filteredData.filter(route => 
-        route.locationName.toLowerCase().includes(this.selectedWarehouseName.toLowerCase())
-      );
+    // Apply warehouse name filter and search term filter
+    if (this.selectedWarehouseName || this.searchTerm) {
+      const warehouseLower = this.selectedWarehouseName?.toLowerCase() || '';
+      const searchLower = this.searchTerm?.toLowerCase() || '';
+      
+      const filterFunction = (route: CreateRoutes) => {
+        const matchesWarehouse = !this.selectedWarehouseName || 
+          route.locationName.toLowerCase().includes(warehouseLower);
+        const matchesSearch = !this.searchTerm || 
+          route.locationName.toLowerCase().includes(searchLower) ||
+          route.locationAddress.toLowerCase().includes(searchLower) ||
+          route.driverName.toLowerCase().includes(searchLower) ||
+          route.status.toLowerCase().includes(searchLower);
+        
+        return matchesWarehouse && matchesSearch;
+      };
+      
+      leftFilteredData = leftFilteredData.filter(filterFunction);
+      rightFilteredData = rightFilteredData.filter(filterFunction);
     }
     
-    // Apply search term filter
-    if (this.searchTerm) {
-      const searchLower = this.searchTerm.toLowerCase();
-      filteredData = filteredData.filter(route =>
-        route.locationName.toLowerCase().includes(searchLower) ||
-        route.locationAddress.toLowerCase().includes(searchLower) ||
-        route.driverName.toLowerCase().includes(searchLower) ||
-        route.status.toLowerCase().includes(searchLower)
-      );
-    }
-    
-    this.dataSource.data = filteredData;
+    // Note: For now, we're not updating the data sources here as filtering will be handled by the mat-table filter
   }
 
   createRoute() {
-    this.showCreateModal = true;
+    // Check if right data source has data before proceeding
+    if (this.rightDataSource.data.length === 0) {
+      alert('Please select at least one location to create a route.');
+      return;
+    }
+    
+    // Proceed with route creation if data is available
+    console.log('Creating route with selected locations:', this.rightDataSource.data);
+    
+    // Navigate directly to route-detail with selected data
+    this.saveRoute();
   }
 
   viewMap(route: CreateRoutes) {
@@ -153,7 +177,7 @@ export class CreateRouteComponent implements OnInit {
   // Checkbox methods
   isAllSelectedCheckbox(): boolean {
     const numSelected = this.selectedItems.length;
-    const numRows = this.dataSource.data.length;
+    const numRows = this.leftDataSource.data.length + this.rightDataSource.data.length;
     return numSelected === numRows;
   }
 
@@ -163,7 +187,7 @@ export class CreateRouteComponent implements OnInit {
     if (this.isAllSelected) {
       this.selectedItems = [];
     } else {
-      this.selectedItems = [...this.dataSource.data];
+      this.selectedItems = [...this.leftDataSource.data, ...this.rightDataSource.data];
     }
   }
 
@@ -186,7 +210,17 @@ export class CreateRouteComponent implements OnInit {
   }
 
   saveRoute() {
-    this.router.navigate(['/route-detail']);
+    // Navigate to route-detail with selected locations data
+    this.router.navigate(['/route-detail'], {
+      state: {
+        selectedLocations: this.rightDataSource.data,
+        routeData: {
+          selectedDate: this.selectedDate,
+          selectedDriver: this.selectedDriverName,
+          totalLocations: this.rightDataSource.data.length
+        }
+      }
+    });
   }
 
   closeModal() {
@@ -240,8 +274,11 @@ export class CreateRouteComponent implements OnInit {
     this.selectedWarehouseName = '';
     this.searchTerm = '';
     this.selectedDriverName = '';
-    this.dataSource.data = this.createRoutes;
-    this.dataSource.filter = '';
+    // Reset to original data distribution - all data on left, none on right
+    this.leftDataSource.data = [...this.createRoutes];
+    this.rightDataSource.data = [];
+    this.leftDataSource.filter = '';
+    this.rightDataSource.filter = '';
   }
 
   getUniqueWarehouseNames(): string[] {
@@ -252,4 +289,26 @@ export class CreateRouteComponent implements OnInit {
     this.selectedWarehouseName = this.selectedDriverName;
     this.applyWarehouseFilter();
   }
+
+  // Grid movement methods
+  moveToRight(item: CreateRoutes) {
+    // Remove from left grid
+    const leftData = this.leftDataSource.data.filter(route => route.id !== item.id);
+    this.leftDataSource.data = leftData;
+    
+    // Add to right grid
+    const rightData = [...this.rightDataSource.data, item];
+    this.rightDataSource.data = rightData;
+  }
+
+  moveToLeft(item: CreateRoutes) {
+    // Remove from right grid
+    const rightData = this.rightDataSource.data.filter(route => route.id !== item.id);
+    this.rightDataSource.data = rightData;
+    
+    // Add to left grid
+    const leftData = [...this.leftDataSource.data, item];
+    this.leftDataSource.data = leftData;
+  }
+
 }

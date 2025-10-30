@@ -3,6 +3,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 
 export interface routeDetail {
   stop: string;
@@ -70,10 +71,52 @@ export class RouteDetailComponent implements OnInit {
   totalTime = '1.5 Hrs';
   deliveryDate = 'Oct 30, 2025';
 
-  constructor(private router: Router) { }
+  // Properties for received data from create-route
+  selectedLocations: any[] = [];
+  routeCreationData: any = {};
+
+  constructor(private router: Router, private location: Location) { }
 
   ngOnInit(): void {
-    this.dataSource.data = this.routeDetail;
+    // Check if data was passed from create-route navigation using history.state
+    const state = history.state;
+    console.log('Navigation state:', state);
+    
+    if (state && state.selectedLocations) {
+      this.selectedLocations = state.selectedLocations || [];
+      this.routeCreationData = state.routeData || {};
+      
+      console.log('Received selected locations:', this.selectedLocations);
+      console.log('Received route data:', this.routeCreationData);
+      
+      // Convert selected locations to route detail format
+      this.convertSelectedLocationsToRouteDetail();
+    } else {
+      // Fallback to default data if no navigation state
+      console.log('No navigation state found, using default data');
+      this.dataSource.data = this.routeDetail;
+    }
+  }
+
+  convertSelectedLocationsToRouteDetail() {
+    if (this.selectedLocations.length > 0) {
+      const convertedData = this.selectedLocations.map((location, index) => ({
+        stop: `Stop ${index + 1}`,
+        deliveryDate: location.shippingDate || this.routeCreationData.selectedDate || '2023-10-01',
+        location: location.locationAddress || location.locationName,
+        inventoryItem: '2 Items', // Default value - could be calculated based on location data
+        shippingItem: '2 Items'   // Default value - could be calculated based on location data
+      }));
+      
+      this.dataSource.data = convertedData;
+      
+      // Update route summary based on selected locations
+      this.totalStops = this.selectedLocations.length;
+      this.totalDistance = `${this.selectedLocations.length * 5} Miles`; // Estimated
+      this.totalTime = `${this.selectedLocations.length * 0.5} Hrs`;     // Estimated
+    } else {
+      this.dataSource.data = this.routeDetail;
+    }
   }
 
   ngAfterViewInit() {
