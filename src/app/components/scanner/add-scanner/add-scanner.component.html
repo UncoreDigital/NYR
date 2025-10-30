@@ -55,6 +55,20 @@
                         </div>
 
                         <div class="form-group">
+                            <label>Scanner PIN</label>
+                            <input 
+                                formControlName="scannerPin" 
+                                type="text" 
+                                placeholder="Enter Scanner PIN" 
+                                maxlength="4" 
+                                [disabled]="!isEditMode" />
+                            <div class="form-hint">
+                                <span *ngIf="!isEditMode">Default PIN: 0000 (can be changed after creation)</span>
+                                <span *ngIf="isEditMode">Enter a 4 digit PIN for scanner security</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
                             <label>Select Location</label>
                             <div class="custom-select-container">
                                 <div class="search-wrapper">

@@ -40,6 +40,7 @@ export class AddScannerComponent implements OnInit {
       scannerName: ['', Validators.required],
       location: ['', Validators.required],
       scannerId: ['', Validators.required],
+      scannerPin: ['0000'],
     });
   }
 
@@ -52,6 +53,9 @@ export class AddScannerComponent implements OnInit {
         this.isEditMode = true;
         this.scannerId = +params['id'];
         this.loadScannerForEdit();
+      } else {
+        // In create mode, disable the PIN field and set default value
+        this.scannerForm.get('scannerPin')?.disable();
       }
     });
   }
@@ -76,10 +80,14 @@ export class AddScannerComponent implements OnInit {
   }
 
   populateForm(scanner: Scanner): void {
+    // Enable PIN field in edit mode
+    this.scannerForm.get('scannerPin')?.enable();
+    
     this.scannerForm.patchValue({
       scannerId: scanner.scannerId,
       scannerName: scanner.scannerName,
       location: scanner.location,
+      scannerPin: scanner.scannerPin || '0000',
     });
   }
 
@@ -87,7 +95,14 @@ export class AddScannerComponent implements OnInit {
     if (this.scannerForm.valid) {
       this.isSaving = true;
 
-      const formValue = this.scannerForm.value;
+      // Get raw value to include disabled fields
+      const formValue = this.scannerForm.getRawValue();
+      
+      // Ensure PIN is included (default to "0000" if not set)
+      if (!formValue.scannerPin) {
+        formValue.scannerPin = '0000';
+      }
+      
       console.log('Form Submitted:', formValue);
 
       setTimeout(() => {

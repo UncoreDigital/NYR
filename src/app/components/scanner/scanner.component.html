@@ -55,6 +55,12 @@
             <td mat-cell *matCellDef="let scanner">{{scanner.scannerName}}</td>
           </ng-container>
 
+          <!-- Scanner Pin Column -->
+          <ng-container matColumnDef="scannerPin">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>SCANNER PIN</th>
+            <td mat-cell *matCellDef="let scanner">{{scanner.scannerPin}}</td>
+          </ng-container>
+
           <!-- Scanner NAME Column -->
           <ng-container matColumnDef="location">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Location</th>

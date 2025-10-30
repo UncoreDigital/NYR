@@ -11,6 +11,7 @@ export interface Scanner {
   scannerId: number;
   scannerName: string;
   location: string;
+  scannerPin?: string;
 }
 
 @Component({
@@ -20,17 +21,17 @@ export interface Scanner {
 })
 
 export class ScannerComponent implements OnInit {
-  displayedColumns: string[] = ['scannerId', 'scannerName', 'location', 'actions'];
+  displayedColumns: string[] = ['scannerId', 'scannerName', 'scannerPin', 'location', 'actions'];
   dataSource = new MatTableDataSource<Scanner>();
 
   isLoading = false;
   errorMessage = '';
   scanners: Scanner[] = [
-    { scannerId: 1, scannerName: 'Scanner A', location: 'Warehouse 1' },
-    { scannerId: 2, scannerName: 'Scanner B', location: 'Warehouse 2' },
-    { scannerId: 3, scannerName: 'Scanner C', location: 'Warehouse 3' },
-    { scannerId: 4, scannerName: 'Scanner D', location: 'Warehouse 4' },
-    { scannerId: 5, scannerName: 'Scanner E', location: 'Warehouse 5' }
+    { scannerId: 1, scannerName: 'Scanner A', location: 'Warehouse 1', scannerPin: '0000' },
+    { scannerId: 2, scannerName: 'Scanner B', location: 'Warehouse 2', scannerPin: '1234' },
+    { scannerId: 3, scannerName: 'Scanner C', location: 'Warehouse 3', scannerPin: '9632' },
+    { scannerId: 4, scannerName: 'Scanner D', location: 'Warehouse 4', scannerPin: '7412' },
+    { scannerId: 5, scannerName: 'Scanner E', location: 'Warehouse 5', scannerPin: '0000' }
   ];
   deletingScannerId: number | null = null;
 
