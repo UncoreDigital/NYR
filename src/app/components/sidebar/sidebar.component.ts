@@ -120,7 +120,9 @@ export class SidebarComponent implements OnInit {
     // Check inventory items first
     const activeInventoryItem = this.inventoryItems.find(item => 
       currentUrl.includes(item.route) || 
-      (item.route === '/warehouse' && (currentUrl.includes('/warehouse') || currentUrl.includes('/add-inventory')))
+      (item.route === '/warehouse' && (currentUrl.includes('/warehouse') || currentUrl.includes('/add-inventory'))) ||
+      (item.route === '/inlocation' && currentUrl.includes('/tolocation')) || // Transfer to location is part of locations
+      (item.route === '/invans' && currentUrl.includes('/tovan')) // Transfer to van is part of vans
     );
 
     if (activeInventoryItem) {
