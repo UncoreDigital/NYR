@@ -87,8 +87,8 @@
                                     *ngIf="showLocationDropdown && getFilteredLocations().length > 0">
                                     <div class="dropdown-item" *ngFor="let location of getFilteredLocations()"
                                         (mousedown)="selectLocation(location)"
-                                        [class.selected]="selectedLocation?.value === location.value">
-                                        {{location.name}}
+                                        [class.selected]="selectedLocation?.id === location.id">
+                                        {{location.locationName}}
                                     </div>
                                 </div>
                                 <div class="dropdown-list"

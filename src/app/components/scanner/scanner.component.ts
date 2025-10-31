@@ -6,12 +6,15 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { ToastService } from 'src/app/services/toast.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { ScannerService } from '../../services/scanner.service';
+import { ScannerResponse } from '../../models/scanner.model';
 
 export interface Scanner {
-  scannerId: number;
+  id: number;
+  scannerId: string;
   scannerName: string;
   location: string;
-  scannerPin?: string;
+  scannerPin: string;
 }
 
 @Component({
@@ -26,13 +29,7 @@ export class ScannerComponent implements OnInit {
 
   isLoading = false;
   errorMessage = '';
-  scanners: Scanner[] = [
-    { scannerId: 1, scannerName: 'Scanner A', location: 'Warehouse 1', scannerPin: '0000' },
-    { scannerId: 2, scannerName: 'Scanner B', location: 'Warehouse 2', scannerPin: '1234' },
-    { scannerId: 3, scannerName: 'Scanner C', location: 'Warehouse 3', scannerPin: '9632' },
-    { scannerId: 4, scannerName: 'Scanner D', location: 'Warehouse 4', scannerPin: '7412' },
-    { scannerId: 5, scannerName: 'Scanner E', location: 'Warehouse 5', scannerPin: '0000' }
-  ];
+  scanners: Scanner[] = [];
   deletingScannerId: number | null = null;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -41,7 +38,8 @@ export class ScannerComponent implements OnInit {
   constructor(
     private router: Router,
     private toastService: ToastService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private scannerService: ScannerService
   ) { }
 
   ngOnInit(): void {
@@ -52,11 +50,29 @@ export class ScannerComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     
-    // Simulate async data loading (you can replace this with actual API call)
-    setTimeout(() => {
-      this.dataSource.data = this.scanners;
-      this.isLoading = false;
-    }, 500);
+    this.scannerService.getScanners().subscribe({
+      next: (apiScanners: ScannerResponse[]) => {
+        this.scanners = this.mapApiResponseToScanner(apiScanners);
+        this.dataSource.data = this.scanners;
+        this.isLoading = false;
+      },
+      error: (error: any) => {
+        console.error('Error loading scanners:', error);
+        this.toastService.error('Error', 'Failed to load scanners. Please try again.');
+        this.errorMessage = 'Failed to load scanners. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private mapApiResponseToScanner(apiScanners: ScannerResponse[]): Scanner[] {
+    return apiScanners.map(apiScanner => ({
+      id: apiScanner.id,
+      scannerId: apiScanner.scannerId,
+      scannerName: apiScanner.scannerName,
+      scannerPin: apiScanner.scannerPIN,
+      location: apiScanner.locationName
+    }));
   }
 
   ngAfterViewInit() {
@@ -80,7 +96,7 @@ export class ScannerComponent implements OnInit {
 
   editScanner(scanner: Scanner) {
     console.log('Edit Scanner:', scanner);
-    this.router.navigate(['/scanner/edit', scanner.scannerId]);
+    this.router.navigate(['/scanner/edit', scanner.id]);
   }
 
   deleteScanner(scanner: Scanner) {
@@ -102,6 +118,19 @@ export class ScannerComponent implements OnInit {
   }
 
   private performDelete(scanner: Scanner): void {
-    console.log('Delete Scanner:', scanner);    
+    this.deletingScannerId = scanner.id;
+    this.scannerService.deleteScanner(scanner.id).subscribe({
+      next: () => {
+        this.deletingScannerId = null;
+        this.toastService.success('Success', 'Scanner has been deleted successfully');
+        this.loadScanners(); // Refresh the list
+      },
+      error: (error: any) => {
+        this.deletingScannerId = null;
+        console.error('Error deleting scanner:', error);
+        const message = error.error?.message || 'Failed to delete scanner. Please try again.';
+        this.toastService.error('Error', message);
+      }
+    });
   }
 }
