@@ -140,9 +140,7 @@ export class CreateRouteComponent implements OnInit {
     
     // Proceed with route creation if data is available
     console.log('Creating route with selected locations:', this.rightDataSource.data);
-    
-    // Navigate directly to route-detail with selected data
-    this.saveRoute();
+    this.showCreateModal = true;
   }
 
   viewMap(route: CreateRoutes) {
