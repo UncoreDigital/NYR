@@ -53,6 +53,18 @@ export interface AddInventoryRequest {
   notes?: string;
 }
 
+export interface BulkInventoryItem {
+  productVariationId: number;
+  quantity: number;
+  notes?: string;
+}
+
+export interface AddBulkInventoryRequest {
+  warehouseId: number;
+  productId: number;
+  inventoryItems: BulkInventoryItem[];
+}
+
 export interface UpdateInventoryRequest {
   quantity: number;
   notes?: string;

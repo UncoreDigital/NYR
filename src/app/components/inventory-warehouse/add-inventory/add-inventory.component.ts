@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
 import { WarehouseInventoryService } from '../../../services/warehouse-inventory.service';
 import { WarehouseService } from '../../../services/warehouse.service';
 import { ProductService } from '../../../services/product.service';
-import { AddInventoryRequest } from '../../../models/warehouse-inventory.model';
+import { AddInventoryRequest, AddBulkInventoryRequest, BulkInventoryItem } from '../../../models/warehouse-inventory.model';
 import { WarehouseResponse } from '../../../models/warehouse.model';
 import { ProductApiModel, ProductVariation } from '../../../models/product.model';
 
@@ -276,23 +275,23 @@ export class AddInventoryComponent implements OnInit {
     if (this.selectedWarehouse && this.selectedProduct && this.inventoryCart.length > 0) {
       this.loading = true;
       
-      // Process each item in the cart as a separate inventory addition
-      const inventoryPromises = this.inventoryCart.map(item => {
-        const addInventoryRequest: AddInventoryRequest = {
-          warehouseId: this.selectedWarehouse!.id,
-          productId: this.selectedProduct!.id,
-          productVariationId: item.variationId || 0, // Use 0 for universal products or handle differently based on API requirements
-          quantity: item.quantity,
-          notes: item.isUniversal 
-            ? 'Universal product - no variations' 
-            : `Variation: ${item.variationName} - ${item.variationValue}`
-        };
-        
-        return this.warehouseInventoryService.addInventory(addInventoryRequest);
-      });
+      // Prepare bulk inventory request
+      const bulkInventoryItems: BulkInventoryItem[] = this.inventoryCart.map(item => ({
+        productVariationId: item.variationId || 0, // Use 0 for universal products or handle differently based on API requirements
+        quantity: item.quantity,
+        notes: item.isUniversal 
+          ? 'Universal product - no variations' 
+          : `Variation: ${item.variationName} - ${item.variationValue}`
+      }));
 
-      // Execute all inventory additions using forkJoin
-      forkJoin(inventoryPromises).subscribe({
+      const addBulkInventoryRequest: AddBulkInventoryRequest = {
+        warehouseId: this.selectedWarehouse.id,
+        productId: this.selectedProduct.id,
+        inventoryItems: bulkInventoryItems
+      };
+
+      // Execute bulk inventory addition
+      this.warehouseInventoryService.addBulkInventory(addBulkInventoryRequest).subscribe({
         next: (responses) => {
           console.log('All inventory items added successfully:', responses);
           this.loading = false;

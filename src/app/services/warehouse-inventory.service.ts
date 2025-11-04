@@ -6,6 +6,7 @@ import {
   WarehouseListResponse, 
   WarehouseInventoryDetailResponse, 
   AddInventoryRequest, 
+  AddBulkInventoryRequest,
   UpdateInventoryRequest 
 } from '../models/warehouse-inventory.model';
 import { environment } from 'environment';
@@ -31,6 +32,11 @@ export class WarehouseInventoryService {
   // Add inventory to warehouse
   addInventory(payload: AddInventoryRequest): Observable<WarehouseInventoryResponse> {
     return this.http.post<WarehouseInventoryResponse>(`${this.API_URL}/WarehouseInventory/add-inventory`, payload);
+  }
+
+  // Add bulk inventory to warehouse
+  addBulkInventory(payload: AddBulkInventoryRequest): Observable<WarehouseInventoryResponse[]> {
+    return this.http.post<WarehouseInventoryResponse[]>(`${this.API_URL}/WarehouseInventory/add-bulk-inventory`, payload);
   }
 
   // Get specific inventory item by ID
