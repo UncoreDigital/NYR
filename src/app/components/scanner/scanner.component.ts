@@ -6,6 +6,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { ToastService } from 'src/app/services/toast.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { ScannerService } from '../../services/scanner.service';
+import { ScannerResponse } from '../../models/scanner.model';
 
 export interface Scanner {
   serialNo: number;
@@ -42,7 +44,8 @@ export class ScannerComponent implements OnInit {
   constructor(
     private router: Router,
     private toastService: ToastService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private scannerService: ScannerService
   ) { }
 
   ngOnInit(): void {
@@ -53,11 +56,29 @@ export class ScannerComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     
-    // Simulate async data loading (you can replace this with actual API call)
-    setTimeout(() => {
-      this.dataSource.data = this.scanners;
-      this.isLoading = false;
-    }, 500);
+    this.scannerService.getScanners().subscribe({
+      next: (apiScanners: ScannerResponse[]) => {
+        this.scanners = this.mapApiResponseToScanner(apiScanners);
+        this.dataSource.data = this.scanners;
+        this.isLoading = false;
+      },
+      error: (error: any) => {
+        console.error('Error loading scanners:', error);
+        this.toastService.error('Error', 'Failed to load scanners. Please try again.');
+        this.errorMessage = 'Failed to load scanners. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private mapApiResponseToScanner(apiScanners: ScannerResponse[]): Scanner[] {
+    return apiScanners.map(apiScanner => ({
+      id: apiScanner.id,
+      scannerId: apiScanner.scannerId,
+      scannerName: apiScanner.scannerName,
+      scannerPin: apiScanner.scannerPIN,
+      location: apiScanner.locationName
+    }));
   }
 
   ngAfterViewInit() {
@@ -103,6 +124,19 @@ export class ScannerComponent implements OnInit {
   }
 
   private performDelete(scanner: Scanner): void {
-    console.log('Delete Scanner:', scanner);    
+    this.deletingScannerId = scanner.id;
+    this.scannerService.deleteScanner(scanner.id).subscribe({
+      next: () => {
+        this.deletingScannerId = null;
+        this.toastService.success('Success', 'Scanner has been deleted successfully');
+        this.loadScanners(); // Refresh the list
+      },
+      error: (error: any) => {
+        this.deletingScannerId = null;
+        console.error('Error deleting scanner:', error);
+        const message = error.error?.message || 'Failed to delete scanner. Please try again.';
+        this.toastService.error('Error', message);
+      }
+    });
   }
 }

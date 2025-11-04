@@ -4,9 +4,11 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } 
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { WarehouseResponse } from 'src/app/models/warehouse.model';
 import { ToastService } from 'src/app/services/toast.service';
-import { Scanner } from '../scanner.component';
+import { ScannerService } from '../../../services/scanner.service';
+import { LocationService } from '../../../services/location.service';
+import { ScannerResponse, CreateScannerRequest, UpdateScannerRequest } from '../../../models/scanner.model';
+import { LocationResponse } from '../../../models/location.model';
 
 @Component({
   selector: 'app-add-scanner',
@@ -25,16 +27,19 @@ export class AddScannerComponent implements OnInit {
   isLoading = false;
 
   // Location dropdown properties
-  locations: any[] = [];
-  selectedLocation: any = null;
+  locations: LocationResponse[] = [];
+  selectedLocation: LocationResponse | null = null;
   showLocationDropdown = false;
   locationSearchTerm = '';
+  isLoadingLocations = false;
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private scannerService: ScannerService,
+    private locationService: LocationService
   ) {
     this.scannerForm = this.fb.group({
       scannerName: ['', Validators.required],
@@ -46,17 +51,19 @@ export class AddScannerComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadLocations();
-    
     // Check if we're in edit mode
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.isEditMode = true;
         this.scannerId = +params['id'];
-        this.loadScannerForEdit();
+        // Load locations first, then load scanner data
+        this.loadLocations(() => {
+          this.loadScannerForEdit();
+        });
       } else {
         // In create mode, disable the PIN field and set default value
         this.scannerForm.get('scannerPin')?.disable();
+        this.loadLocations();
       }
     });
   }
@@ -65,35 +72,42 @@ export class AddScannerComponent implements OnInit {
     if (this.scannerId) {
       this.isLoading = true;
       
-      // Simulate API call to load scanner data
-      setTimeout(() => {
-        // Mock scanner data for editing
-        const mockScanner: Scanner = {
-          serialNo: this.scannerId!,
-          scannerName: `Scanner ${this.scannerId}`,
-          location: 'Warehouse A'
-        };
-        
-        this.populateForm(mockScanner);
-        this.isLoading = false;
-      }, 1000);
+      this.scannerService.getScannerById(this.scannerId).subscribe({
+        next: (scanner: ScannerResponse) => {
+          this.populateForm(scanner);
+          this.isLoading = false;
+        },
+        error: (error: any) => {
+          console.error('Error loading scanner:', error);
+          this.toastService.error('Error', 'Failed to load scanner data. Please try again.');
+          this.isLoading = false;
+          this.router.navigate(['/scanner']);
+        }
+      });
     }
   }
 
-  populateForm(scanner: Scanner): void {
+  populateForm(scanner: ScannerResponse): void {
     // Enable PIN field in edit mode
     this.scannerForm.get('scannerPin')?.enable();
+    
+    // Find and select the location
+    const location = this.locations.find(loc => loc.id === scanner.locationId);
+    if (location) {
+      this.selectedLocation = location;
+      this.locationSearchTerm = location.locationName;
+    }
     
     this.scannerForm.patchValue({
       scannerId: scanner.serialNo,
       scannerName: scanner.scannerName,
-      location: scanner.location,
-      scannerPin: scanner.scannerPin || '0000',
+      location: scanner.locationId,
+      scannerPin: scanner.scannerPIN || '0000',
     });
   }
 
   onSubmit() {
-    if (this.scannerForm.valid) {
+    if (this.scannerForm.valid && !this.isSaving) {
       this.isSaving = true;
 
       // Get raw value to include disabled fields
@@ -104,14 +118,63 @@ export class AddScannerComponent implements OnInit {
         formValue.scannerPin = '0000';
       }
       
-      console.log('Form Submitted:', formValue);
+      if (this.isEditMode && this.scannerId) {
+        // Update existing scanner
+        this.toastService.info('Saving', 'Updating scanner...');
+        
+        const updateData: UpdateScannerRequest = {
+          scannerId: formValue.scannerId,
+          scannerName: formValue.scannerName,
+          scannerPIN: formValue.scannerPin,
+          locationId: formValue.location,
+          isActive: true
+        };
 
-      setTimeout(() => {
-        this.isSaving = false;
-        this.showSuccess = true;
-      }, 1000);
+        this.scannerService.updateScanner(this.scannerId, updateData).subscribe({
+          next: (response: ScannerResponse) => {
+            console.log('Scanner updated successfully:', response);
+            this.isSaving = false;
+            this.toastService.success('Success', 'Scanner has been updated successfully');
+            this.showSuccess = true;
+          },
+          error: (error: any) => {
+            console.error('Error updating scanner:', error);
+            const message = error.error?.message || 'Failed to update scanner. Please try again.';
+            this.toastService.error('Error', message);
+            this.isSaving = false;
+          }
+        });
+      } else {
+        // Create new scanner
+        this.toastService.info('Saving', 'Creating scanner...');
+        
+        const createData: CreateScannerRequest = {
+          scannerId: formValue.scannerId,
+          scannerName: formValue.scannerName,
+          scannerPIN: formValue.scannerPin,
+          locationId: formValue.location
+        };
+
+        this.scannerService.createScanner(createData).subscribe({
+          next: (response: ScannerResponse) => {
+            console.log('Scanner created successfully:', response);
+            this.isSaving = false;
+            this.toastService.success('Success', 'Scanner has been created successfully');
+            this.showSuccess = true;
+          },
+          error: (error: any) => {
+            console.error('Error creating scanner:', error);
+            const message = error.error?.message || 'Failed to create scanner. Please try again.';
+            this.toastService.error('Error', message);
+            this.isSaving = false;
+          }
+        });
+      }
     } else {
       this.scannerForm.markAllAsTouched();
+      if (this.scannerForm.invalid) {
+        this.toastService.warning('Validation Error', 'Please fill in all required fields.');
+      }
     }
   }
 
@@ -133,24 +196,32 @@ export class AddScannerComponent implements OnInit {
   }
 
   // Location dropdown methods
-  loadLocations(): void {
-    // Simulate API call to load locations
-    setTimeout(() => {
-      this.locations = [
-        { value: 1, name: 'Warehouse A', address: '123 Industrial St, City' },
-        { value: 2, name: 'Warehouse B', address: '456 Storage Ave, City' },
-        { value: 3, name: 'Distribution Center', address: '789 Logistics Blvd, City' },
-        { value: 4, name: 'Store Location 1', address: '321 Retail St, City' },
-        { value: 5, name: 'Store Location 2', address: '654 Commerce Dr, City' }
-      ];
-    }, 100);
+  loadLocations(callback?: () => void): void {
+    this.isLoadingLocations = true;
+    this.locationService.getLocations().subscribe({
+      next: (locations: LocationResponse[]) => {
+        this.locations = locations;
+        this.isLoadingLocations = false;
+        if (callback) {
+          callback();
+        }
+      },
+      error: (error: any) => {
+        console.error('Error loading locations:', error);
+        this.toastService.error('Error', 'Failed to load locations. Please try again.');
+        this.isLoadingLocations = false;
+        if (callback) {
+          callback();
+        }
+      }
+    });
   }
 
-  selectLocation(location: any): void {
+  selectLocation(location: LocationResponse): void {
     this.selectedLocation = location;
-    this.locationSearchTerm = location.name;
+    this.locationSearchTerm = location.locationName;
     this.showLocationDropdown = false;
-    this.scannerForm.patchValue({ location: location.value });
+    this.scannerForm.patchValue({ location: location.id });
   }
 
   clearLocation(): void {
@@ -171,13 +242,14 @@ export class AddScannerComponent implements OnInit {
     // This method is called from the template to trigger change detection
   }
 
-  getFilteredLocations(): any[] {
+  getFilteredLocations(): LocationResponse[] {
     if (!this.locationSearchTerm) {
       return this.locations;
     }
     return this.locations.filter(location =>
-      location.name.toLowerCase().includes(this.locationSearchTerm.toLowerCase()) ||
-      (location.address && location.address.toLowerCase().includes(this.locationSearchTerm.toLowerCase()))
+      location.locationName.toLowerCase().includes(this.locationSearchTerm.toLowerCase()) ||
+      (location.addressLine1 && location.addressLine1.toLowerCase().includes(this.locationSearchTerm.toLowerCase())) ||
+      (location.city && location.city.toLowerCase().includes(this.locationSearchTerm.toLowerCase()))
     );
   }
 
