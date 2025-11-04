@@ -10,7 +10,8 @@ import { ScannerService } from '../../services/scanner.service';
 import { ScannerResponse } from '../../models/scanner.model';
 
 export interface Scanner {
-  serialNo: number;
+  id: number;
+  scannerId: string;
   scannerName: string;
   location: string;
   scannerPin?: string;
@@ -24,18 +25,12 @@ export interface Scanner {
 })
 
 export class ScannerComponent implements OnInit {
-  displayedColumns: string[] = ['serialNo', 'scannerName', 'scannerPin', 'location', 'actions', 'scannerUrl'];
+  displayedColumns: string[] = ['serialNo', 'scannerName', 'scannerPin', 'location', 'scannerUrl', 'actions'];
   dataSource = new MatTableDataSource<Scanner>();
 
   isLoading = false;
   errorMessage = '';
-  scanners: Scanner[] = [
-    { serialNo: 1, scannerName: 'Scanner A', location: 'Warehouse 1', scannerPin: '0000', scannerUrl: 'http://scanner-a.local' },
-    { serialNo: 2, scannerName: 'Scanner B', location: 'Warehouse 2', scannerPin: '1234', scannerUrl: 'http://scanner-b.local' },
-    { serialNo: 3, scannerName: 'Scanner C', location: 'Warehouse 3', scannerPin: '9632', scannerUrl: 'http://scanner-c.local' },
-    { serialNo: 4, scannerName: 'Scanner D', location: 'Warehouse 4', scannerPin: '7412', scannerUrl: 'http://scanner-d.local' },
-    { serialNo: 5, scannerName: 'Scanner E', location: 'Warehouse 5', scannerPin: '0000', scannerUrl: 'http://scanner-e.local' }
-  ];
+  scanners: Scanner[] = [];
   deletingScannerId: number | null = null;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -77,7 +72,8 @@ export class ScannerComponent implements OnInit {
       scannerId: apiScanner.scannerId,
       scannerName: apiScanner.scannerName,
       scannerPin: apiScanner.scannerPIN,
-      location: apiScanner.locationName
+      location: apiScanner.locationName,
+      scannerUrl: apiScanner.scannerUrl
     }));
   }
 
@@ -102,7 +98,7 @@ export class ScannerComponent implements OnInit {
 
   editScanner(scanner: Scanner) {
     console.log('Edit Scanner:', scanner);
-    this.router.navigate(['/scanner/edit', scanner.serialNo]);
+    this.router.navigate(['/scanner/edit', scanner.id]);
   }
 
   deleteScanner(scanner: Scanner) {

@@ -99,7 +99,7 @@ export class AddScannerComponent implements OnInit {
     }
     
     this.scannerForm.patchValue({
-      scannerId: scanner.serialNo,
+      scannerId: scanner.scannerId,
       scannerName: scanner.scannerName,
       location: scanner.locationId,
       scannerPin: scanner.scannerPIN || '0000',

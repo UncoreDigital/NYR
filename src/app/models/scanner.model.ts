@@ -7,6 +7,7 @@ export interface ScannerResponse {
   locationName: string;
   createdAt: string;
   isActive: boolean;
+  scannerUrl?: string;
 }
 
 export interface CreateScannerRequest {
