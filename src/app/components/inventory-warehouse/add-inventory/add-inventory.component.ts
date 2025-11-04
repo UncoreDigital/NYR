@@ -1,21 +1,27 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { MatIconModule } from '@angular/material/icon';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { HeaderComponent } from '../../header/header.component';
-import { SidebarComponent } from '../../sidebar/sidebar.component';
+import { forkJoin } from 'rxjs';
 import { WarehouseInventoryService } from '../../../services/warehouse-inventory.service';
 import { WarehouseService } from '../../../services/warehouse.service';
 import { ProductService } from '../../../services/product.service';
 import { AddInventoryRequest } from '../../../models/warehouse-inventory.model';
 import { WarehouseResponse } from '../../../models/warehouse.model';
-import { ProductApiModel } from '../../../models/product.model';
+import { ProductApiModel, ProductVariation } from '../../../models/product.model';
 
 export interface Variation {
   id?: number;
   name: string;
   value: string;
+  quantity?: number;
+}
+
+export interface InventoryCartItem {
+  variationId?: number;
+  variationName?: string;
+  variationValue?: string;
+  quantity: number;
+  isUniversal?: boolean;
 }
 
 @Component({
@@ -26,11 +32,20 @@ export interface Variation {
 export class AddInventoryComponent implements OnInit {
   inventoryForm: FormGroup;
   
-  // All available variations (mock data) - now with empty values for user input
+  // Product variations from selected product
   allVariations: Variation[] = [];
   filteredVariations: Variation[] = [];
-  selectedVariations: Variation[] = [];
   searchTerm: string = '';
+  
+  // Available product variations for the selected product
+  productVariations: ProductVariation[] = [];
+  
+  // Inventory cart for managing multiple variations with quantities
+  inventoryCart: InventoryCartItem[] = [];
+  
+  // Universal product quantity (for products without variations)
+  universalProductQuantity: number = 0;
+  universalProductInCart: boolean = false;
   
   // Search terms for dropdowns
   warehouseSearchTerm: string = '';
@@ -58,15 +73,13 @@ export class AddInventoryComponent implements OnInit {
   ) {
     this.inventoryForm = this.fb.group({
       warehouseName: ['', Validators.required],
-      prodcut: ['', Validators.required],
-      quantity: ['', Validators.required]
+      prodcut: ['', Validators.required]
     });
   }
 
   ngOnInit(): void {
     this.loadWarehouses();
     this.loadProducts();
-    this.loadProductVariations();
   }
 
   loadWarehouses(): void {
@@ -91,19 +104,35 @@ export class AddInventoryComponent implements OnInit {
     });
   }
 
-  loadProductVariations(): void {
-    // Mock variations for now - in real implementation, this would come from ProductVariation API
-    this.allVariations = [
-      { name: 'Size', value: '' },
-      { name: 'Color', value: '' },
-      { name: 'Material', value: '' },
-      { name: 'Weight', value: '' },
-      { name: 'Style', value: '' },
-      { name: 'Brand', value: '' },
-      { name: 'Model', value: '' },
-      { name: 'Category', value: '' }
-    ];
+  loadProductVariations(product: ProductApiModel): void {
+    // Load variations from the selected product
+    this.productVariations = product.variations || [];
+    
+    // Convert ProductVariation to Variation interface for the UI
+    this.allVariations = this.productVariations.map(pv => ({
+      id: pv.id,
+      name: pv.variationType,
+      value: pv.variationValue,
+      quantity: 0
+    }));
+    
     this.filteredVariations = [...this.allVariations];
+    
+    // Clear cart and universal product when product changes
+    this.clearInventoryData();
+  }
+
+  clearProductVariations(): void {
+    this.productVariations = [];
+    this.allVariations = [];
+    this.filteredVariations = [];
+    this.clearInventoryData();
+  }
+
+  clearInventoryData(): void {
+    this.inventoryCart = [];
+    this.universalProductQuantity = 0;
+    this.universalProductInCart = false;
   }
 
   applyFilter(event: any): void {
@@ -114,31 +143,61 @@ export class AddInventoryComponent implements OnInit {
     );
   }
 
-  updateVariationValue(index: number, newValue: string): void {
-    // Update the value in the original array
-    const originalIndex = this.allVariations.findIndex(v => v.name === this.filteredVariations[index].name);
-    if (originalIndex !== -1) {
-      this.allVariations[originalIndex].value = newValue;
+  updateVariationQuantity(variation: Variation): void {
+    // Update quantity in the variation object
+    // This is handled by ngModel binding
+  }
+
+  addVariationToCart(variation: Variation): void {
+    if (variation.quantity && variation.quantity > 0 && !this.isVariationInCart(variation)) {
+      const cartItem: InventoryCartItem = {
+        variationId: variation.id,
+        variationName: variation.name,
+        variationValue: variation.value,
+        quantity: variation.quantity,
+        isUniversal: false
+      };
+      
+      this.inventoryCart.push(cartItem);
+      
+      // Reset the variation quantity after adding to cart
+      variation.quantity = 0;
     }
   }
 
-  addVariationToSelected(variation: Variation): void {
-    if (!this.isVariationSelected(variation) && variation.value?.trim()) {
-      this.selectedVariations.push({ 
-        name: variation.name, 
-        value: variation.value.trim() 
-      });
+  addUniversalProductToCart(): void {
+    if (this.universalProductQuantity > 0 && !this.universalProductInCart) {
+      const cartItem: InventoryCartItem = {
+        quantity: this.universalProductQuantity,
+        isUniversal: true
+      };
+      
+      this.inventoryCart.push(cartItem);
+      this.universalProductInCart = true;
+      this.universalProductQuantity = 0;
     }
   }
 
-  removeSelectedVariation(index: number): void {
-    this.selectedVariations.splice(index, 1);
-  }
-
-  isVariationSelected(variation: Variation): boolean {
-    return this.selectedVariations.some(selected => 
-      selected.name === variation.name && selected.value === variation.value
+  isVariationInCart(variation: Variation): boolean {
+    return this.inventoryCart.some(item => 
+      item.variationId === variation.id
     );
+  }
+
+  removeFromCart(index: number): void {
+    const removedItem = this.inventoryCart[index];
+    
+    if (removedItem.isUniversal) {
+      this.universalProductInCart = false;
+    }
+    
+    this.inventoryCart.splice(index, 1);
+  }
+
+  updateCartItemQuantity(index: number, quantity: number): void {
+    if (quantity > 0) {
+      this.inventoryCart[index].quantity = quantity;
+    }
   }
 
   getFilteredWarehouses() {
@@ -179,6 +238,9 @@ export class AddInventoryComponent implements OnInit {
     this.productSearchTerm = product.name;
     this.inventoryForm.patchValue({ prodcut: product.id });
     this.showProductDropdown = false;
+    
+    // Load variations for the selected product
+    this.loadProductVariations(product);
   }
   
   hideWarehouseDropdown() {
@@ -205,42 +267,54 @@ export class AddInventoryComponent implements OnInit {
     this.productSearchTerm = '';
     this.inventoryForm.patchValue({ prodcut: '' });
     this.showProductDropdown = false;
+    
+    // Clear variations and inventory data when product is cleared
+    this.clearProductVariations();
   }
 
   onSubmit(): void {
-    if (this.inventoryForm.valid && this.selectedVariations.length > 0 && this.selectedWarehouse && this.selectedProduct) {
+    if (this.selectedWarehouse && this.selectedProduct && this.inventoryCart.length > 0) {
       this.loading = true;
       
-      // For now, we'll use the first selected variation as the product variation
-      // In a real implementation, you'd need to create or find the product variation
-      const firstVariation = this.selectedVariations[0];
-      
-      const addInventoryRequest: AddInventoryRequest = {
-        warehouseId: this.selectedWarehouse.id,
-        productId: this.selectedProduct.id,
-        productVariationId: 1, // This should be the actual variation ID from the API
-        quantity: parseInt(this.inventoryForm.value.quantity),
-        notes: `Variations: ${this.selectedVariations.map(v => `${v.name}: ${v.value}`).join(', ')}`
-      };
+      // Process each item in the cart as a separate inventory addition
+      const inventoryPromises = this.inventoryCart.map(item => {
+        const addInventoryRequest: AddInventoryRequest = {
+          warehouseId: this.selectedWarehouse!.id,
+          productId: this.selectedProduct!.id,
+          productVariationId: item.variationId || 0, // Use 0 for universal products or handle differently based on API requirements
+          quantity: item.quantity,
+          notes: item.isUniversal 
+            ? 'Universal product - no variations' 
+            : `Variation: ${item.variationName} - ${item.variationValue}`
+        };
+        
+        return this.warehouseInventoryService.addInventory(addInventoryRequest);
+      });
 
-      this.warehouseInventoryService.addInventory(addInventoryRequest).subscribe({
-        next: (response) => {
-          console.log('Inventory added successfully:', response);
+      // Execute all inventory additions using forkJoin
+      forkJoin(inventoryPromises).subscribe({
+        next: (responses) => {
+          console.log('All inventory items added successfully:', responses);
           this.loading = false;
           this.router.navigate(['/warehouse']);
         },
         error: (error) => {
-          console.error('Error adding inventory:', error);
+          console.error('Error adding inventory items:', error);
           this.loading = false;
         }
       });
     } else {
-      console.log('Form is invalid or no variations selected');
+      console.log('Missing required selections or no items in cart');
     }
   }
 
   onCancel() {
     this.inventoryForm.reset();
+    this.selectedWarehouse = null;
+    this.selectedProduct = null;
+    this.warehouseSearchTerm = '';
+    this.productSearchTerm = '';
+    this.clearProductVariations();
   }
 
   addAnotherInventory() {

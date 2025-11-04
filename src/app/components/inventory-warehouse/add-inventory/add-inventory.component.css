@@ -1,23 +1,25 @@
 /* Variation Section Styling */
 .variation-section {
-  margin: 10px 0;
+  margin: 24px 0;
   background: #fff;
   border-radius: 8px;
-  /* padding: 20px; */
-  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .variation-section h3 {
-  margin: 0 0 20px 0;
+  margin: 0;
+  padding: 20px 20px 0 20px;
   color: #333;
   font-size: 18px;
   font-weight: 500;
+  border-bottom: none;
 }
 
 /* Search Container */
 .search-container {
   position: relative;
-  margin-bottom: 20px;
+  margin: 20px 20px 0 20px;
   display: flex;
   align-items: center;
   max-width: 400px;
@@ -46,22 +48,27 @@
   box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
 }
 
-/* Variation Table Container with Scroll */
+/* Variation Table Container with Horizontal and Vertical Scroll */
 .variation-table-container {
+  margin: 20px;
   border: 1px solid #e0e0e0;
   border-radius: 6px;
-  overflow: hidden;
+  overflow: auto; /* Enable both horizontal and vertical scrolling */
   background: #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  max-height: 400px; /* Set max height for vertical scroll */
+  position: relative;
 }
 
 .variation-table {
   width: 100%;
+  min-width: 600px; /* Minimum width to ensure proper column spacing */
   border-collapse: collapse;
   font-size: 14px;
+  table-layout: auto; /* Allow flexible column widths */
 }
 
-/* Table Header */
+/* Table Header - Sticky for vertical scroll */
 .variation-table thead {
   background: #f5f5f5;
   position: sticky;
@@ -78,23 +85,13 @@
   font-size: 12px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  white-space: nowrap; /* Prevent header text wrapping */
+  position: sticky;
+  top: 0;
+  background: #f5f5f5; /* Ensure background stays during scroll */
 }
 
-/* Table Body with Scroll */
-.variation-table tbody {
-  display: block;
-  max-height: 300px; /* Show ~5 rows (60px per row) */
-  overflow-y: auto;
-  width: 100%;
-}
-
-.variation-table thead,
-.variation-table tbody tr {
-  display: table;
-  width: 100%;
-  table-layout: fixed;
-}
-
+/* Table Body */
 .variation-table tbody tr {
   border-bottom: 1px solid #f0f0f0;
   transition: background-color 0.2s ease;
@@ -109,25 +106,36 @@
 }
 
 .variation-table td {
-  padding: 12px 16px;
+  padding: 16px 20px;
   vertical-align: middle;
   color: #333;
+  white-space: nowrap; /* Prevent cell content wrapping */
 }
 
-/* Column widths */
+/* Column widths - More flexible for horizontal scroll */
 .variation-table th:nth-child(1),
 .variation-table td:nth-child(1) {
-  width: 35%;
+  min-width: 150px;
+  width: 25%;
 }
 
 .variation-table th:nth-child(2),
 .variation-table td:nth-child(2) {
-  width: 35%;
+  min-width: 150px;
+  width: 25%;
 }
 
 .variation-table th:nth-child(3),
 .variation-table td:nth-child(3) {
-  width: 30%;
+  min-width: 120px;
+  width: 25%;
+}
+
+.variation-table th:nth-child(4),
+.variation-table td:nth-child(4) {
+  min-width: 100px;
+  width: 25%;
+  text-align: center;
 }
 
 /* Add Button Styling */
@@ -143,6 +151,8 @@
   transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
+  min-width: 70px;
 }
 
 .btn-add-variation:hover:not(:disabled) {
@@ -157,6 +167,15 @@
   cursor: not-allowed;
   transform: none !important;
   box-shadow: none !important;
+}
+
+.btn-add-variation.btn-added {
+  background: #2196F3;
+  color: white;
+}
+
+.btn-add-variation.btn-added:hover {
+  background: #1976D2;
 }
 
 /* Variation Value Input Styling */
@@ -182,112 +201,422 @@
   /* font-style: italic; */
 }
 
-/* Custom Scrollbar for Webkit browsers */
-.variation-table tbody::-webkit-scrollbar {
-  width: 6px;
+/* Custom Scrollbar for Webkit browsers - Both horizontal and vertical */
+.variation-table-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.variation-table tbody::-webkit-scrollbar-track {
+.variation-table-container::-webkit-scrollbar-track {
   background: #f1f1f1;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
-.variation-table tbody::-webkit-scrollbar-thumb {
+.variation-table-container::-webkit-scrollbar-thumb {
   background: #c1c1c1;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
-.variation-table tbody::-webkit-scrollbar-thumb:hover {
+.variation-table-container::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
 
-/* Selected Variations Section */
-.selected-variations-section {
-  margin-top: 24px;
+.variation-table-container::-webkit-scrollbar-corner {
+  background: #f1f1f1;
+}
+
+/* Scroll indicators for better UX */
+.variation-table-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(to left, rgba(255,255,255,0.8), transparent);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 5;
+}
+
+.variation-table-container:hover::before {
+  opacity: 1;
+}
+
+/* Universal Product Section */
+.universal-product-section {
+  margin: 20px;
   padding: 20px;
   background: #f8f9fa;
   border-radius: 6px;
   border: 1px solid #e9ecef;
 }
 
-.selected-variations-section h4 {
-  margin: 0 0 16px 0;
-  color: #333;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.variation-tags-container {
+.universal-product-form {
   display: flex;
+  align-items: end;
+  gap: 16px;
   flex-wrap: wrap;
-  gap: 8px;
 }
 
-.variation-tag {
-  display: inline-flex;
-  align-items: center;
-  background-color: #A0EBE5;
-  color: #08504B;
-  padding: 6px 12px;
-  border: 1px solid #08504B;
-  border-radius: 10px;
+.universal-product-form .form-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.universal-product-form .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
   font-size: 14px;
   font-weight: 500;
 }
 
-.variation-text {
-  margin-right: 8px;
+.quantity-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
 }
 
-.remove-tag {
-  background: none;
-  border: none;
-  color: #065f46;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
+.quantity-input:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
+/* Inventory Cart Section */
+.inventory-cart-section {
+  margin-top: 24px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.inventory-cart-section h4 {
+  margin: 0;
+  padding: 20px 20px 0 20px;
+  color: #333;
+  font-size: 18px;
+  font-weight: 500;
+  border-bottom: none;
+}
+
+/* Cart Table Container */
+.cart-table-container {
+  padding: 20px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* Cart Table Header */
+.cart-table thead {
+  background: #f5f5f5;
+}
+
+.cart-table thead th {
+  padding: 16px 20px;
+  text-align: left;
+  font-weight: 600;
+  color: #555;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Cart Table Body */
+.cart-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
   transition: background-color 0.2s ease;
 }
 
-.remove-tag:hover {
-  background: rgba(255, 255, 255, 0.2);
+.cart-table tbody tr:hover {
+  background-color: #f8f9fa;
 }
 
-.remove-tag mat-icon {
+.cart-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.cart-table td {
+  padding: 16px 20px;
+  vertical-align: middle;
+  color: #333;
+}
+
+/* Cart Column widths */
+.cart-table th:nth-child(1),
+.cart-table td:nth-child(1) {
+  width: 50%;
+}
+
+.cart-table th:nth-child(2),
+.cart-table td:nth-child(2) {
+  width: 30%;
+}
+
+.cart-table th:nth-child(3),
+.cart-table td:nth-child(3) {
+  width: 20%;
+  text-align: center;
+}
+
+/* Cart Quantity Input */
+.cart-quantity-input {
+  width: 80px;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
   font-size: 14px;
-  width: 14px;
-  height: 14px;
+  background: #fff;
+  transition: border-color 0.3s ease;
+  text-align: center;
+}
+
+.cart-quantity-input:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
+/* Remove Button */
+.btn-remove {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.btn-remove:hover {
+  background: #d32f2f;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
+}
+
+.btn-remove mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* No Product/Variations Messages */
+.no-product-message,
+.no-variations-message {
+  text-align: center;
+  padding: 40px 20px;
+  margin: 20px;
+  color: #666;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.no-product-message mat-icon,
+.no-variations-message mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+  color: #1976d2;
+}
+
+.no-product-message p,
+.no-variations-message p {
+  margin: 0;
+  font-size: 16px;
+  color: #666;
+}
+
+/* Form Actions Styling */
+.form-actions {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-start;
+}
+
+.form-actions .btn {
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.form-actions .btn-primary {
+  background: #1976d2;
+  color: white;
+}
+
+.form-actions .btn-primary:hover:not(:disabled) {
+  background: #1565c0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(25, 118, 210, 0.3);
+}
+
+.form-actions .btn-primary:disabled {
+  background: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.form-actions .btn-outline {
+  background: transparent;
+  color: #666;
+  border: 1px solid #e0e0e0;
+}
+
+.form-actions .btn-outline:hover {
+  background: #f5f5f5;
+  border-color: #ccc;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .variation-table-container {
+    margin: 15px;
+    max-height: 350px;
+  }
+
+  .variation-table {
+    min-width: 500px; /* Ensure horizontal scroll on mobile */
+  }
+
   .variation-table th:nth-child(1),
   .variation-table td:nth-child(1) {
-    width: 40%;
+    min-width: 120px;
   }
 
   .variation-table th:nth-child(2),
   .variation-table td:nth-child(2) {
-    width: 35%;
+    min-width: 120px;
   }
 
   .variation-table th:nth-child(3),
   .variation-table td:nth-child(3) {
-    width: 25%;
+    min-width: 100px;
+  }
+
+  .variation-table th:nth-child(4),
+  .variation-table td:nth-child(4) {
+    min-width: 80px;
   }
 
   .variation-table th,
   .variation-table td {
     padding: 12px 16px;
+    font-size: 13px;
+  }
+
+  /* Mobile scroll hint */
+  .variation-table-container::after {
+    content: '← Scroll horizontally →';
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    opacity: 0;
+    animation: scrollHint 3s ease-in-out;
+    pointer-events: none;
+    z-index: 15;
+  }
+
+  @keyframes scrollHint {
+    0%, 90%, 100% { opacity: 0; }
+    10%, 80% { opacity: 1; }
   }
 
   .search-container {
     max-width: 100%;
+  }
+
+  .universal-product-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .universal-product-form .form-group {
+    min-width: auto;
+  }
+
+  .cart-table th,
+  .cart-table td {
+    padding: 12px 16px;
+    font-size: 12px;
+  }
+
+  .cart-table th:nth-child(1),
+  .cart-table td:nth-child(1) {
+    width: 45%;
+  }
+
+  .cart-table th:nth-child(2),
+  .cart-table td:nth-child(2) {
+    width: 35%;
+  }
+
+  .cart-table th:nth-child(3),
+  .cart-table td:nth-child(3) {
+    width: 20%;
+  }
+
+  .cart-quantity-input {
+    width: 60px;
+    padding: 6px 8px;
+  }
+
+  .btn-remove {
+    width: 32px;
+    height: 32px;
+    padding: 6px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 
