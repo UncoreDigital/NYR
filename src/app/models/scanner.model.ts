@@ -1,34 +1,37 @@
 export interface ScannerResponse {
   id: number;
-  scannerId: string;
+  serialNo: string;
   scannerName: string;
   scannerPIN: string;
+  scannerUrl?: string;
   locationId: number;
   locationName: string;
   createdAt: string;
   isActive: boolean;
-  scannerUrl?: string;
 }
 
 export interface CreateScannerRequest {
-  scannerId: string;
+  serialNo: string;
   scannerName: string;
   scannerPIN: string;
+  scannerUrl?: string;
   locationId: number;
 }
 
 export interface UpdateScannerRequest {
-  scannerId: string;
+  serialNo: string;
   scannerName: string;
   scannerPIN: string;
+  scannerUrl?: string;
   locationId: number;
   isActive: boolean;
 }
 
 export interface Scanner {
-  scannerId: string;
+  serialNo: string;
   scannerName: string;
   scannerPin: string;
+  scannerUrl?: string;
   location: string;
 }
 
