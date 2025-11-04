@@ -41,6 +41,7 @@ export class AddScannerComponent implements OnInit {
       location: ['', Validators.required],
       scannerId: ['', Validators.required],
       scannerPin: ['0000'],
+      scannerUrl: ['']
     });
   }
 
@@ -68,7 +69,7 @@ export class AddScannerComponent implements OnInit {
       setTimeout(() => {
         // Mock scanner data for editing
         const mockScanner: Scanner = {
-          scannerId: this.scannerId!,
+          serialNo: this.scannerId!,
           scannerName: `Scanner ${this.scannerId}`,
           location: 'Warehouse A'
         };
@@ -84,7 +85,7 @@ export class AddScannerComponent implements OnInit {
     this.scannerForm.get('scannerPin')?.enable();
     
     this.scannerForm.patchValue({
-      scannerId: scanner.scannerId,
+      scannerId: scanner.serialNo,
       scannerName: scanner.scannerName,
       location: scanner.location,
       scannerPin: scanner.scannerPin || '0000',

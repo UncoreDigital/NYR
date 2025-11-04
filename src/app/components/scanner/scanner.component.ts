@@ -8,10 +8,11 @@ import { ToastService } from 'src/app/services/toast.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 export interface Scanner {
-  scannerId: number;
+  serialNo: number;
   scannerName: string;
   location: string;
   scannerPin?: string;
+  scannerUrl?: string;
 }
 
 @Component({
@@ -21,17 +22,17 @@ export interface Scanner {
 })
 
 export class ScannerComponent implements OnInit {
-  displayedColumns: string[] = ['scannerId', 'scannerName', 'scannerPin', 'location', 'actions'];
+  displayedColumns: string[] = ['serialNo', 'scannerName', 'scannerPin', 'location', 'actions', 'scannerUrl'];
   dataSource = new MatTableDataSource<Scanner>();
 
   isLoading = false;
   errorMessage = '';
   scanners: Scanner[] = [
-    { scannerId: 1, scannerName: 'Scanner A', location: 'Warehouse 1', scannerPin: '0000' },
-    { scannerId: 2, scannerName: 'Scanner B', location: 'Warehouse 2', scannerPin: '1234' },
-    { scannerId: 3, scannerName: 'Scanner C', location: 'Warehouse 3', scannerPin: '9632' },
-    { scannerId: 4, scannerName: 'Scanner D', location: 'Warehouse 4', scannerPin: '7412' },
-    { scannerId: 5, scannerName: 'Scanner E', location: 'Warehouse 5', scannerPin: '0000' }
+    { serialNo: 1, scannerName: 'Scanner A', location: 'Warehouse 1', scannerPin: '0000', scannerUrl: 'http://scanner-a.local' },
+    { serialNo: 2, scannerName: 'Scanner B', location: 'Warehouse 2', scannerPin: '1234', scannerUrl: 'http://scanner-b.local' },
+    { serialNo: 3, scannerName: 'Scanner C', location: 'Warehouse 3', scannerPin: '9632', scannerUrl: 'http://scanner-c.local' },
+    { serialNo: 4, scannerName: 'Scanner D', location: 'Warehouse 4', scannerPin: '7412', scannerUrl: 'http://scanner-d.local' },
+    { serialNo: 5, scannerName: 'Scanner E', location: 'Warehouse 5', scannerPin: '0000', scannerUrl: 'http://scanner-e.local' }
   ];
   deletingScannerId: number | null = null;
 
@@ -80,7 +81,7 @@ export class ScannerComponent implements OnInit {
 
   editScanner(scanner: Scanner) {
     console.log('Edit Scanner:', scanner);
-    this.router.navigate(['/scanner/edit', scanner.scannerId]);
+    this.router.navigate(['/scanner/edit', scanner.serialNo]);
   }
 
   deleteScanner(scanner: Scanner) {
