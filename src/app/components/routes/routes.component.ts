@@ -160,6 +160,6 @@ export class RoutesComponent implements OnInit {
   }
 
   createRoute() {
-    this.router.navigate(['/crate-route']);
+    this.router.navigate(['/create-route']);
   }
 }

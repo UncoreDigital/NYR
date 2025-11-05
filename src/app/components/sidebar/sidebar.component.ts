@@ -142,6 +142,13 @@ export class SidebarComponent implements OnInit {
     }
 
     // Check routes items
+    const activeRoutesItem:any = (currentUrl.includes('/create-route') || currentUrl.includes('/route-detail')) ? this.menuItems.find(item => item.label === 'Routes') : null;
+
+    if (activeRoutesItem) {
+      activeRoutesItem.active = true;
+      // Keep transfers menu open
+      return;
+    }
 
     // Check settings items
     const activeSettingsItem = this.settingsItems.find(item => 

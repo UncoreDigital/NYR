@@ -182,7 +182,7 @@ const routes: Routes = [
     canActivate: [AuthGuard] 
   },
   { 
-    path: 'crate-route', 
+    path: 'create-route', 
     component: CreateRouteComponent, 
     canActivate: [AuthGuard] 
   },
