@@ -243,11 +243,11 @@
 <div class="modal-overlay" *ngIf="showLocationModal" (click)="closeLocationModal()">
     <div class="location-modal-dialog" (click)="$event.stopPropagation()">
         <div class="location-modal-header">
-            <div class="header-column" (click)="toggleSelectAll()">
-                <mat-icon class="checkbox-icon" [class.checked]="allSelected">
-                    {{allSelected ? 'check_box' : 'check_box_outline_blank'}}
-                </mat-icon>
-                <span class="header-text">CUSTOMER NAME</span>
+            <div class="header-column">
+                <span class="header-text">DRIVER NAME</span>
+            </div>
+            <div class="header-column">
+                <span class="header-text">LOCATION ADDRESS</span>
             </div>
             <div class="header-column">
                 <span class="header-text">STATUS</span>
@@ -262,7 +262,10 @@
                         <mat-icon class="checkbox-icon" [class.checked]="customer.selected">
                             {{customer.selected ? 'check_box' : 'check_box_outline_blank'}}
                         </mat-icon>
-                        <span class="customer-name">{{customer.name}}</span>
+                        <span class="customer-name">{{customer.driverName}}</span>
+                    </div>
+                    <div class="customer-address-column">
+                        <span class="location-address">{{customer.locationAddress}}</span>
                     </div>
                     <div class="customer-status-column">
                         <span class="status-badge" [class.ready-to-ship]="customer.status === 'Ready To Ship'"

@@ -30,7 +30,9 @@ export interface ProductDetail {
 
 export interface Customer {
   id: number;
-  name: string;
+  name?: string;
+  driverName: string;
+  locationAddress: string;
   status: string;
   selected: boolean;
 }
@@ -222,14 +224,14 @@ export class RouteDetailComponent implements OnInit {
   openLocationModal() {
     // Sample customer data - in real app, this would come from API
     this.customers = [
-      { id: 1, name: 'Cervical Collar', status: 'Ready To Ship', selected: true },
-      { id: 2, name: 'Cervical Collar', status: 'Ready To Ship', selected: true },
-      { id: 3, name: 'Cervical Collar', status: 'Ready To Ship', selected: true },
-      { id: 4, name: 'Cervical Collar', status: 'Ready To Ship', selected: true },
-      { id: 5, name: 'Cervical Collar', status: 'Ready To Ship', selected: true },
-      { id: 6, name: 'Cervical Collar', status: 'Ready To Ship', selected: true },
-      { id: 7, name: 'Cervical Collar', status: 'Ready To Ship', selected: true },
-      { id: 8, name: '-', status: 'Follow up', selected: false }
+      { id: 1, driverName: 'John Smith', locationAddress: '123 Main St, New York, NY 10001', status: 'Ready To Ship', selected: true },
+      { id: 2, driverName: 'Jane Doe', locationAddress: '456 Oak Ave, Los Angeles, CA 90210', status: 'Ready To Ship', selected: true },
+      { id: 3, driverName: 'Mike Johnson', locationAddress: '789 Pine Rd, Chicago, IL 60601', status: 'Ready To Ship', selected: true },
+      { id: 4, driverName: 'Sarah Wilson', locationAddress: '321 Elm St, Houston, TX 77001', status: 'Ready To Ship', selected: true },
+      { id: 5, driverName: 'David Brown', locationAddress: '654 Maple Dr, Phoenix, AZ 85001', status: 'Ready To Ship', selected: true },
+      { id: 6, driverName: 'Lisa Anderson', locationAddress: '987 Cedar Ln, Philadelphia, PA 19101', status: 'Ready To Ship', selected: true },
+      { id: 7, driverName: 'Tom Garcia', locationAddress: '147 Birch Way, San Antonio, TX 78201', status: 'Ready To Ship', selected: true },
+      { id: 8, driverName: 'Not Assigned', locationAddress: 'Address Not Available', status: 'Follow up', selected: false }
     ];
     this.updateAllSelectedState();
     this.showLocationModal = true;
