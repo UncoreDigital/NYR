@@ -18,6 +18,23 @@
             <!-- Page Header -->
             <div class="page-header">
                 <h1>Route Details</h1>
+                <div class="button-group">
+                    <!-- <button class="btn btn-primary mr-15 viewIcon" title="View" (click)="openRouteDetail()">
+                        <mat-icon>visibility</mat-icon>
+                    </button> -->
+                    <button class="toggle-btn" [class.active]="currentView === 'table'" (click)="switchView('table')"
+                        matTooltip="Table View" matTooltipPosition="below" style="display: inline;">
+                        <mat-icon>table_view</mat-icon>
+                    </button>
+                    <button class="toggle-btn" [class.active]="currentView === 'map'" (click)="switchView('map')"
+                        matTooltip="Map View" matTooltipPosition="below" style="display: inline; margin-right: 10px;">
+                        <mat-icon>map</mat-icon>
+                    </button>
+                    <button *ngIf="shouldShowActionButtons()" class="btn btn-primary mr-15"
+                        (click)="openApprovalModal()">Approve Route</button>
+                    <button *ngIf="shouldShowActionButtons()" class="btn btn-primary" (click)="openLocationModal()">Add
+                        Location Address</button>
+                </div>
             </div>
 
             <!-- Route Summary Cards -->
@@ -54,8 +71,26 @@
                 <div class="" style="display: flex; gap:10px">
                     <div class="summary-card">
                         <div class="summary-card-content">
+                            <h3 class="summary-title">DRIVER NAME</h3>
+                            <p class="summary-value">{{ driverName }}</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-card-content">
+                            <h3 class="summary-title">DELIVERY DATE</h3>
+                            <p class="summary-value">{{ deliveryDate }}</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-card-content">
                             <h3 class="summary-title">TOTAL STOPS</h3>
                             <p class="summary-value">{{ totalStops }}</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-card-content">
+                            <h3 class="summary-title">STARTING POINT</h3>
+                            <p class="summary-value">{{ startPoint }}</p>
                         </div>
                     </div>
                     <div class="summary-card">
@@ -70,41 +105,14 @@
                             <p class="summary-value">{{ totalTime }}</p>
                         </div>
                     </div>
-                    <div class="summary-card">
-                        <div class="summary-card-content">
-                            <h3 class="summary-title">DELIVERY DATE</h3>
-                            <p class="summary-value">{{ deliveryDate }}</p>
-                        </div>
-                    </div>
+                    
                 </div>
                 <div class="view-toggle-section">
                     <div class="toggle-buttons">
-                        
+
                     </div>
                 </div>
-                <div class="button-group">
-                    <!-- <button class="btn btn-primary mr-15 viewIcon" title="View" (click)="openRouteDetail()">
-                        <mat-icon>visibility</mat-icon>
-                    </button> -->
-                    <button 
-                            class="toggle-btn" 
-                            [class.active]="currentView === 'table'" 
-                            (click)="switchView('table')"
-                            matTooltip="Table View"
-                            matTooltipPosition="below" style="display: inline;">
-                            <mat-icon>table_view</mat-icon>
-                        </button>
-                        <button 
-                            class="toggle-btn" 
-                            [class.active]="currentView === 'map'" 
-                            (click)="switchView('map')"
-                            matTooltip="Map View"
-                            matTooltipPosition="below" style="display: inline; margin-right: 10px;">
-                            <mat-icon>map</mat-icon>
-                        </button>
-                    <button *ngIf="shouldShowActionButtons()" class="btn btn-primary mr-15" (click)="openApprovalModal()">Approve Route</button>
-                    <button *ngIf="shouldShowActionButtons()" class="btn btn-primary" (click)="openLocationModal()">Add Location Address</button>
-                </div>
+
             </div>
 
             <div class="table-container" *ngIf="currentView === 'table'">
@@ -138,9 +146,9 @@
                         </td>
                     </ng-container>
 
-                    <ng-container matColumnDef="eta">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>ETA</th>
-                        <td mat-cell *matCellDef="let route">{{route.eta}}</td>
+                    <ng-container matColumnDef="travelTime">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>TRAVEL TIME</th>
+                        <td mat-cell *matCellDef="let route">{{route.travelTime}}</td>
                     </ng-container>
 
                     <ng-container matColumnDef="deliveryTime">

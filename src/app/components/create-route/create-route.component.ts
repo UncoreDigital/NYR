@@ -21,16 +21,11 @@ export interface CreateRoutes {
   styleUrl: './create-route.component.css'
 })
 export class CreateRouteComponent implements OnInit {
-  displayedColumns: string[] = ['locationName', 'locationAddress', 'status', 'actions'];
-  leftDataSource = new MatTableDataSource<CreateRoutes>();
-  rightDataSource = new MatTableDataSource<CreateRoutes>();
-  selectedItems: CreateRoutes[] = [];
-  isAllSelected = false;
+  displayedColumns: string[] = ['locationName', 'locationAddress', 'status'];
+  dataSource = new MatTableDataSource<CreateRoutes>();
 
-  @ViewChild('leftPaginator') leftPaginator!: MatPaginator;
-  @ViewChild('rightPaginator') rightPaginator!: MatPaginator;
-  @ViewChild('leftSort') leftSort!: MatSort;
-  @ViewChild('rightSort') rightSort!: MatSort;
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
 
   createRoutes: CreateRoutes[] = [
     { id: 1, shippingDate: '2023-10-01', locationName: 'Location A', locationAddress: '123 Main St, Cityville', driverName: 'John Doe', status: 'Low Inventory' },
@@ -75,18 +70,15 @@ export class CreateRouteComponent implements OnInit {
   constructor(private router: Router) { }
 
   ngOnInit(): void {
-    // Initialize left grid with all data (available locations), right grid empty (selected locations)
-    this.leftDataSource.data = [...this.createRoutes];
-    this.rightDataSource.data = [];
+    // Initialize single table with all data
+    this.dataSource.data = [...this.createRoutes];
     this.selectedDriverName = this.driverOptions?.[0].value;
     this.applyFilter();
   }
 
   ngAfterViewInit() {
-    this.leftDataSource.paginator = this.leftPaginator;
-    this.leftDataSource.sort = this.leftSort;
-    this.rightDataSource.paginator = this.rightPaginator;
-    this.rightDataSource.sort = this.rightSort;
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
   }
 
   applyFilter(event?: Event) {
@@ -98,49 +90,46 @@ export class CreateRouteComponent implements OnInit {
       filterValue = this.selectedDriverName || '';
     }
     const filter = filterValue.trim().toLowerCase();
-    this.leftDataSource.filter = filter;
-    this.rightDataSource.filter = filter;
+    this.dataSource.filter = filter;
     this.applyWarehouseFilter();
   }
 
   applyWarehouseFilter() {
-    let leftFilteredData = [...this.leftDataSource.data];
-    let rightFilteredData = [...this.rightDataSource.data];
-    
+    let filteredData = [...this.createRoutes];
+
     // Apply warehouse name filter and search term filter
     if (this.selectedWarehouseName || this.searchTerm) {
       const warehouseLower = this.selectedWarehouseName?.toLowerCase() || '';
       const searchLower = this.searchTerm?.toLowerCase() || '';
-      
+
       const filterFunction = (route: CreateRoutes) => {
-        const matchesWarehouse = !this.selectedWarehouseName || 
+        const matchesWarehouse = !this.selectedWarehouseName ||
           route.locationName.toLowerCase().includes(warehouseLower);
-        const matchesSearch = !this.searchTerm || 
+        const matchesSearch = !this.searchTerm ||
           route.locationName.toLowerCase().includes(searchLower) ||
           route.locationAddress.toLowerCase().includes(searchLower) ||
           route.driverName.toLowerCase().includes(searchLower) ||
           route.status.toLowerCase().includes(searchLower);
-        
+
         return matchesWarehouse && matchesSearch;
       };
-      
-      leftFilteredData = leftFilteredData.filter(filterFunction);
-      rightFilteredData = rightFilteredData.filter(filterFunction);
+
+      filteredData = filteredData.filter(filterFunction);
     }
-    
-    // Note: For now, we're not updating the data sources here as filtering will be handled by the mat-table filter
+
+    this.dataSource.data = filteredData;
   }
 
   createRoute() {
-    // Check if right data source has data before proceeding
-    if (this.rightDataSource.data.length === 0) {
-      alert('Please select at least one location to create a route.');
+    // Check if any data is available before proceeding
+    if (this.dataSource.data.length === 0) {
+      alert('No locations available to create a route.');
       return;
     }
-    
-    // Proceed with route creation if data is available
-    console.log('Creating route with selected locations:', this.rightDataSource.data);
-    this.showCreateModal = true;
+    this.saveRoute();
+    // Proceed with route creation using all available data
+    console.log('Creating route with all locations:', this.dataSource.data);
+    // this.showCreateModal = true;
   }
 
   viewMap(route: CreateRoutes) {
@@ -172,58 +161,26 @@ export class CreateRouteComponent implements OnInit {
     return classMap[status] || 'status-default';
   }
 
-  // Checkbox methods
-  isAllSelectedCheckbox(): boolean {
-    const numSelected = this.selectedItems.length;
-    const numRows = this.leftDataSource.data.length + this.rightDataSource.data.length;
-    return numSelected === numRows;
-  }
-
-  masterToggle() {
-    this.isAllSelected = this.isAllSelectedCheckbox();
-
-    if (this.isAllSelected) {
-      this.selectedItems = [];
-    } else {
-      this.selectedItems = [...this.leftDataSource.data, ...this.rightDataSource.data];
-    }
-  }
-
-  isRowSelected(row: CreateRoutes): boolean {
-    return this.selectedItems.some(item => item.id === row.id);
-  }
-
-  toggleRowSelection(row: CreateRoutes) {
-    const index = this.selectedItems.findIndex(item => item.id === row.id);
-    if (index > -1) {
-      this.selectedItems.splice(index, 1);
-    } else {
-      this.selectedItems.push(row);
-    }
-    this.isAllSelected = this.isAllSelectedCheckbox();
-  }
-
-  getSelectedCount(): number {
-    return this.selectedItems.length;
+  getAvailableCount(): number {
+    return this.dataSource.data.length;
   }
 
   saveRoute() {
-    // Navigate to route-detail with selected locations data
+    // Navigate to route-detail with all available locations data
     this.router.navigate(['/route-detail'], {
       state: {
-        selectedLocations: this.rightDataSource.data,
+        selectedLocations: this.dataSource.data,
         routeData: {
           selectedDate: this.selectedDate,
           selectedDriver: this.selectedDriverName,
-          totalLocations: this.rightDataSource.data.length
+          totalLocations: this.dataSource.data.length
         }
       }
     });
   }
 
   closeModal() {
-    this.selectedItems = [];
-    this.isAllSelected = false;
+    this.showCreateModal = false;
   }
 
   // onDriverOptionChange(event: any) {
@@ -272,11 +229,10 @@ export class CreateRouteComponent implements OnInit {
     this.selectedWarehouseName = '';
     this.searchTerm = '';
     this.selectedDriverName = '';
-    // Reset to original data distribution - all data on left, none on right
-    this.leftDataSource.data = [...this.createRoutes];
-    this.rightDataSource.data = [];
-    this.leftDataSource.filter = '';
-    this.rightDataSource.filter = '';
+    this.selectedDate = '';
+    // Reset data to original state
+    this.dataSource.data = [...this.createRoutes];
+    this.dataSource.filter = '';
   }
 
   getUniqueWarehouseNames(): string[] {
@@ -288,25 +244,10 @@ export class CreateRouteComponent implements OnInit {
     this.applyWarehouseFilter();
   }
 
-  // Grid movement methods
-  moveToRight(item: CreateRoutes) {
-    // Remove from left grid
-    const leftData = this.leftDataSource.data.filter(route => route.id !== item.id);
-    this.leftDataSource.data = leftData;
-    
-    // Add to right grid
-    const rightData = [...this.rightDataSource.data, item];
-    this.rightDataSource.data = rightData;
-  }
 
-  moveToLeft(item: CreateRoutes) {
-    // Remove from right grid
-    const rightData = this.rightDataSource.data.filter(route => route.id !== item.id);
-    this.rightDataSource.data = rightData;
-    
-    // Add to left grid
-    const leftData = [...this.leftDataSource.data, item];
-    this.leftDataSource.data = leftData;
+
+  onDateFilterChange() {
+    this.applyFilter();
   }
 
 }

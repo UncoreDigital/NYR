@@ -14,7 +14,7 @@ export interface routeDetail {
   location: string;
   inventoryItem: string;
   shippingItem: string;
-  eta?: string;
+  travelTime?: string;
   deliveryTime?: string;
 }
 
@@ -41,7 +41,7 @@ export interface Customer {
   styleUrl: './route-detail.component.css'
 })
 export class RouteDetailComponent implements OnInit {
-  baseColumns: string[] = ['stop', 'location', 'inventoryItem', 'shippingItem', 'eta', 'deliveryTime'];
+  baseColumns: string[] = ['stop', 'location', 'inventoryItem', 'shippingItem', 'travelTime', 'deliveryTime'];
   dataSource = new MatTableDataSource<routeDetail>();
 
   // Dynamic displayedColumns getter
@@ -70,10 +70,10 @@ export class RouteDetailComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   routeDetail: routeDetail[] = [
-    { stop: 'Stop 1', deliveryDate: '2023-10-01', location: 'New York, NY', inventoryItem: '2 Items', shippingItem: '2 Items', eta: '10 AM', deliveryTime: '12 PM' },
-    { stop: 'Stop 2', deliveryDate: '2023-10-02', location: 'Los Angeles, CA', inventoryItem: '3 Items', shippingItem: '4 Items', eta: '11 AM', deliveryTime: '2 PM' },
-    { stop: 'Stop 3', deliveryDate: '2023-10-03', location: 'Chicago, IL', inventoryItem: '4 Items', shippingItem: '3 Items', eta: '12 PM', deliveryTime: '5 PM' },
-    { stop: 'Stop 12', deliveryDate: '2023-10-12', location: 'Jacksonville, FL', inventoryItem: '5 Items', shippingItem: '2 Items', eta: '1 PM', deliveryTime: '1 PM' },
+    { stop: 'Stop 1', deliveryDate: '2023-10-01', location: 'New York, NY', inventoryItem: '2 Items', shippingItem: '2 Items', travelTime: '1 hr', deliveryTime: '12 PM' },
+    { stop: 'Stop 2', deliveryDate: '2023-10-02', location: 'Los Angeles, CA', inventoryItem: '3 Items', shippingItem: '4 Items', travelTime: '2 hr', deliveryTime: '2 PM' },
+    { stop: 'Stop 3', deliveryDate: '2023-10-03', location: 'Chicago, IL', inventoryItem: '4 Items', shippingItem: '3 Items', travelTime: '0.5 hr', deliveryTime: '5 PM' },
+    { stop: 'Stop 12', deliveryDate: '2023-10-12', location: 'Jacksonville, FL', inventoryItem: '5 Items', shippingItem: '2 Items', travelTime: '3 hr', deliveryTime: '1 PM' },
   ];
   showRouteDetail = false;
 
@@ -82,6 +82,8 @@ export class RouteDetailComponent implements OnInit {
   totalDistance = '20 Miles';
   totalTime = '1.5 Hrs';
   deliveryDate = 'Oct 30, 2025';
+  driverName = 'John Doe';
+  startPoint = 'Warehouse A';
 
   // Properties for received data from create-route
   selectedLocations: any[] = [];
@@ -101,7 +103,7 @@ export class RouteDetailComponent implements OnInit {
     if (state && state.selectedLocations) {
       this.selectedLocations = state.selectedLocations || [];
       this.routeCreationData = state.routeData || {};
-      
+      this.selectedLocations.map(location => location.travelTime = '1 hr');
       console.log('Received selected locations:', this.selectedLocations);
       console.log('Received route data:', this.routeCreationData);
       
@@ -133,7 +135,9 @@ export class RouteDetailComponent implements OnInit {
         deliveryDate: location.shippingDate || this.routeCreationData.selectedDate || '2023-10-01',
         location: location.locationAddress || location.locationName,
         inventoryItem: '2 Items', // Default value - could be calculated based on location data
-        shippingItem: '2 Items'   // Default value - could be calculated based on location data
+        shippingItem: '2 Items',   // Default value - could be calculated based on location data
+        travelTime: location.travelTime || '1 hr',
+        deliveryTime: '12 PM'     // Default value - could be calculated based on location data
       }));
       
       this.dataSource.data = convertedData;
