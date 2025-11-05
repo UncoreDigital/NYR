@@ -249,16 +249,84 @@
                                    [placeholder]="isEditMode ? 'Enter new password (leave blank to keep current)' : 'Enter Password'" />
                         </div>
                     </div>
-                    <div class="form-row" *ngIf="userForm.get('roleId')?.value == 3">
+                    <div class="form-row">
                         <div class="form-group">
+                            <label>Address Line 1</label>
+                            <input formControlName="address1" type="text" placeholder="Enter Address Line 1" />
+                        </div>
+                        <div class="form-group">
+                            <label>Address Line 2</label>
+                            <input formControlName="address2" type="text" placeholder="Enter Address Line 2" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City</label>
+                            <input formControlName="city" type="text" placeholder="Enter City" />
+                        </div>
+                        <div class="form-group">
+                            <label>State</label>
+                            <input formControlName="state" type="text" placeholder="Enter State" />
+                        </div>
+                        <div class="form-group">
+                            <label>Zip Code</label>
+                            <input formControlName="zip" type="text" placeholder="Enter Zip" />
+                        </div>
+                    </div>
+                    <div class="form-row" *ngIf="userForm.get('roleId')?.value == 3">
+                        <!-- <div class="form-group">
                             <label>Home Address</label>
                             <input formControlName="homeAddress" type="text" placeholder="Enter Home Address" />
-                        </div>
+                        </div> -->
                         <div class="form-group">
                             <label>Default Starting Point</label>
-                            <input formControlName="startingPoint" type="text"
-                                placeholder="Enter Default Starting Point" />
+                            <div class="custom-select-container" *ngIf="!isLoadingWarehouses">
+                                <div class="search-wrapper" (click)="showStartingPointDropdown = true">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        placeholder="Select starting point"
+                                        [value]="startingPointSearchTerm"
+                                        (input)="onStartingPointSearchInput($event); filterStartingPoints()"
+                                        (focus)="showStartingPointDropdown = true"
+                                        (blur)="hideStartingPointDropdown()"
+                                        [readonly]="selectedStartingPoint ? true : false"
+                                    >
+                                    <button 
+                                        *ngIf="selectedStartingPoint" 
+                                        type="button" 
+                                        class="clear-button"
+                                        (click)="clearStartingPoint(); $event.stopPropagation()"
+                                    >
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showStartingPointDropdown && !selectedStartingPoint">
+                                    <div 
+                                        class="dropdown-item" 
+                                        *ngFor="let option of getFilteredStartingPoints()"
+                                        (click)="selectStartingPoint(option)"
+                                        [class.selected]="selectedStartingPoint?.id === option.id"
+                                    >
+                                        <div class="dropdown-item-content">
+                                            <span class="option-name">{{ option.name }}</span>
+                                            <span class="option-type" [class.home-type]="option.type === 'home'" [class.warehouse-type]="option.type === 'warehouse'">
+                                                {{ option.type === 'home' ? 'Home' : 'Warehouse' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div *ngIf="getFilteredStartingPoints().length === 0" class="no-results">
+                                        No starting points found
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="isLoadingWarehouses" class="loading-container">
+                                <span class="loading-text">Loading starting points...</span>
+                            </div>
                         </div>
+                        <div class="form-group"></div>
+                        <div class="form-group"></div>
                     </div>
 
                     <div class="form-actions">

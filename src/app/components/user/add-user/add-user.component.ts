@@ -10,8 +10,10 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { UserService } from '../../../services/user.service';
 import { CustomerService, CustomerApiModel } from '../../../services/customer.service';
 import { LocationService } from '../../../services/location.service';
+import { WarehouseService } from '../../../services/warehouse.service';
 import { CreateUserRequest, UserResponse, UpdateUserRequest } from '../../../models/user.model';
 import { DriverAvailability, DriverAvailabilityBulkRequest } from '../../../models/driver-availability.model';
+import { WarehouseResponse } from '../../../models/warehouse.model';
 import { ToastService } from '../../../services/toast.service';
 
 @Component({
@@ -37,7 +39,9 @@ export class AddUserComponent implements OnInit {
   isSaving = false;
   customers: CustomerApiModel[] = [];
   locations: any[] = [];
+  warehouses: WarehouseResponse[] = [];
   isLoadingLocations = false;
+  isLoadingWarehouses = false;
   roles = [
     { id: 1, name: 'Administrators' },
     { id: 2, name: 'Warehouse and Inventory' },
@@ -60,6 +64,12 @@ export class AddUserComponent implements OnInit {
   showLocationDropdown: boolean = false;
   selectedLocation: any = null;
 
+  // Starting Point dropdown properties
+  startingPointSearchTerm: string = '';
+  showStartingPointDropdown: boolean = false;
+  selectedStartingPoint: any = null;
+  startingPointOptions: any[] = [];
+
   constructor(
     private fb: FormBuilder, 
     private router: Router,
@@ -67,6 +77,7 @@ export class AddUserComponent implements OnInit {
     private userService: UserService,
     private customerService: CustomerService,
     private locationService: LocationService,
+    private warehouseService: WarehouseService,
     private toastService: ToastService
   ) {
     this.initializeForm();
@@ -103,6 +114,7 @@ export class AddUserComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCustomers();
+    this.loadWarehouses();
     
     // Check if we're in edit mode
     this.route.params.subscribe(params => {
@@ -128,6 +140,43 @@ export class AddUserComponent implements OnInit {
         this.toastService.error('Error', 'Failed to load customers. Please try again.');
         this.isLoading = false;
       }
+    });
+  }
+
+  loadWarehouses(): void {
+    this.isLoadingWarehouses = true;
+    
+    this.warehouseService.getWarehouses().subscribe({
+      next: (warehouses) => {
+        this.warehouses = warehouses;
+        this.buildStartingPointOptions();
+        this.isLoadingWarehouses = false;
+      },
+      error: (error: any) => {
+        console.error('Error loading warehouses:', error);
+        this.toastService.error('Error', 'Failed to load warehouses. Please try again.');
+        this.isLoadingWarehouses = false;
+      }
+    });
+  }
+
+  buildStartingPointOptions(): void {
+    this.startingPointOptions = [
+      {
+        id: 'home',
+        name: 'Home Address',
+        type: 'home'
+      }
+    ];
+
+    // Add warehouses to options
+    this.warehouses.forEach(warehouse => {
+      this.startingPointOptions.push({
+        id: `warehouse_${warehouse.id}`,
+        name: warehouse.name,
+        type: 'warehouse',
+        warehouseData: warehouse
+      });
     });
   }
 
@@ -193,9 +242,33 @@ export class AddUserComponent implements OnInit {
       startingPoint: ''
     });
     
+    // Set starting point selection if available
+    this.setSelectedStartingPoint(this.userForm.get('startingPoint')?.value || '');
+    
     // Load locations if customer is selected
     if (user.customerId && user.customerId > 0) {
       this.loadLocationsForEdit(user.customerId, user.locationId || 0);
+    }
+  }
+
+  setSelectedStartingPoint(startingPointValue: string): void {
+    if (!startingPointValue) return;
+
+    if (startingPointValue === 'home_address') {
+      const homeOption = this.startingPointOptions.find(opt => opt.type === 'home');
+      if (homeOption) {
+        this.selectedStartingPoint = homeOption;
+        this.startingPointSearchTerm = homeOption.name;
+      }
+    } else if (startingPointValue.startsWith('warehouse_')) {
+      const warehouseId = startingPointValue.replace('warehouse_', '');
+      const warehouseOption = this.startingPointOptions.find(opt => 
+        opt.type === 'warehouse' && opt.warehouseData?.id == warehouseId
+      );
+      if (warehouseOption) {
+        this.selectedStartingPoint = warehouseOption;
+        this.startingPointSearchTerm = warehouseOption.name;
+      }
     }
   }
 
@@ -337,9 +410,11 @@ export class AddUserComponent implements OnInit {
     this.selectedRole = null;
     this.selectedCustomer = null;
     this.selectedLocation = null;
+    this.selectedStartingPoint = null;
     this.roleSearchTerm = '';
     this.customerSearchTerm = '';
     this.locationSearchTerm = '';
+    this.startingPointSearchTerm = '';
     this.pendingDriverAvailabilities = [];
     this.resetDriverAvailabilityForm();
   }
@@ -347,6 +422,14 @@ export class AddUserComponent implements OnInit {
   addAnotherUser() {
     this.showSuccess = false;
     this.userForm.reset();
+    this.selectedRole = null;
+    this.selectedCustomer = null;
+    this.selectedLocation = null;
+    this.selectedStartingPoint = null;
+    this.roleSearchTerm = '';
+    this.customerSearchTerm = '';
+    this.locationSearchTerm = '';
+    this.startingPointSearchTerm = '';
     this.pendingDriverAvailabilities = [];
     this.resetDriverAvailabilityForm();
   }
@@ -842,5 +925,52 @@ export class AddUserComponent implements OnInit {
   onLocationSearchInput(event: Event) {
     const target = event.target as HTMLInputElement;
     this.locationSearchTerm = target.value;
+  }
+
+  // Starting Point dropdown methods
+  getFilteredStartingPoints() {
+    if (!this.startingPointSearchTerm.trim()) {
+      return this.startingPointOptions;
+    }
+    return this.startingPointOptions.filter(option => 
+      option.name.toLowerCase().includes(this.startingPointSearchTerm.toLowerCase())
+    );
+  }
+
+  filterStartingPoints() {
+    if (!this.showStartingPointDropdown) {
+      this.showStartingPointDropdown = true;
+    }
+  }
+
+  selectStartingPoint(option: any) {
+    this.selectedStartingPoint = option;
+    this.startingPointSearchTerm = option.name;
+    
+    if (option.type === 'home') {
+      this.userForm.patchValue({ startingPoint: 'home_address' });
+    } else if (option.type === 'warehouse') {
+      this.userForm.patchValue({ startingPoint: `warehouse_${option.warehouseData.id}` });
+    }
+    
+    this.showStartingPointDropdown = false;
+  }
+
+  hideStartingPointDropdown() {
+    setTimeout(() => {
+      this.showStartingPointDropdown = false;
+    }, 150);
+  }
+
+  clearStartingPoint() {
+    this.selectedStartingPoint = null;
+    this.startingPointSearchTerm = '';
+    this.userForm.patchValue({ startingPoint: '' });
+    this.showStartingPointDropdown = false;
+  }
+
+  onStartingPointSearchInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.startingPointSearchTerm = target.value;
   }
 }

@@ -25,3 +25,40 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Starting Point Dropdown Styles */
+.dropdown-item-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.option-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.option-type {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.home-type {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.warehouse-type {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.loading-text {
+  color: #666;
+  font-size: 0.9rem;
+  font-style: italic;
+}
