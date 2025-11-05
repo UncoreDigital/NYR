@@ -56,6 +56,8 @@ import { AddWarehouseComponent } from './components/warehouse/add-warehouse/add-
 import { AddInventoryComponent } from './components/inventory-warehouse/add-inventory/add-inventory.component';
 import { ScannerComponent } from './components/scanner/scanner.component';
 import { AddScannerComponent } from './components/scanner/add-scanner/add-scanner.component';
+import { VariationComponent } from './components/variation/variation.component';
+import { AddVariationComponent } from './components/variation/add-variation/add-variation.component';
 
 @NgModule({
   declarations: [
@@ -92,7 +94,9 @@ import { AddScannerComponent } from './components/scanner/add-scanner/add-scanne
     AddWarehouseComponent,
     AddInventoryComponent,
     ScannerComponent,
-    AddScannerComponent
+    AddScannerComponent,
+    VariationComponent,
+    AddVariationComponent
   ],
   imports: [
     BrowserModule,

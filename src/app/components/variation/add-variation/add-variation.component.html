@@ -1,0 +1,133 @@
+<div class="page-layout">
+    <app-sidebar></app-sidebar>
+    <div class="main-content">
+        <app-header></app-header>
+        <div class="content">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a routerLink="/variation" class="breadcrumb-item hover:text-blue-600 cursor-pointer active">
+                    Variation
+                </a>
+                <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
+
+                <span class="breadcrumb-item text-gray-800 font-semibold active">
+                    {{ 'Add Variation' }}
+                </span>
+            </div>
+            <div class="table-container" *ngIf="!isLoading">
+
+                <form [formGroup]="variationForm" class="user-form" (ngSubmit)="onSubmit()">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Variation Name*</label>
+                            <input formControlName="variationName" type="text" placeholder="Enter Variation Name" />
+                            <div *ngIf="variationForm.get('variationName')?.invalid && variationForm.get('variationName')?.touched"
+                                class="error-message">
+                                Variation Name is required
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Value Type*</label>
+                            <!-- Value Type Options -->
+                            <div class="value-type-container">
+                                <!-- Dropdown Options -->
+                                <div class="value-type-option" [class.selected]="selectedValueType === 'dropdown'"
+                                    (click)="selectValueType('dropdown')">
+                                    <div class="option-header">
+                                        <mat-icon class="option-icon">arrow_drop_down</mat-icon>
+                                        <span class="option-title">Dropdown Options</span>
+                                    </div>
+                                    <p class="option-description">Predefined set of options (e.g., S, M, L, XL)</p>
+                                </div>
+
+                                <!-- Text Input -->
+                                <div class="value-type-option" [class.selected]="selectedValueType === 'text'"
+                                    (click)="selectValueType('text')">
+                                    <div class="option-header">
+                                        <mat-icon class="option-icon">text_fields</mat-icon>
+                                        <span class="option-title">Text Input</span>
+                                    </div>
+                                    <p class="option-description">Free text entry for each variation</p>
+                                </div>
+                            </div>
+
+                            <!-- Dropdown Options Configuration -->
+                            <div *ngIf="selectedValueType === 'dropdown'" class="dropdown-config">
+                                <div class="form-group">
+                                    <label>Variation Options</label>
+                                    <div class="options-container">
+                                        <div class="option-input-row"
+                                            *ngFor="let option of dropdownOptions.controls; let i = index">
+                                            <input type="text" [formControl]="$any(option.get('value'))"
+                                                class="form-control option-input" [placeholder]="'Option ' + (i + 1)">
+                                            <button type="button" class="remove-option-btn"
+                                                (click)="removeDropdownOption(i)"
+                                                [disabled]="dropdownOptions.length <= 1">
+                                                <mat-icon>delete</mat-icon>
+                                            </button>
+                                        </div>
+                                        <button type="button" class="add-option-btn" (click)="addDropdownOption()">
+                                            <mat-icon>add</mat-icon>
+                                            Add Option
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Quick Templates -->
+                                <div class="form-group">
+                                    <label>Quick Templates</label>
+                                    <div class="template-buttons">
+                                        <button type="button" class="template-btn" (click)="applyTemplate('size')">
+                                            Sizes (XS, S, M, L, XL)
+                                        </button>
+                                        <button type="button" class="template-btn" (click)="applyTemplate('color')">
+                                            Colors (Red, Blue, Green, Black, White)
+                                        </button>
+                                        <button type="button" class="template-btn" (click)="applyTemplate('material')">
+                                            Materials (Cotton, Polyester, Silk, Wool)
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Text Input Configuration -->
+                            <div *ngIf="selectedValueType === 'text'" class="text-config">
+                                <div class="form-group">
+                                    <label>Input Configuration</label>
+                                    <div class="text-options">
+                                        <div class="checkbox-option">
+                                            <input type="checkbox" id="required" formControlName="textInputRequired">
+                                            <label for="required">Required field</label>
+                                        </div>
+                                        <div class="input-group">
+                                            <label>Placeholder Text</label>
+                                            <input type="text" formControlName="textInputPlaceholder"
+                                                class="form-control" placeholder="Enter placeholder text">
+                                        </div>
+                                        <div class="input-group">
+                                            <label>Maximum Length</label>
+                                            <input type="number" formControlName="textInputMaxLength"
+                                                class="form-control" placeholder="Optional (e.g., 50)" min="1">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+                            <span *ngIf="!isSaving">Save</span>
+                            <span *ngIf="isSaving">Saving...</span>
+                        </button>
+                        <button type="reset" class="btn btn-outline" [disabled]="isSaving"
+                            (click)="onCancel()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>

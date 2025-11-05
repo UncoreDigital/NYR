@@ -36,6 +36,8 @@ import { RoleGuard } from './guards/role.guard';
 import { InventoryDetailComponent } from './components/inventory-detail/inventory-detail.component';
 import { ScannerComponent } from './components/scanner/scanner.component';
 import { AddScannerComponent } from './components/scanner/add-scanner/add-scanner.component';
+import { VariationComponent } from './components/variation/variation.component';
+import { AddVariationComponent } from './components/variation/add-variation/add-variation.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -241,6 +243,21 @@ const routes: Routes = [
   { 
     path: 'scanner/edit/:id', 
     component: AddScannerComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'variation', 
+    component: VariationComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'variation/add', 
+    component: AddVariationComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
+    path: 'variation/edit/:id', 
+    component: AddVariationComponent, 
     canActivate: [AuthGuard] 
   },
   { path: '**', redirectTo: '/login' }

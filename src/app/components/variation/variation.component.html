@@ -1,0 +1,77 @@
+<div class="page-layout">
+  <app-sidebar></app-sidebar>
+  <div class="main-content">
+    <app-header></app-header>
+    <div class="content">
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <span class="breadcrumb-item active">Variation</span>
+      </div>
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1>Variation</h1>
+
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-section">
+        <div class="search-container">
+          <mat-icon class="search-icon">search</mat-icon>
+          <input type="text" placeholder="Search..." class="search-input" (keyup)="applyFilter($event)">
+        </div>
+        <button class="btn btn-primary" (click)="addVariation()">
+          Add Variation
+        </button>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading Variation...</p>
+      </div>
+
+      <!-- Variation Table -->
+      <div class="table-container" *ngIf="!isLoading">
+        <table mat-table [dataSource]="dataSource" matSort class="customer-table">
+
+          <!-- Variation NAME Column -->
+          <ng-container matColumnDef="variationName">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>VARIATION NAME</th>
+            <td mat-cell *matCellDef="let variation">{{variation.variationName}}</td>
+          </ng-container>
+
+          <!-- Variation Type Column -->
+          <ng-container matColumnDef="variationType">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>VARIATION TYPE</th>
+            <td mat-cell *matCellDef="let variation">{{variation.variationType}}</td>
+          </ng-container>
+          
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>ACTION</th>
+            <td mat-cell *matCellDef="let variation">
+              <div class="action-group">
+                <button class="group-btn edit" (click)="editVariation(variation)" title="Edit">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <span class="group-divider"></span>
+                <button class="group-btn delete" (click)="deleteVariation(variation)" title="Delete" [disabled]="deletingVariationId === variation.id">
+                  <mat-icon *ngIf="deletingVariationId !== variation.id">delete</mat-icon>
+                  <mat-spinner *ngIf="deletingVariationId === variation.id" diameter="16"></mat-spinner>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <!-- Paginator -->
+        <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons class="table-paginator">
+        </mat-paginator>
+      </div>
+    </div>
+  </div>
+</div>
