@@ -9,9 +9,9 @@ import { WarehouseInventoryDetailResponse } from '../../models/warehouse-invento
 export interface inventoryLocation {
   productName: string,
   skucode: string,
-  size: string,
-  side: string,
-  colour: string,
+  variationType: string,
+  variationValue: string,
+  //colour: string,
   quantity: number,
 }
 
@@ -21,7 +21,7 @@ export interface inventoryLocation {
   styleUrl: './inventory-detail.component.css'
 })
 export class InventoryDetailComponent implements OnInit {
-  displayedColumns: string[] = ['productName', 'skucode', 'size', 'side', 'colour', 'quantity'];
+  displayedColumns: string[] = ['productName', 'skucode', 'variationType', 'variationValue', 'quantity'];
   dataSource = new MatTableDataSource<inventoryLocation>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -100,9 +100,8 @@ export class InventoryDetailComponent implements OnInit {
           this.inventoryLocation = inventoryDetails.map(item => ({
             productName: item.productName,
             skucode: item.productSKU,
-            size: item.variationType === 'Size' ? item.variationValue : '',
-            side: item.variationType === 'Side' ? item.variationValue : 'Universal',
-            colour: item.variationType === 'Color' ? item.variationValue : '',
+            variationType: item.variationType,
+            variationValue: item.variationValue,
             quantity: item.quantity
           }));
           this.dataSource.data = this.inventoryLocation;

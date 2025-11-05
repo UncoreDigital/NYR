@@ -44,7 +44,7 @@ export class AddScannerComponent implements OnInit {
     this.scannerForm = this.fb.group({
       scannerName: ['', Validators.required],
       location: ['', Validators.required],
-      scannerId: ['', Validators.required],
+      serialNo: ['', Validators.required],
       scannerPin: ['0000'],
       scannerUrl: ['']
     });
@@ -99,10 +99,11 @@ export class AddScannerComponent implements OnInit {
     }
     
     this.scannerForm.patchValue({
-      scannerId: scanner.scannerId,
+      serialNo: scanner.serialNo,
       scannerName: scanner.scannerName,
       location: scanner.locationId,
       scannerPin: scanner.scannerPIN || '0000',
+      scannerUrl: scanner.scannerUrl || ''
     });
   }
 
@@ -123,9 +124,10 @@ export class AddScannerComponent implements OnInit {
         this.toastService.info('Saving', 'Updating scanner...');
         
         const updateData: UpdateScannerRequest = {
-          scannerId: formValue.scannerId,
+          serialNo: formValue.serialNo,
           scannerName: formValue.scannerName,
           scannerPIN: formValue.scannerPin,
+          scannerUrl: formValue.scannerUrl,
           locationId: formValue.location,
           isActive: true
         };
@@ -149,9 +151,10 @@ export class AddScannerComponent implements OnInit {
         this.toastService.info('Saving', 'Creating scanner...');
         
         const createData: CreateScannerRequest = {
-          scannerId: formValue.scannerId,
+          serialNo: formValue.serialNo,
           scannerName: formValue.scannerName,
           scannerPIN: formValue.scannerPin,
+          scannerUrl: formValue.scannerUrl,
           locationId: formValue.location
         };
 

@@ -99,60 +99,70 @@
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Quantity</label>
-                            <input formControlName="quantity" type="text" placeholder="Enter Quantity" />
-                        </div>
-                        <div class="form-group">
+
+
+                    <!-- Product Selection Message -->
+                    <div class="variation-section" *ngIf="!selectedProduct">
+                        <div class="no-product-message">
+                            <mat-icon>info</mat-icon>
+                            <p>Please select a product to view its variations.</p>
                         </div>
                     </div>
 
                     <!-- Variation Selection Section -->
-                    <div class="variation-section">
-                        <h3>All Variation List</h3>
+                    <div class="variation-section" *ngIf="selectedProduct">
+                        <h3>Product Variations</h3>
                         
                         <!-- Search Bar -->
-                        <div class="search-container">
+                        <div class="search-container" *ngIf="allVariations.length > 0">
                             <mat-icon class="search-icon">search</mat-icon>
                             <input type="text" placeholder="Search variations..." class="search-input" 
                                    [(ngModel)]="searchTerm" [ngModelOptions]="{standalone: true}" 
                                    (keyup)="applyFilter($event)">
                         </div>
 
+                        <!-- No Variations Message -->
+                        <div *ngIf="allVariations.length === 0" class="no-variations-message">
+                            <mat-icon>info</mat-icon>
+                            <p>This product has no variations available.</p>
+                        </div>
+
                         <!-- Variation Table -->
-                        <div class="variation-table-container">
+                        <div class="variation-table-container" *ngIf="allVariations.length > 0">
                             <table class="variation-table">
                                 <thead>
                                     <tr>
-                                        <th>VARIATION NAME</th>
+                                        <th>VARIATION TYPE</th>
                                         <th>VARIATION VALUE</th>
+                                        <th>QUANTITY</th>
                                         <th>ACTION</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr *ngFor="let variation of filteredVariations; let i = index">
                                         <td>{{variation.name}}</td>
+                                        <td>{{variation.value}}</td>
                                         <td>
-                                            <input type="text" 
+                                            <input type="number" 
                                                    class="variation-value-input" 
-                                                   [(ngModel)]="variation.value" 
+                                                   [(ngModel)]="variation.quantity" 
                                                    [ngModelOptions]="{standalone: true}"
-                                                   placeholder="Enter value"
-                                                   (blur)="updateVariationValue(i, variation.value)">
+                                                   placeholder="0"
+                                                   min="0"
+                                                   (input)="updateVariationQuantity(variation)">
                                         </td>
                                         <td>
                                             <button type="button" 
                                                     class="btn-add-variation" 
-                                                    [class.btn-added]="isVariationSelected(variation)"
-                                                    [disabled]="isVariationSelected(variation) || !variation.value.trim()"
-                                                    (click)="addVariationToSelected(variation)">
-                                                {{isVariationSelected(variation) ? 'Added' : 'Add'}}
+                                                    [class.btn-added]="isVariationInCart(variation)"
+                                                    [disabled]="!variation.quantity || variation.quantity <= 0"
+                                                    (click)="addVariationToCart(variation)">
+                                                {{isVariationInCart(variation) ? 'Added' : 'Add'}}
                                             </button>
                                         </td>
                                     </tr>
-                                    <tr *ngIf="filteredVariations.length === 0" class="empty-row">
-                                        <td colspan="3">
+                                    <tr *ngIf="filteredVariations.length === 0 && allVariations.length > 0" class="empty-row">
+                                        <td colspan="4">
                                             <mat-icon>search_off</mat-icon>
                                             <div>No variations found</div>
                                         </td>
@@ -160,24 +170,76 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
 
-                    <!-- Selected Variations Display -->
-                    <div class="selected-variations-section" *ngIf="selectedVariations.length > 0">
-                        <h4>Selected Variations</h4>
-                        <div class="variation-tags-container">
-                            <div class="variation-tag" *ngFor="let variation of selectedVariations; let i = index">
-                                <span class="variation-text">{{variation.name}} - {{variation.value}}</span>
-                                <button type="button" class="remove-tag" (click)="removeSelectedVariation(i)">
-                                    <mat-icon>close</mat-icon>
+                        <!-- Universal Product (No Variations) -->
+                        <div *ngIf="allVariations.length === 0" class="universal-product-section">
+                            <div class="universal-product-form">
+                                <div class="form-group">
+                                    <label>Quantity</label>
+                                    <input type="number" 
+                                           class="quantity-input" 
+                                           [(ngModel)]="universalProductQuantity" 
+                                           [ngModelOptions]="{standalone: true}"
+                                           placeholder="Enter quantity"
+                                           min="0">
+                                </div>
+                                <button type="button" 
+                                        class="btn-add-variation" 
+                                        [disabled]="!universalProductQuantity || universalProductQuantity <= 0 || universalProductInCart"
+                                        (click)="addUniversalProductToCart()">
+                                    {{universalProductInCart ? 'Added' : 'Add to Cart'}}
                                 </button>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Inventory Cart -->
+                    <div class="inventory-cart-section" *ngIf="inventoryCart.length > 0">
+                        <h4>Inventory to Add</h4>
+                        <div class="cart-table-container">
+                            <table class="cart-table">
+                                <thead>
+                                    <tr>
+                                        <th>VARIATION</th>
+                                        <th>QUANTITY</th>
+                                        <th>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let item of inventoryCart; let i = index">
+                                        <td>
+                                            <span *ngIf="item.variationName && item.variationValue">
+                                                {{item.variationName}} - {{item.variationValue}}
+                                            </span>
+                                            <span *ngIf="!item.variationName">
+                                                Universal Product
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <input type="number" 
+                                                   class="cart-quantity-input" 
+                                                   [(ngModel)]="item.quantity" 
+                                                   [ngModelOptions]="{standalone: true}"
+                                                   min="1"
+                                                   (input)="updateCartItemQuantity(i, item.quantity)">
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn-remove" (click)="removeFromCart(i)">
+                                                <mat-icon>delete</mat-icon>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary" [disabled]="selectedVariations.length === 0">Add</button>
-                        <button type="reset" class="btn btn-outline">Cancel</button>
+                        <button type="submit" class="btn btn-primary" 
+                                [disabled]="!selectedWarehouse || !selectedProduct || inventoryCart.length === 0">
+                            Add Inventory
+                        </button>
+                        <button type="reset" class="btn btn-outline" (click)="onCancel()">Cancel</button>
                     </div>
                 </form>
             </div>

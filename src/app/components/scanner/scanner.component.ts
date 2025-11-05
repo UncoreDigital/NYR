@@ -11,7 +11,7 @@ import { ScannerResponse } from '../../models/scanner.model';
 
 export interface Scanner {
   id: number;
-  scannerId: string;
+  serialNo: string;
   scannerName: string;
   location: string;
   scannerPin?: string;
@@ -69,7 +69,7 @@ export class ScannerComponent implements OnInit {
   private mapApiResponseToScanner(apiScanners: ScannerResponse[]): Scanner[] {
     return apiScanners.map(apiScanner => ({
       id: apiScanner.id,
-      scannerId: apiScanner.scannerId,
+      serialNo: apiScanner.serialNo,
       scannerName: apiScanner.scannerName,
       scannerPin: apiScanner.scannerPIN,
       location: apiScanner.locationName,
