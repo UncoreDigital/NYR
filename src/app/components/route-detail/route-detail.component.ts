@@ -490,11 +490,19 @@ export class RouteDetailComponent implements OnInit {
     const currentData = this.dataSource.data;
     const currentIndex = currentData.findIndex(route => route.stop === currentRoute.stop);
     
-    if (currentIndex >= 0 && currentIndex < currentData.length - 1) {
+    // For the first row (index 0), show distance from starting point to Stop 1
+    if (currentIndex === 0) {
+      const distance = currentRoute.distance || 'N/A';
+      return `Distance from ${this.startPoint} to ${this.truncateLocation(currentRoute.location)}: ${distance}`;
+    }
+    // For middle rows, show distance from current stop to next stop
+    else if (currentIndex > 0 && currentIndex < currentData.length - 1) {
       const nextRoute = currentData[currentIndex + 1];
       const distance = currentRoute.distance || 'N/A';
-      return `From ${this.truncateLocation(currentRoute.location)} & to ${this.truncateLocation(nextRoute.location)}: ${distance}`;
-    } else if (currentIndex === currentData.length - 1) {
+      return `Distance from ${this.truncateLocation(currentRoute.location)} to ${this.truncateLocation(nextRoute.location)}: ${distance}`;
+    } 
+    // For the last row, show it's the final destination
+    else if (currentIndex === currentData.length - 1) {
       return `Final destination: ${this.truncateLocation(currentRoute.location)} - No further stops`;
     }
     
