@@ -23,6 +23,7 @@ export class SidebarComponent implements OnInit {
     { icon: 'route', label: 'Routes', route: '/routes', active: false },
     // { icon: 'analytics', label: 'Tracking & Analytics', route: '/analytics', active: false },
     { icon: 'inventory', label: 'Supplies', route: '/supplies', active: false },
+    { icon: 'settings', label: 'Settings', route: '/settings', active: false },
   ];
 
   inventoryItems = [
@@ -93,6 +94,10 @@ export class SidebarComponent implements OnInit {
       this.isInventoryOpen = false;
       this.isRoutesOpen = false;
     }
+  }
+
+  isSettingsActive(): boolean {
+    return this.settingsItems.some(item => item.active);
   }
 
   toggleRoutes(): void {

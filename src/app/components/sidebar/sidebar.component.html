@@ -18,7 +18,7 @@
       <ul class="nav-list">
         <!-- Regular Menu Items -->
         <ng-container *ngFor="let item of menuItems">
-          <li *ngIf="item.label !== 'Inventory'" class="nav-item" 
+          <li *ngIf="item.label !== 'Inventory' && item.label !== 'Settings'" class="nav-item" 
               [class.active]="item.active"
               (click)="navigate(item.route)">
             <div class="nav-item-content">
@@ -55,36 +55,33 @@
             </div>
           </li>
 
-          <!-- Routes Section with Submenu -->
+          <!-- Settings Section with Submenu -->
+          <li *ngIf="item.label === 'Settings'" class="nav-item inventory-item" 
+              [class.active]="isSettingsActive()">
+            <div class="nav-item-content" (click)="toggleSettings()">
+              <div class="nav-icon">
+                <mat-icon>{{item.icon}}</mat-icon>
+              </div>
+              <span class="nav-label">{{item.label}}</span>
+              <mat-icon class="expand-icon">
+                {{ isInventoryOpen ? 'expand_more' : 'chevron_right' }}
+              </mat-icon>
+            </div>
+            
+            <!-- Settings Submenu with Animation -->
+            <div class="submenu-container" [class.expanded]="isSettingsOpen">
+              <ul class="submenu">
+                <li *ngFor="let subItem of settingsItems" 
+                    class="submenu-item" 
+                    [class.active]="subItem.active"
+                    (click)="navigate(subItem.route)">
+                  <span class="submenu-label">{{subItem.label}}</span>
+                </li>
+              </ul>
+            </div>
+          </li>
         </ng-container>
       </ul>
     </nav>
-
-    <!-- Settings Section -->
-    <div class="settings-section">
-      <div class="settings-header" (click)="toggleSettings()">
-        <div class="settings-header-content">
-          <div class="settings-icon">
-            <mat-icon>settings</mat-icon>
-          </div>
-          <span class="settings-label">Settings</span>
-          <mat-icon class="expand-icon">
-            {{ isSettingsOpen ? 'expand_less' : 'expand_more' }}
-          </mat-icon>
-        </div>
-      </div>
-
-      <!-- Settings Submenu with Animation -->
-      <div class="submenu-container" [class.expanded]="isSettingsOpen">
-        <ul class="settings-list">
-          <li *ngFor="let item of settingsItems" 
-              class="settings-item" 
-              [class.active]="item.active"
-              (click)="navigate(item.route)">
-            <span class="settings-item-label">{{item.label}}</span>
-          </li>
-        </ul>
-      </div>
-    </div>
   </div>
 </div>
