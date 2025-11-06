@@ -168,6 +168,16 @@
                         <td mat-cell *matCellDef="let route">{{route.deliveryTime}}</td>
                     </ng-container>
 
+                    <!-- Status Column - Only shown when route status is not completed -->
+                    <ng-container matColumnDef="status">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>STATUS</th>
+                        <td mat-cell *matCellDef="let route">
+                            <span class="status-badge" [class]="getStatusClass(route.status || 'Not Started')">
+                                {{route.status || 'Not Started'}}
+                            </span>
+                        </td>
+                    </ng-container>
+
                     <!-- Actions Column -->
                     <ng-container matColumnDef="actions" *ngIf="shouldShowActionButtons()">
                         <th mat-header-cell *matHeaderCellDef>ACTION</th>

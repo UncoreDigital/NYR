@@ -17,6 +17,7 @@ export interface routeDetail {
   travelTime?: string;
   deliveryTime?: string;
   distance?: string;
+  status?: string;
 }
 
 export interface ProductDetail {
@@ -49,9 +50,16 @@ export class RouteDetailComponent implements OnInit {
 
   // Dynamic displayedColumns getter
   get displayedColumns(): string[] {
+    let columns = [...this.baseColumns];
+    
+    // Add status column if route status is not "Completed"
+    if (this.routeStatus && this.routeStatus.toLowerCase() !== 'completed') {
+      columns.push('status');
+    }
+    
     return this.shouldShowActionButtons() 
-      ? [...this.baseColumns, 'actions'] 
-      : this.baseColumns;
+      ? [...columns, 'actions'] 
+      : columns;
   }
 
   // Modal properties
@@ -73,10 +81,10 @@ export class RouteDetailComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   routeDetail: routeDetail[] = [
-    { stop: 'Stop 1', deliveryDate: '2023-10-01', location: 'New York, NY', inventoryItem: '2 Items', shippingItem: '2 Items', distance: '5.2 Miles', travelTime: '1 hr', deliveryTime: '12 PM' },
-    { stop: 'Stop 2', deliveryDate: '2023-10-02', location: 'Los Angeles, CA', inventoryItem: '3 Items', shippingItem: '4 Items', distance: '12.8 Miles', travelTime: '2 hr', deliveryTime: '2 PM' },
-    { stop: 'Stop 3', deliveryDate: '2023-10-03', location: 'Chicago, IL', inventoryItem: '4 Items', shippingItem: '3 Items', distance: '8.3 Miles', travelTime: '0.5 hr', deliveryTime: '5 PM' },
-    { stop: 'Stop 12', deliveryDate: '2023-10-12', location: 'Jacksonville, FL', inventoryItem: '5 Items', shippingItem: '2 Items', distance: '15.7 Miles', travelTime: '3 hr', deliveryTime: '1 PM' },
+    { stop: 'Stop 1', deliveryDate: '2023-10-01', location: 'New York, NY', inventoryItem: '2 Items', shippingItem: '2 Items', distance: '5.2 Miles', travelTime: '1 hr', deliveryTime: '12 PM', status: 'Pending' },
+    { stop: 'Stop 2', deliveryDate: '2023-10-02', location: 'Los Angeles, CA', inventoryItem: '3 Items', shippingItem: '4 Items', distance: '12.8 Miles', travelTime: '2 hr', deliveryTime: '2 PM', status: 'In Progress' },
+    { stop: 'Stop 3', deliveryDate: '2023-10-03', location: 'Chicago, IL', inventoryItem: '4 Items', shippingItem: '3 Items', distance: '8.3 Miles', travelTime: '0.5 hr', deliveryTime: '5 PM', status: 'Not Started' },
+    { stop: 'Stop 12', deliveryDate: '2023-10-12', location: 'Jacksonville, FL', inventoryItem: '5 Items', shippingItem: '2 Items', distance: '15.7 Miles', travelTime: '3 hr', deliveryTime: '1 PM', status: 'Pending' },
   ];
   showRouteDetail = false;
 
@@ -141,7 +149,8 @@ export class RouteDetailComponent implements OnInit {
         shippingItem: '2 Items',   // Default value - could be calculated based on location data
         travelTime: location.travelTime || '1 hr',
         deliveryTime: '12 PM',     // Default value - could be calculated based on location data
-        distance: location.distance || `${(index + 1) * 3 + Math.floor(Math.random() * 5)} Miles` // Generate realistic distances
+        distance: location.distance || `${(index + 1) * 3 + Math.floor(Math.random() * 5)} Miles`, // Generate realistic distances
+        status: location.status || 'Not Started' // Default status for new routes
       }));
       
       this.dataSource.data = convertedData;
@@ -338,6 +347,18 @@ export class RouteDetailComponent implements OnInit {
   // View toggle methods
   switchView(view: 'table' | 'map') {
     this.currentView = view;
+  }
+
+  // Status styling methods
+  getStatusClass(status: string): string {
+    const classMap: { [key: string]: string } = {
+      'Completed': 'status-completed',
+      'In Progress': 'status-in-progress',
+      'Not Started': 'status-not-started',
+      'Pending': 'status-pending',
+      'Draft': 'status-draft',
+    };
+    return classMap[status] || 'status-default';
   }
 
 }

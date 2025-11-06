@@ -1,18 +1,21 @@
 .mat-mdc-cell a {
   text-decoration: underline;
-  color: #000000; /* optional, for link color */
+  color: #000000;
+  /* optional, for link color */
   cursor: pointer;
 }
 
 /* Inventory and Shipping link styling */
-.inventory-link, .shipping-link {
+.inventory-link,
+.shipping-link {
   color: #000000;
   text-decoration: underline;
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
-.inventory-link:hover, .shipping-link:hover {
+.inventory-link:hover,
+.shipping-link:hover {
   color: #007bff;
 }
 
@@ -127,8 +130,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 14px;   /* same padding for all buttons */
-  min-height: 40px;    /* force consistent height */
+  padding: 8px 14px;
+  /* same padding for all buttons */
+  min-height: 40px;
+  /* force consistent height */
   border-radius: 6px;
   background-color: #00c4b3;
   color: #fff;
@@ -420,10 +425,14 @@
 .reject-btn:active {
   transform: translateY(1px);
 }
+
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.6);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -436,7 +445,7 @@
   max-width: 600px;
   width: 90%;
   padding: 20px;
-  box-shadow: 0px 6px 20px rgba(0,0,0,0.25);
+  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.25);
 }
 
 .route-modal-header {
@@ -489,7 +498,7 @@
   justify-content: center;
   align-items: center;
   margin-right: 15px;
-  box-shadow: 0px 3px 8px rgba(0,0,0,0.15);
+  box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.15);
 }
 
 .step-info h4 {
@@ -596,15 +605,15 @@
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .summary-card {
     min-width: auto;
   }
-  
+
   .summary-card-content {
     padding: 10px 10px;
   }
-  
+
   .summary-value {
     font-size: 22px;
   }
@@ -673,49 +682,50 @@
   .view-toggle-section {
     margin: 0 10px;
   }
-  
+
   .toggle-btn {
     min-width: 100px;
     padding: 8px 12px;
     font-size: 13px;
   }
-  
+
   .toggle-btn mat-icon {
     font-size: 16px;
     width: 16px;
     height: 16px;
   }
-  
+
   /* Location Modal Responsive */
   .location-modal-dialog {
     width: 95%;
     max-height: 80%;
   }
-  
+
   .location-modal-header {
     grid-template-columns: 2.5fr 3fr 1.5fr;
     gap: 16px;
     padding: 12px 16px;
   }
-  
+
   .header-text {
     font-size: 12px;
   }
-  
+
   .customer-item {
     grid-template-columns: 2.5fr 3fr 1.5fr;
     gap: 16px;
     padding: 12px 16px;
   }
-  
-  .customer-name, .driver-name {
+
+  .customer-name,
+  .driver-name {
     font-size: 12px;
   }
-  
+
   .location-address {
     font-size: 11px;
   }
-  
+
   .status-badge {
     font-size: 10px;
     padding: 4px 8px;
@@ -741,6 +751,56 @@
   border-color: #0ea5e9;
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(14, 165, 233, 0.2);
+}
+
+/* Status Badge Styling */
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 80px;
+  border: 1px solid transparent;
+}
+
+.status-completed {
+  background-color: #CCF3F0;
+  color: #02C3B4;
+  border-color: #CCF3F0;
+}
+
+.status-in-progress {
+  background-color: #fcead8;
+  color: #FF8C00;
+  border-color: #fcead8;
+}
+
+.status-not-started {
+  background-color: #E2E8F0;
+  color: #4A5568;
+  border-color: #E2E8F0;
+}
+
+.status-pending {
+  background-color: #E2E8F0;
+  color: #4A5568;
+  border-color: #E2E8F0;
+}
+
+.status-draft {
+  background-color: #e5efff;
+  color: #7CB0FD;
+  border-color: #e5efff;
+}
+
+.status-default {
+  background-color: #f9fafb;
+  color: #6b7280;
+  border-color: #e5e7eb;
 }
 
 /* Tooltip customization */
