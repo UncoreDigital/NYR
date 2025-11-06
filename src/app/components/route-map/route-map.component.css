@@ -150,9 +150,9 @@
 
 .stop-item {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 10px;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
   transition: all 0.2s ease;
@@ -177,21 +177,82 @@
   border-color: #d1d5db;
 }
 
+.stop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .stop-details {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .stop-location {
-  /* font-weight: 600; */
   color: #1f2937;
   font-size: 15px;
-  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.stop-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .stop-eta {
   color: #6b7280;
   font-size: 13px;
-  margin-bottom: 2px;
+}
+
+.stop-distance {
+  color: #02c3b4;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.stop-inventory-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.stop-location-inventory,
+.stop-shipping-inventory {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.stop-location-inventory .label,
+.stop-shipping-inventory .label {
+  font-size: 11px;
+  color: #6b7280;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.stop-location-inventory .value,
+.stop-shipping-inventory .value {
+  font-size: 13px;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+/* Inventory Link Styles */
+.inventory-link,
+.shipping-link {
+  color: #02c3b4 !important;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.inventory-link:hover,
+.shipping-link:hover {
+  color: #0891b2 !important;
 }
 
 .stop-items {
@@ -483,4 +544,110 @@
   .stop-number {
     align-self: flex-start;
   } */
+}
+
+/* Product Details Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+}
+
+.modal-overlay.inventory-modal {
+  z-index: 1100;
+}
+
+.modal-dialog {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 90%;
+  max-height: 90%;
+  width: 800px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+}
+
+.modal-content {
+  flex: 1;
+  padding: 16px 24px;
+  overflow-y: auto;
+}
+
+.modal-table-container {
+  overflow-x: auto;
+}
+
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.product-table th {
+  background-color: #f8f9fa;
+  color: #333;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 2px solid #e0e0e0;
+  white-space: nowrap;
+}
+
+.product-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 14px;
+  color: #555;
+}
+
+.product-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.close-btn:hover {
+  background-color: #f3f4f6;
 }

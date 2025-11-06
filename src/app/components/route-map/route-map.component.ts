@@ -3,6 +3,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
 
@@ -11,6 +12,9 @@ export interface RouteStop {
   eta: string;
   items?: number;
   status: 'completed' | 'in-transit' | 'pending';
+  distance?: string;
+  locationInventory?: string;
+  shippingInventory?: string;
 }
 
 export interface Customer {
@@ -19,10 +23,20 @@ export interface Customer {
   selected: boolean;
 }
 
+export interface ProductDetail {
+  productName: string;
+  skuCode: string;
+  size: string;
+  side: string;
+  colour: string;
+  quantity: number;
+  inStock: number;
+}
+
 @Component({
   selector: 'app-route-map',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, SidebarComponent, HeaderComponent, RouterModule],
+  imports: [CommonModule, FormsModule, MatIconModule, MatTableModule, SidebarComponent, HeaderComponent, RouterModule],
   templateUrl: './route-map.component.html',
   styleUrl: './route-map.component.css'
 })
@@ -31,22 +45,37 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
   routeData: any = null;
   showAddStopModal = false;
   
+  // Modal properties for product details
+  showModal = false;
+  modalTitle = '';
+  productDetails = new MatTableDataSource<ProductDetail>([]);
+  productDisplayedColumns: string[] = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
+  
   routeStops: RouteStop[] = [
     {
       location: 'Howard University',
       eta: '10:00 AM',
       items: 4,
-      status: 'completed'
+      status: 'completed',
+      distance: '5.2 Miles',
+      locationInventory: '2 Items',
+      shippingInventory: '2 Items'
     },
     {
       location: 'Bryant Street',
       eta: '10:30 AM',
-      status: 'in-transit'
+      status: 'in-transit',
+      distance: '12.8 Miles',
+      locationInventory: '3 Items',
+      shippingInventory: '4 Items'
     },
     {
       location: 'District Vet',
       eta: '11:40 AM',
-      status: 'pending'
+      status: 'pending',
+      distance: '8.3 Miles',
+      locationInventory: '4 Items',
+      shippingInventory: '3 Items'
     }
   ];
 
@@ -124,6 +153,38 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
 
   goBack(): void {
     this.router.navigate(['/routes']);
+  }
+
+  // Product Modal functions
+  openLocationInventoryModal(stop: RouteStop): void {
+    console.log('Opening location inventory modal for:', stop.location);
+    this.productDetails.data = [
+      { productName: 'Cervical Collar', skuCode: 'CC001', size: 'Medium', side: 'Left', colour: 'Beige', quantity: 2, inStock: 15 },
+      { productName: 'Knee Brace', skuCode: 'KB002', size: 'Large', side: 'Right', colour: 'Black', quantity: 1, inStock: 8 }
+    ];
+    this.modalTitle = `Location Inventory - ${stop.location}`;
+    this.showModal = true;
+    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
+    console.log('Modal should be showing:', this.showModal);
+  }
+
+  openShippingInventoryModal(stop: RouteStop): void {
+    console.log('Opening shipping inventory modal for:', stop.location);
+    this.productDetails.data = [
+      { productName: 'Ankle Support', skuCode: 'AS003', size: 'Small', side: 'Left', colour: 'Grey', quantity: 3, inStock: 12 },
+      { productName: 'Wrist Splint', skuCode: 'WS004', size: 'Medium', side: 'Right', colour: 'Blue', quantity: 2, inStock: 6 }
+    ];
+    this.modalTitle = `Shipping Inventory - ${stop.location}`;
+    this.showModal = true;
+    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
+    console.log('Modal should be showing:', this.showModal);
+  }
+
+  closeModal(): void {
+    console.log('Closing modal');
+    this.showModal = false;
+    this.productDetails.data = [];
+    this.modalTitle = '';
   }
 
   // Modal functions
