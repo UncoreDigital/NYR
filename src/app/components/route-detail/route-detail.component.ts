@@ -1,3 +1,6 @@
+// NOTE :- 
+// Show Status Column when we click on Map from Route screen (If status is not completed then in all other case show the status in next screen)
+
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
