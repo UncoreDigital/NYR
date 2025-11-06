@@ -92,11 +92,11 @@
                                     <div class="stop-inventory-row">
                                         <div class="stop-location-inventory" *ngIf="stop.locationInventory">
                                             <span class="label">Location Inventory:</span>
-                                            <span class="value inventory-link" (click)="openLocationInventoryModal(stop); $event.stopPropagation()">{{ stop.locationInventory }}</span>
+                                            <span class="value inventory-link" (click)="openStopLocationInventoryModal(stop); $event.stopPropagation()">{{ stop.locationInventory }}</span>
                                         </div>
                                         <div class="stop-shipping-inventory" *ngIf="stop.shippingInventory">
                                             <span class="label">Shipping Inventory:</span>
-                                            <span class="value shipping-link" (click)="openShippingInventoryModal(stop); $event.stopPropagation()">{{ stop.shippingInventory }}</span>
+                                            <span class="value shipping-link" (click)="openStopShippingInventoryModal(stop); $event.stopPropagation()">{{ stop.shippingInventory }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -113,58 +113,88 @@
                 </div>
 </ng-template>
 
-<!-- Add Stop Modal -->
-<div class="modal-backdrop" *ngIf="showAddStopModal" (click)="closeAddStopModal()">
-    <div class="add-stop-modal" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-            <h3>Select Customers</h3>
-            <button class="close-btn" (click)="closeAddStopModal()">
-                <mat-icon>close</mat-icon>
-            </button>
+<!-- Add Stop Modal (Location Modal) -->
+<div class="modal-overlay" *ngIf="showAddStopModal" (click)="closeAddStopModal()">
+    <div class="location-modal-dialog" (click)="$event.stopPropagation()">
+        <!-- Radio Button Section -->
+        <div class="radio-button-section">
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" 
+                           name="locationView" 
+                           value="assigned" 
+                           [checked]="locationViewType === 'assigned'"
+                           (change)="onLocationViewChange('assigned')">
+                    <span class="radio-text">Location assign to driver</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" 
+                           name="locationView" 
+                           value="all" 
+                           [checked]="locationViewType === 'all'"
+                           (change)="onLocationViewChange('all')">
+                    <span class="radio-text">All locations</span>
+                </label>
+            </div>
         </div>
         
-        <div class="modal-content">
+        <div class="location-modal-header">
+            <div class="header-column">
+                <span class="header-text">LOCATION NAME</span>
+            </div>
+            <div class="header-column">
+                <span class="header-text">LOCATION ADDRESS</span>
+            </div>
+            <div class="header-column">
+                <span class="header-text">DRIVER NAME</span>
+            </div>
+            <div class="header-column">
+                <span class="header-text">LOCATION INVENTORY</span>
+            </div>
+            <div class="header-column">
+                <span class="header-text">SHIPPING INVENTORY</span>
+            </div>
+            <div class="header-column">
+                <span class="header-text">STATUS</span>
+            </div>
+        </div>
+
+        <div class="location-modal-content">
             <div class="customer-list">
-                <div class="customer-header">
-                    <div class="select-all-container">
-                        <input type="checkbox" 
-                               id="selectAll"
-                               [checked]="areAllCustomersSelected()"
-                               [indeterminate]="isSomeCustomersSelected()"
-                               (change)="toggleAllCustomers($event)">
-                        <label for="selectAll">CUSTOMER NAME</label>
+                <div class="customer-item" *ngFor="let customer of customers"
+                    (click)="toggleCustomerSelection(customer)">
+                    <div class="location-name-column">
+                        <mat-icon class="checkbox-icon" [class.checked]="customer.selected">
+                            {{customer.selected ? 'check_box' : 'check_box_outline_blank'}}
+                        </mat-icon>
+                        <span class="location-name">{{customer.locationName}}</span>
                     </div>
-                    <div class="status-header">STATUS</div>
-                </div>
-                
-                <div class="customer-items">
-                    <div class="customer-item" *ngFor="let customer of availableCustomers; let i = index">
-                        <div class="customer-info">
-                            <input type="checkbox" 
-                                   [id]="'customer-' + i"
-                                   [(ngModel)]="customer.selected"
-                                   (change)="onCustomerSelectionChange()">
-                            <label [for]="'customer-' + i" class="customer-name">
-                                {{ customer.name }}
-                            </label>
-                        </div>
-                        <div class="customer-status">
-                            <span class="status-badge" [class]="customer.status.toLowerCase().toLowerCase().split(' ').join('-')">
-                                {{ customer.status }}
-                            </span>
-                        </div>
+                    <div class="location-address-column">
+                        <span class="location-address">{{customer.locationAddress}}</span>
+                    </div>
+                    <div class="driver-name-column">
+                        <span class="driver-name">{{customer.driverName}}</span>
+                    </div>
+                    <div class="location-inventory-column">
+                        <span class="inventory-count inventory-link" (click)="openLocationInventoryModal(customer, $event)">{{customer.locationInventory}}</span>
+                    </div>
+                    <div class="shipping-inventory-column">
+                        <span class="shipping-count shipping-link" (click)="openLocationShippingModal(customer, $event)">{{customer.shippingInventory}}</span>
+                    </div>
+                    <div class="customer-status-column">
+                        <span class="status-badge" [class.ready-to-ship]="customer.status === 'Ready To Ship'"
+                            [class.follow-up]="customer.status === 'Follow up'">
+                            {{customer.status}}
+                        </span>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="modal-footer">
-            <button class="btn btn-outline" (click)="closeAddStopModal()">Cancel</button>
-            <button class="btn btn-primary" 
+
+        <div class="location-modal-footer">
+            <button class="create-btn" 
                     (click)="addSelectedCustomersToStops()"
-                    [disabled]="!hasSelectedCustomers()">
-                Create
-            </button>
+                    [disabled]="!hasSelectedCustomers()">Add Stop</button>
         </div>
     </div>
 </div>
@@ -227,4 +257,90 @@
             <button class="btn btn-outline" (click)="closeModal()">Close</button>
         </div>
     </div>
+</div>
+
+<!-- Location Inventory Modal -->
+<div class="product-modal-overlay" *ngIf="showLocationInventoryModal" (click)="closeLocationInventoryModal()">
+  <div class="product-modal-dialog" (click)="$event.stopPropagation()">
+    <div class="product-modal-header">
+      <h3>{{modalTitle}}</h3>
+      <button class="close-btn" (click)="closeLocationInventoryModal()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    
+    <div class="product-modal-content">
+      <table class="product-table">
+        <thead>
+          <tr>
+            <th>Product Name</th>
+            <th>SKU Code</th>
+            <th>Size</th>
+            <th>Side</th>
+            <th>Colour</th>
+            <th>Quantity</th>
+            <th>In Stock</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of selectedLocationInventory">
+            <td>{{product.productName}}</td>
+            <td>{{product.skuCode}}</td>
+            <td>{{product.size}}</td>
+            <td>{{product.side}}</td>
+            <td>{{product.colour}}</td>
+            <td>{{product.quantity}}</td>
+            <td>{{product.inStock}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="close-btn" (click)="closeLocationInventoryModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Shipping Inventory Modal -->
+<div class="product-modal-overlay" *ngIf="showShippingInventoryModal" (click)="closeShippingInventoryModal()">
+  <div class="product-modal-dialog" (click)="$event.stopPropagation()">
+    <div class="product-modal-header">
+      <h3>{{modalTitle}}</h3>
+      <button class="close-btn" (click)="closeShippingInventoryModal()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    
+    <div class="product-modal-content">
+      <table class="product-table">
+        <thead>
+          <tr>
+            <th>Product Name</th>
+            <th>SKU Code</th>
+            <th>Size</th>
+            <th>Side</th>
+            <th>Colour</th>
+            <th>Quantity</th>
+            <th>In Stock</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of selectedShippingInventory">
+            <td>{{product.productName}}</td>
+            <td>{{product.skuCode}}</td>
+            <td>{{product.size}}</td>
+            <td>{{product.side}}</td>
+            <td>{{product.colour}}</td>
+            <td>{{product.quantity}}</td>
+            <td>{{product.inStock}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="close-btn" (click)="closeShippingInventoryModal()">Close</button>
+    </div>
+  </div>
 </div>

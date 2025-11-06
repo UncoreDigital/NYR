@@ -18,7 +18,12 @@ export interface RouteStop {
 }
 
 export interface Customer {
-  name: string;
+  id: number;
+  locationName: string;
+  locationAddress: string;
+  driverName: string;
+  locationInventory: string;
+  shippingInventory: string;
   status: string;
   selected: boolean;
 }
@@ -51,6 +56,21 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
   productDetails = new MatTableDataSource<ProductDetail>([]);
   productDisplayedColumns: string[] = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
   
+  // Location modal properties
+  customers: Customer[] = [];
+  selectedCustomers: Customer[] = [];
+  locationViewType: 'assigned' | 'all' = 'assigned';
+  assignedLocations: Customer[] = [];
+  allLocations: Customer[] = [];
+  
+  // Location inventory modal properties
+  showLocationInventoryModal = false;
+  selectedLocationInventory: ProductDetail[] = [];
+  
+  // Shipping inventory modal properties
+  showShippingInventoryModal = false;
+  selectedShippingInventory: ProductDetail[] = [];
+  
   routeStops: RouteStop[] = [
     {
       location: 'Howard University',
@@ -80,13 +100,13 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
   ];
 
   availableCustomers: Customer[] = [
-    { name: 'Cervical Collar', status: 'Ready To Ship', selected: false },
-    { name: 'Cervical Collar', status: 'Ready To Ship', selected: false },
-    { name: 'Cervical Collar', status: 'Ready To Ship', selected: false },
-    { name: 'Cervical Collar', status: 'Ready To Ship', selected: false },
-    { name: 'Cervical Collar', status: 'Ready To Ship', selected: false },
-    { name: 'Cervical Collar', status: 'Ready To Ship', selected: false },
-    { name: 'Cervical Collar', status: 'Follow up', selected: false }
+    { id: 1, locationName: 'Downtown Medical Center', locationAddress: '123 Main St, New York, NY 10001', driverName: 'John Smith', locationInventory: '5 Items', shippingInventory: '3 Items', status: 'Ready To Ship', selected: false },
+    { id: 2, locationName: 'West Side Clinic', locationAddress: '456 Oak Ave, Los Angeles, CA 90210', driverName: 'Jane Doe', locationInventory: '8 Items', shippingInventory: '6 Items', status: 'Ready To Ship', selected: false },
+    { id: 3, locationName: 'Central Hospital', locationAddress: '789 Pine Rd, Chicago, IL 60601', driverName: 'Mike Johnson', locationInventory: '12 Items', shippingInventory: '9 Items', status: 'Ready To Ship', selected: false },
+    { id: 4, locationName: 'South Medical Plaza', locationAddress: '321 Elm St, Houston, TX 77001', driverName: 'Sarah Wilson', locationInventory: '6 Items', shippingInventory: '4 Items', status: 'Ready To Ship', selected: false },
+    { id: 5, locationName: 'East Valley Clinic', locationAddress: '654 Maple Dr, Phoenix, AZ 85001', driverName: 'David Brown', locationInventory: '9 Items', shippingInventory: '7 Items', status: 'Ready To Ship', selected: false },
+    { id: 6, locationName: 'North Point Medical', locationAddress: '987 Cedar Ln, Philadelphia, PA 19101', driverName: 'Lisa Anderson', locationInventory: '4 Items', shippingInventory: '2 Items', status: 'Ready To Ship', selected: false },
+    { id: 7, locationName: 'Metro Health Center', locationAddress: 'Address Not Available', driverName: 'Not Assigned', locationInventory: '7 Items', shippingInventory: '5 Items', status: 'Follow up', selected: false }
   ];
 
   constructor(
@@ -124,6 +144,51 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
         distance: '5.1 miles'
       };
     }
+
+    // Initialize customer data for location modal
+    this.initializeCustomers();
+  }
+
+  initializeCustomers(): void {
+    this.assignedLocations = [
+      {
+        id: 1,
+        locationName: 'Downtown Medical Center',
+        locationAddress: '123 Main St, Downtown',
+        driverName: 'James Miller',
+        status: 'Ready To Ship',
+        selected: false,
+        locationInventory: '2 items',
+        shippingInventory: '2 items'
+      },
+      {
+        id: 2,
+        locationName: 'Southside Clinic',
+        locationAddress: '456 Oak Ave, Southside',
+        driverName: 'James Miller',
+        status: 'Follow up',
+        selected: false,
+        locationInventory: '1 item',
+        shippingInventory: '1 item'
+      }
+    ];
+
+    this.allLocations = [
+      ...this.assignedLocations,
+      {
+        id: 3,
+        locationName: 'Northgate Hospital',
+        locationAddress: '789 Pine St, Northgate',
+        driverName: 'Sarah Johnson',
+        status: 'Ready To Ship',
+        selected: false,
+        locationInventory: '1 item',
+        shippingInventory: '1 item'
+      }
+    ];
+
+    // Set initial customers based on locationViewType
+    this.customers = this.locationViewType === 'assigned' ? this.assignedLocations : this.allLocations;
   }
 
   ngAfterViewInit(): void {
@@ -155,8 +220,8 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
     this.router.navigate(['/routes']);
   }
 
-  // Product Modal functions
-  openLocationInventoryModal(stop: RouteStop): void {
+  // Product Modal functions for stops
+  openStopLocationInventoryModal(stop: RouteStop): void {
     console.log('Opening location inventory modal for:', stop.location);
     this.productDetails.data = [
       { productName: 'Cervical Collar', skuCode: 'CC001', size: 'Medium', side: 'Left', colour: 'Beige', quantity: 2, inStock: 15 },
@@ -168,7 +233,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
     console.log('Modal should be showing:', this.showModal);
   }
 
-  openShippingInventoryModal(stop: RouteStop): void {
+  openStopShippingInventoryModal(stop: RouteStop): void {
     console.log('Opening shipping inventory modal for:', stop.location);
     this.productDetails.data = [
       { productName: 'Ankle Support', skuCode: 'AS003', size: 'Small', side: 'Left', colour: 'Grey', quantity: 3, inStock: 12 },
@@ -189,6 +254,14 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
 
   // Modal functions
   openAddStopModal(): void {
+    // Initialize location data similar to route-detail component
+    this.assignedLocations = this.availableCustomers.filter(customer => customer.driverName !== 'Not Assigned');
+    this.allLocations = this.availableCustomers;
+    
+    // Initialize with assigned locations by default
+    this.locationViewType = 'assigned';
+    this.customers = this.assignedLocations;
+    this.selectedCustomers = [];
     this.showAddStopModal = true;
   }
 
@@ -196,38 +269,97 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
     this.showAddStopModal = false;
     // Reset selections when closing modal
     this.availableCustomers.forEach(customer => customer.selected = false);
+    this.selectedCustomers = [];
   }
 
-  toggleAllCustomers(event: any): void {
-    const isChecked = event.target.checked;
-    this.availableCustomers.forEach(customer => customer.selected = isChecked);
+  toggleCustomerSelection(customer: Customer): void {
+    customer.selected = !customer.selected;
+    if (customer.selected) {
+      this.selectedCustomers.push(customer);
+    } else {
+      this.selectedCustomers = this.selectedCustomers.filter(c => c.id !== customer.id);
+    }
   }
 
-  areAllCustomersSelected(): boolean {
-    return this.availableCustomers.length > 0 && this.availableCustomers.every(customer => customer.selected);
+  // Location modal inventory handlers (similar to route-detail)
+  openLocationInventoryModal(customer: Customer, event: Event) {
+    event.stopPropagation(); // Prevent row selection toggle
+    this.selectedLocationInventory = [
+      { productName: 'Cervical Collar', skuCode: 'CC001', size: 'Medium', side: 'Left', colour: 'Beige', quantity: 2, inStock: 15 },
+      { productName: 'Knee Brace', skuCode: 'KB002', size: 'Large', side: 'Right', colour: 'Black', quantity: 1, inStock: 8 }
+    ];
+    this.modalTitle = `Location Inventory - ${customer.locationName}`;
+    this.showLocationInventoryModal = true;
+    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
   }
 
-  isSomeCustomersSelected(): boolean {
-    return this.availableCustomers.some(customer => customer.selected) && !this.areAllCustomersSelected();
+  closeLocationInventoryModal(): void {
+    this.showLocationInventoryModal = false;
+    this.selectedLocationInventory = [];
   }
 
-  onCustomerSelectionChange(): void {
-    // This method can be used for any additional logic when customer selection changes
+  openLocationShippingModal(customer: Customer, event: Event) {
+    event.stopPropagation(); // Prevent row selection toggle
+    this.selectedShippingInventory = [
+      { productName: 'Ankle Support', skuCode: 'AS003', size: 'Small', side: 'Left', colour: 'Grey', quantity: 3, inStock: 12 },
+      { productName: 'Wrist Splint', skuCode: 'WS004', size: 'Medium', side: 'Right', colour: 'Blue', quantity: 2, inStock: 6 }
+    ];
+    this.modalTitle = `Shipping Inventory - ${customer.locationName}`;
+    this.showShippingInventoryModal = true;
+    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
+  }
+
+  closeShippingInventoryModal(): void {
+    this.showShippingInventoryModal = false;
+    this.selectedShippingInventory = [];
   }
 
   hasSelectedCustomers(): boolean {
-    return this.availableCustomers.some(customer => customer.selected);
+    return this.selectedCustomers.length > 0;
+  }
+
+  // Location modal radio button handler
+  onLocationViewChange(viewType: 'assigned' | 'all'): void {
+    this.locationViewType = viewType;
+    // Update customers list based on view type
+    if (viewType === 'assigned') {
+      this.customers = this.assignedLocations;
+    } else {
+      this.customers = this.allLocations;
+    }
+  }
+
+  // Remove old methods that are no longer needed
+  toggleAllCustomers(event: any): void {
+    // This method is no longer used with the new location modal design
+  }
+
+  areAllCustomersSelected(): boolean {
+    // This method is no longer used with the new location modal design
+    return false;
+  }
+
+  isSomeCustomersSelected(): boolean {
+    // This method is no longer used with the new location modal design
+    return false;
+  }
+
+  onCustomerSelectionChange(): void {
+    // This method is no longer used with the new location modal design
   }
 
   addSelectedCustomersToStops(): void {
-    const selectedCustomers = this.availableCustomers.filter(customer => customer.selected);
+    const selectedCustomers = this.selectedCustomers;
     
     selectedCustomers.forEach((customer, index) => {
       const newStop: RouteStop = {
-        location: customer.name,
+        location: customer.locationName,
         eta: this.generateNextETA(),
         items: Math.floor(Math.random() * 5) + 1, // Random number of items between 1-5
-        status: 'pending'
+        status: 'pending',
+        distance: '0 Miles', // Will be calculated
+        locationInventory: customer.locationInventory,
+        shippingInventory: customer.shippingInventory
       };
       
       this.routeStops.push(newStop);
