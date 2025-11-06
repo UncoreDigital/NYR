@@ -493,7 +493,7 @@ export class RouteDetailComponent implements OnInit {
     if (currentIndex >= 0 && currentIndex < currentData.length - 1) {
       const nextRoute = currentData[currentIndex + 1];
       const distance = currentRoute.distance || 'N/A';
-      return `Distance from ${this.truncateLocation(currentRoute.location)} to ${this.truncateLocation(nextRoute.location)}: ${distance}`;
+      return `From ${this.truncateLocation(currentRoute.location)} & to ${this.truncateLocation(nextRoute.location)}: ${distance}`;
     } else if (currentIndex === currentData.length - 1) {
       return `Final destination: ${this.truncateLocation(currentRoute.location)} - No further stops`;
     }
