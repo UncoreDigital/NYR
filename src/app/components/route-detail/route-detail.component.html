@@ -30,11 +30,11 @@
                         matTooltip="Map View" matTooltipPosition="below" style="display: inline; margin-right: 10px;">
                         <mat-icon>map</mat-icon>
                     </button>
-                    <button
+                    <button *ngIf="routeStatus.toLowerCase() !== 'completed'"
                         class="btn btn-primary mr-15"
                         [disabled]="!(shouldShowActionButtons() && !showRecalculateButton)"
                         (click)="openApprovalModal()">Approve Route</button>
-                    <button 
+                    <button *ngIf="routeStatus.toLowerCase() !== 'completed'"
                         class="btn btn-secondary mr-15"
                         [disabled]="!(shouldShowActionButtons() && showRecalculateButton)"
                         (click)="recalculateRoute()">Recalculate Route</button>
