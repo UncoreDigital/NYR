@@ -101,11 +101,11 @@
                     </div>
                     <div class="summary-card">
                         <div class="summary-card-content">
-                            <h3 class="summary-title">TOTAL TIME (ETA)</h3>
+                            <h3 class="summary-title">TOTAL TRAVEL TIME</h3>
                             <p class="summary-value">{{ totalTime }}</p>
                         </div>
                     </div>
-                    
+
                 </div>
                 <div class="view-toggle-section">
                     <div class="toggle-buttons">
@@ -143,6 +143,18 @@
                         <th mat-header-cell *matHeaderCellDef mat-sort-header>SHIPPING INVENTORY</th>
                         <td mat-cell *matCellDef="let route">
                             <a (click)="openShippingModal(route)" class="shipping-link">{{route.shippingItem}}</a>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="distance">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>DISTANCE</th>
+                        <td mat-cell *matCellDef="let route">
+                            <span [matTooltip]="getDistanceTooltip(route)" 
+                                  matTooltipPosition="above"
+                                  matTooltipShowDelay="500"
+                                  class="distance-cell">
+                                {{route.distance}}
+                            </span>
                         </td>
                     </ng-container>
 
@@ -362,7 +374,7 @@
                     <p>20 Miles</p>
                 </div>
                 <div class="stat-card">
-                    <h5>TOTAL TIME (ETA)</h5>
+                    <h5>TOTAL TRAVEL TIME</h5>
                     <p>1.5 Hrs</p>
                 </div>
             </div>

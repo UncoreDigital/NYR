@@ -16,6 +16,7 @@ export interface routeDetail {
   shippingItem: string;
   travelTime?: string;
   deliveryTime?: string;
+  distance?: string;
 }
 
 export interface ProductDetail {
@@ -43,7 +44,7 @@ export interface Customer {
   styleUrl: './route-detail.component.css'
 })
 export class RouteDetailComponent implements OnInit {
-  baseColumns: string[] = ['stop', 'location', 'inventoryItem', 'shippingItem', 'travelTime', 'deliveryTime'];
+  baseColumns: string[] = ['stop', 'location', 'inventoryItem', 'shippingItem', 'distance', 'travelTime', 'deliveryTime'];
   dataSource = new MatTableDataSource<routeDetail>();
 
   // Dynamic displayedColumns getter
@@ -72,10 +73,10 @@ export class RouteDetailComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   routeDetail: routeDetail[] = [
-    { stop: 'Stop 1', deliveryDate: '2023-10-01', location: 'New York, NY', inventoryItem: '2 Items', shippingItem: '2 Items', travelTime: '1 hr', deliveryTime: '12 PM' },
-    { stop: 'Stop 2', deliveryDate: '2023-10-02', location: 'Los Angeles, CA', inventoryItem: '3 Items', shippingItem: '4 Items', travelTime: '2 hr', deliveryTime: '2 PM' },
-    { stop: 'Stop 3', deliveryDate: '2023-10-03', location: 'Chicago, IL', inventoryItem: '4 Items', shippingItem: '3 Items', travelTime: '0.5 hr', deliveryTime: '5 PM' },
-    { stop: 'Stop 12', deliveryDate: '2023-10-12', location: 'Jacksonville, FL', inventoryItem: '5 Items', shippingItem: '2 Items', travelTime: '3 hr', deliveryTime: '1 PM' },
+    { stop: 'Stop 1', deliveryDate: '2023-10-01', location: 'New York, NY', inventoryItem: '2 Items', shippingItem: '2 Items', distance: '5.2 Miles', travelTime: '1 hr', deliveryTime: '12 PM' },
+    { stop: 'Stop 2', deliveryDate: '2023-10-02', location: 'Los Angeles, CA', inventoryItem: '3 Items', shippingItem: '4 Items', distance: '12.8 Miles', travelTime: '2 hr', deliveryTime: '2 PM' },
+    { stop: 'Stop 3', deliveryDate: '2023-10-03', location: 'Chicago, IL', inventoryItem: '4 Items', shippingItem: '3 Items', distance: '8.3 Miles', travelTime: '0.5 hr', deliveryTime: '5 PM' },
+    { stop: 'Stop 12', deliveryDate: '2023-10-12', location: 'Jacksonville, FL', inventoryItem: '5 Items', shippingItem: '2 Items', distance: '15.7 Miles', travelTime: '3 hr', deliveryTime: '1 PM' },
   ];
   showRouteDetail = false;
 
@@ -139,7 +140,8 @@ export class RouteDetailComponent implements OnInit {
         inventoryItem: '2 Items', // Default value - could be calculated based on location data
         shippingItem: '2 Items',   // Default value - could be calculated based on location data
         travelTime: location.travelTime || '1 hr',
-        deliveryTime: '12 PM'     // Default value - could be calculated based on location data
+        deliveryTime: '12 PM',     // Default value - could be calculated based on location data
+        distance: location.distance || `${(index + 1) * 3 + Math.floor(Math.random() * 5)} Miles` // Generate realistic distances
       }));
       
       this.dataSource.data = convertedData;
@@ -307,6 +309,30 @@ export class RouteDetailComponent implements OnInit {
   // Method to check if action buttons should be shown (only for Draft status)
   shouldShowActionButtons(): boolean {
     return this.routeStatus === 'Draft' || this.routeStatus === '';
+  }
+
+  // Method to get distance tooltip text
+  getDistanceTooltip(currentRoute: routeDetail): string {
+    const currentData = this.dataSource.data;
+    const currentIndex = currentData.findIndex(route => route.stop === currentRoute.stop);
+    
+    if (currentIndex >= 0 && currentIndex < currentData.length - 1) {
+      const nextRoute = currentData[currentIndex + 1];
+      const distance = currentRoute.distance || 'N/A';
+      return `Distance from ${this.truncateLocation(currentRoute.location)} to ${this.truncateLocation(nextRoute.location)}: ${distance}`;
+    } else if (currentIndex === currentData.length - 1) {
+      return `Final destination: ${this.truncateLocation(currentRoute.location)} - No further stops`;
+    }
+    
+    const distance = currentRoute.distance || 'Unknown distance';
+    return `Current location: ${this.truncateLocation(currentRoute.location)} - Distance: ${distance}`;
+  }
+
+  private truncateLocation(location: string): string {
+    if (location.length > 25) {
+      return location.substring(0, 25) + '...';
+    }
+    return location;
   }
 
   // View toggle methods

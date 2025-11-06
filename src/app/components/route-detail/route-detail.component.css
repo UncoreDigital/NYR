@@ -722,3 +722,34 @@
     min-width: 60px;
   }
 }
+
+/* Distance Cell Styling */
+.distance-cell {
+  cursor: help;
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: #f0f9ff;
+  color: #0369a1;
+  font-weight: 500;
+  border: 1px solid #e0f2fe;
+  transition: all 0.2s ease;
+}
+
+.distance-cell:hover {
+  background-color: #e0f2fe;
+  border-color: #0ea5e9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(14, 165, 233, 0.2);
+}
+
+/* Tooltip customization */
+::ng-deep .mat-mdc-tooltip {
+  background-color: #1f2937 !important;
+  color: white !important;
+  font-size: 12px !important;
+  max-width: 250px !important;
+  text-align: center !important;
+  border-radius: 6px !important;
+  padding: 8px 12px !important;
+}
