@@ -35,9 +35,11 @@ export interface ProductDetail {
 
 export interface Customer {
   id: number;
-  name?: string;
-  driverName: string;
+  locationName: string;
   locationAddress: string;
+  driverName: string;
+  locationInventory: string;
+  shippingInventory: string;
   status: string;
   selected: boolean;
 }
@@ -70,12 +72,18 @@ export class RouteDetailComponent implements OnInit {
   modalTitle = 'Route Details';
   productDetails: ProductDetail[] = [];
   productDisplayedColumns: string[] = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
+  isModalFromLocationPopup = false; // Flag to track if product modal is opened from location modal
 
   // Location Address Modal properties
   showLocationModal = false;
   customers: Customer[] = [];
   selectedCustomers: Customer[] = [];
   allSelected = false;
+  
+  // Radio button properties for location modal
+  locationViewType: 'assigned' | 'all' = 'assigned';
+  assignedLocations: Customer[] = [];
+  allLocations: Customer[] = [];
 
   // Approval Modal properties
   showApprovalModal = false;
@@ -200,6 +208,7 @@ export class RouteDetailComponent implements OnInit {
       }
     ];
     this.modalTitle = 'Inventory Items';
+    this.isModalFromLocationPopup = false; // Ensure flag is false for regular modals
     this.showModal = true;
     this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity'];
   }
@@ -227,26 +236,42 @@ export class RouteDetailComponent implements OnInit {
       }
     ];
     this.modalTitle = 'Shipping Items';
+    this.isModalFromLocationPopup = false; // Ensure flag is false for regular modals
     this.showModal = true;
     this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
   }
 
   closeModal() {
     this.showModal = false;
+    this.isModalFromLocationPopup = false; // Reset flag when closing modal
   }
 
   openLocationModal() {
-    // Sample customer data - in real app, this would come from API
-    this.customers = [
-      { id: 1, driverName: 'John Smith', locationAddress: '123 Main St, New York, NY 10001', status: 'Ready To Ship', selected: true },
-      { id: 2, driverName: 'Jane Doe', locationAddress: '456 Oak Ave, Los Angeles, CA 90210', status: 'Ready To Ship', selected: true },
-      { id: 3, driverName: 'Mike Johnson', locationAddress: '789 Pine Rd, Chicago, IL 60601', status: 'Ready To Ship', selected: true },
-      { id: 4, driverName: 'Sarah Wilson', locationAddress: '321 Elm St, Houston, TX 77001', status: 'Ready To Ship', selected: true },
-      { id: 5, driverName: 'David Brown', locationAddress: '654 Maple Dr, Phoenix, AZ 85001', status: 'Ready To Ship', selected: true },
-      { id: 6, driverName: 'Lisa Anderson', locationAddress: '987 Cedar Ln, Philadelphia, PA 19101', status: 'Ready To Ship', selected: true },
-      { id: 7, driverName: 'Tom Garcia', locationAddress: '147 Birch Way, San Antonio, TX 78201', status: 'Ready To Ship', selected: true },
-      { id: 8, driverName: 'Not Assigned', locationAddress: 'Address Not Available', status: 'Follow up', selected: false }
+    // Sample assigned locations data - locations with assigned drivers
+    this.assignedLocations = [
+      { id: 1, locationName: 'Downtown Medical Center', locationAddress: '123 Main St, New York, NY 10001', driverName: 'John Smith', locationInventory: '5 Items', shippingInventory: '3 Items', status: 'Ready To Ship', selected: true },
+      { id: 2, locationName: 'West Side Clinic', locationAddress: '456 Oak Ave, Los Angeles, CA 90210', driverName: 'Jane Doe', locationInventory: '8 Items', shippingInventory: '6 Items', status: 'Ready To Ship', selected: true },
+      { id: 3, locationName: 'Central Hospital', locationAddress: '789 Pine Rd, Chicago, IL 60601', driverName: 'Mike Johnson', locationInventory: '12 Items', shippingInventory: '9 Items', status: 'Ready To Ship', selected: true },
+      { id: 4, locationName: 'South Medical Plaza', locationAddress: '321 Elm St, Houston, TX 77001', driverName: 'Sarah Wilson', locationInventory: '6 Items', shippingInventory: '4 Items', status: 'Ready To Ship', selected: true }
     ];
+
+    // Sample all locations data - includes both assigned and unassigned locations
+    this.allLocations = [
+      { id: 1, locationName: 'Downtown Medical Center', locationAddress: '123 Main St, New York, NY 10001', driverName: 'John Smith', locationInventory: '5 Items', shippingInventory: '3 Items', status: 'Ready To Ship', selected: true },
+      { id: 2, locationName: 'West Side Clinic', locationAddress: '456 Oak Ave, Los Angeles, CA 90210', driverName: 'Jane Doe', locationInventory: '8 Items', shippingInventory: '6 Items', status: 'Ready To Ship', selected: true },
+      { id: 3, locationName: 'Central Hospital', locationAddress: '789 Pine Rd, Chicago, IL 60601', driverName: 'Mike Johnson', locationInventory: '12 Items', shippingInventory: '9 Items', status: 'Ready To Ship', selected: true },
+      { id: 4, locationName: 'South Medical Plaza', locationAddress: '321 Elm St, Houston, TX 77001', driverName: 'Sarah Wilson', locationInventory: '6 Items', shippingInventory: '4 Items', status: 'Ready To Ship', selected: true },
+      { id: 5, locationName: 'East Valley Clinic', locationAddress: '654 Maple Dr, Phoenix, AZ 85001', driverName: 'David Brown', locationInventory: '9 Items', shippingInventory: '7 Items', status: 'Ready To Ship', selected: true },
+      { id: 6, locationName: 'North Point Medical', locationAddress: '987 Cedar Ln, Philadelphia, PA 19101', driverName: 'Lisa Anderson', locationInventory: '4 Items', shippingInventory: '2 Items', status: 'Ready To Ship', selected: true },
+      { id: 7, locationName: 'Riverside Hospital', locationAddress: '147 Birch Way, San Antonio, TX 78201', driverName: 'Tom Garcia', locationInventory: '11 Items', shippingInventory: '8 Items', status: 'Ready To Ship', selected: true },
+      { id: 8, locationName: 'Metro Health Center', locationAddress: 'Address Not Available', driverName: 'Not Assigned', locationInventory: '7 Items', shippingInventory: '5 Items', status: 'Follow up', selected: false },
+      { id: 9, locationName: 'Community Clinic', locationAddress: '555 Willow St, Dallas, TX 75201', driverName: 'Not Assigned', locationInventory: '3 Items', shippingInventory: '1 Item', status: 'Follow up', selected: false },
+      { id: 10, locationName: 'Bay Area Medical', locationAddress: '777 Poplar Ave, Miami, FL 33101', driverName: 'Not Assigned', locationInventory: '6 Items', shippingInventory: '4 Items', status: 'Pending', selected: false }
+    ];
+
+    // Initialize with assigned locations by default
+    this.locationViewType = 'assigned';
+    this.customers = this.assignedLocations;
     this.updateAllSelectedState();
     this.showLocationModal = true;
   }
@@ -286,6 +311,97 @@ export class RouteDetailComponent implements OnInit {
     // Handle create location logic here
     console.log('Selected customers:', this.selectedCustomers);
     this.closeLocationModal();
+  }
+
+  // Radio button change handler
+  onLocationViewChange(viewType: 'assigned' | 'all') {
+    this.locationViewType = viewType;
+    if (viewType === 'assigned') {
+      this.customers = this.assignedLocations;
+    } else {
+      this.customers = this.allLocations;
+    }
+    this.selectedCustomers = [];
+    this.updateAllSelectedState();
+  }
+
+  // Location modal inventory handlers
+  openLocationInventoryModal(customer: Customer, event: Event) {
+    event.stopPropagation(); // Prevent row selection toggle
+    
+    // Sample product data for location inventory - in real app, this would come from API based on customer.id
+    this.productDetails = [
+      {
+        productName: 'Pneumatic Walking Boot',
+        skuCode: 'MD-001',
+        size: 'L',
+        side: 'Universal',
+        colour: 'Black',
+        quantity: 8,
+        inStock: 15
+      },
+      {
+        productName: 'Compression Sleeve',
+        skuCode: 'MD-002',
+        size: 'M',
+        side: 'Left',
+        colour: 'Blue',
+        quantity: 12,
+        inStock: 20
+      },
+      {
+        productName: 'Knee Support Brace',
+        skuCode: 'MD-003',
+        size: 'XL',
+        side: 'Right',
+        colour: 'Black',
+        quantity: 6,
+        inStock: 10
+      }
+    ];
+    this.modalTitle = `Location Inventory - ${customer.locationName}`;
+    this.isModalFromLocationPopup = true; // Set flag for higher z-index
+    this.showModal = true;
+    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity'];
+  }
+
+  openLocationShippingModal(customer: Customer, event: Event) {
+    event.stopPropagation(); // Prevent row selection toggle
+    
+    // Sample product data for shipping inventory - in real app, this would come from API based on customer.id
+    this.productDetails = [
+      {
+        productName: 'Ankle Support Wrap',
+        skuCode: 'MD-004',
+        size: 'S',
+        side: 'Universal',
+        colour: 'White',
+        quantity: 5,
+        inStock: 8
+      },
+      {
+        productName: 'Elbow Compression Band',
+        skuCode: 'MD-005',
+        size: 'L',
+        side: 'Right',
+        colour: 'Gray',
+        quantity: 3,
+        inStock: 7
+      },
+      {
+        productName: 'Wrist Stabilizer',
+        skuCode: 'MD-006',
+        size: 'M',
+        side: 'Left',
+        colour: 'Black',
+        quantity: 4,
+        inStock: 12
+      }
+    ];
+    this.modalTitle = `Shipping Inventory - ${customer.locationName}`;
+    this.isModalFromLocationPopup = true; // Set flag for higher z-index
+    this.showModal = true;
+    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
   }
 
   openApprovalModal() {

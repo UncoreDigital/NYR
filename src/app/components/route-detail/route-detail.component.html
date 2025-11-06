@@ -208,7 +208,7 @@
 </div>
 
 <!-- Modal Dialog -->
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+<div class="modal-overlay inventory-modal" *ngIf="showModal" (click)="closeModal()">
     <div class="modal-dialog" (click)="$event.stopPropagation()">
 
         <div class="modal-content">
@@ -264,12 +264,43 @@
 <!-- Location Address Modal Dialog -->
 <div class="modal-overlay" *ngIf="showLocationModal" (click)="closeLocationModal()">
     <div class="location-modal-dialog" (click)="$event.stopPropagation()">
+        <!-- Radio Button Section -->
+        <div class="radio-button-section">
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" 
+                           name="locationView" 
+                           value="assigned" 
+                           [checked]="locationViewType === 'assigned'"
+                           (change)="onLocationViewChange('assigned')">
+                    <span class="radio-text">Location assign to driver</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" 
+                           name="locationView" 
+                           value="all" 
+                           [checked]="locationViewType === 'all'"
+                           (change)="onLocationViewChange('all')">
+                    <span class="radio-text">All locations</span>
+                </label>
+            </div>
+        </div>
+        
         <div class="location-modal-header">
+            <div class="header-column">
+                <span class="header-text">LOCATION NAME</span>
+            </div>
+            <div class="header-column">
+                <span class="header-text">LOCATION ADDRESS</span>
+            </div>
             <div class="header-column">
                 <span class="header-text">DRIVER NAME</span>
             </div>
             <div class="header-column">
-                <span class="header-text">LOCATION ADDRESS</span>
+                <span class="header-text">LOCATION INVENTORY</span>
+            </div>
+            <div class="header-column">
+                <span class="header-text">SHIPPING INVENTORY</span>
             </div>
             <div class="header-column">
                 <span class="header-text">STATUS</span>
@@ -280,14 +311,23 @@
             <div class="customer-list">
                 <div class="customer-item" *ngFor="let customer of customers"
                     (click)="toggleCustomerSelection(customer)">
-                    <div class="customer-name-column">
+                    <div class="location-name-column">
                         <mat-icon class="checkbox-icon" [class.checked]="customer.selected">
                             {{customer.selected ? 'check_box' : 'check_box_outline_blank'}}
                         </mat-icon>
-                        <span class="customer-name">{{customer.driverName}}</span>
+                        <span class="location-name">{{customer.locationName}}</span>
                     </div>
-                    <div class="customer-address-column">
+                    <div class="location-address-column">
                         <span class="location-address">{{customer.locationAddress}}</span>
+                    </div>
+                    <div class="driver-name-column">
+                        <span class="driver-name">{{customer.driverName}}</span>
+                    </div>
+                    <div class="location-inventory-column">
+                        <span class="inventory-count inventory-link" (click)="openLocationInventoryModal(customer, $event)">{{customer.locationInventory}}</span>
+                    </div>
+                    <div class="shipping-inventory-column">
+                        <span class="shipping-count shipping-link" (click)="openLocationShippingModal(customer, $event)">{{customer.shippingInventory}}</span>
                     </div>
                     <div class="customer-status-column">
                         <span class="status-badge" [class.ready-to-ship]="customer.status === 'Ready To Ship'"
