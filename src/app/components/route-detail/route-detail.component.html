@@ -30,8 +30,17 @@
                         matTooltip="Map View" matTooltipPosition="below" style="display: inline; margin-right: 10px;">
                         <mat-icon>map</mat-icon>
                     </button>
-                    <button *ngIf="shouldShowActionButtons()" class="btn btn-primary mr-15"
+                    <button
+                        class="btn btn-primary mr-15"
+                        [disabled]="!(shouldShowActionButtons() && !showRecalculateButton)"
                         (click)="openApprovalModal()">Approve Route</button>
+                    <button 
+                        class="btn btn-secondary mr-15"
+                        [disabled]="!(shouldShowActionButtons() && showRecalculateButton)"
+                        (click)="recalculateRoute()">Recalculate Route</button>
+                    <!-- <button *ngIf="shouldShowActionButtons() && showCreateRouteButton" 
+                        class="btn btn-success mr-15"
+                        (click)="createRoute()">Create Route</button> -->
                     <button *ngIf="shouldShowActionButtons()" class="btn btn-primary" (click)="openLocationModal()">Add
                         Location Address</button>
                 </div>
@@ -183,7 +192,7 @@
                         <th mat-header-cell *matHeaderCellDef>ACTION</th>
                         <td mat-cell *matCellDef="let route">
                             <div class="action-buttons">
-                                <button class="action-btn delete" title="Delete">
+                                <button class="action-btn delete" title="Delete" (click)="deleteRoute(route)">
                                     <mat-icon>delete</mat-icon>
                                 </button>
                             </div>

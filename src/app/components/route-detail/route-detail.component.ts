@@ -114,6 +114,14 @@ export class RouteDetailComponent implements OnInit {
   currentView: 'table' | 'map' = 'table';
   // Route status for conditional button display
   routeStatus: string = '';
+  
+  // Button state management for route modifications
+  hasRouteChanges: boolean = false;
+  showRecalculateButton: boolean = false;
+  showCreateRouteButton: boolean = false;
+  approveRouteDisabled: boolean = false;
+  recalculateRouteDisabled: boolean = false;
+  
   constructor(private router: Router, private location: Location) { }
 
   ngOnInit(): void {
@@ -148,6 +156,18 @@ export class RouteDetailComponent implements OnInit {
       console.log('No navigation state found, using default data');
       this.dataSource.data = this.routeDetail;
     }
+    
+    // Initialize button states
+    this.initializeButtonStates();
+  }
+
+  private initializeButtonStates() {
+    // Reset all button states to default
+    this.hasRouteChanges = false;
+    this.showRecalculateButton = false;
+    this.showCreateRouteButton = false;
+    this.approveRouteDisabled = false;
+    this.recalculateRouteDisabled = false;
   }
 
   convertSelectedLocationsToRouteDetail() {
@@ -310,6 +330,32 @@ export class RouteDetailComponent implements OnInit {
   createLocation() {
     // Handle create location logic here
     console.log('Selected customers:', this.selectedCustomers);
+    
+    // Add selected customers as new routes to the main table
+    if (this.selectedCustomers.length > 0) {
+      const currentData = this.dataSource.data;
+      const newRoutes: routeDetail[] = this.selectedCustomers.map((customer, index) => ({
+        stop: `Stop ${currentData.length + index + 1}`,
+        deliveryDate: new Date().toISOString().split('T')[0],
+        location: customer.locationAddress,
+        inventoryItem: customer.locationInventory,
+        shippingItem: customer.shippingInventory,
+        distance: '0 Miles', // Will be calculated
+        travelTime: '0 hr', // Will be calculated
+        deliveryTime: 'TBD',
+        status: customer.status
+      }));
+      
+      // Update data source with new routes
+      this.dataSource.data = [...currentData, ...newRoutes];
+      
+      // Mark that route has changes and update button states
+      this.hasRouteChanges = true;
+      this.updateButtonStates();
+      
+      console.log('Added new routes:', newRoutes);
+    }
+    
     this.closeLocationModal();
   }
 
@@ -478,6 +524,58 @@ export class RouteDetailComponent implements OnInit {
       'Draft': 'status-draft',
     };
     return classMap[status] || 'status-default';
+  }
+
+  // Route modification methods
+  deleteRoute(route: routeDetail) {
+    // Remove route from data source
+    const currentData = this.dataSource.data;
+    const updatedData = currentData.filter(r => r.stop !== route.stop);
+    this.dataSource.data = updatedData;
+    
+    // Update button states
+    this.hasRouteChanges = true;
+    this.updateButtonStates();
+    
+    console.log('Route deleted:', route);
+  }
+
+  recalculateRoute() {
+    // Disable recalculate button and enable create route
+    this.recalculateRouteDisabled = true;
+    this.showRecalculateButton = false;
+    this.showCreateRouteButton = true;
+    
+    console.log('Route recalculated');
+    // Here you would typically call an API to recalculate the route
+    // For now, we'll just update the UI state
+  }
+
+  createRoute() {
+    // Navigate to create route or perform route creation logic
+    this.router.navigate(['/create-route'], { 
+      state: { 
+        routeData: this.routeCreationData,
+        selectedLocations: this.dataSource.data 
+      } 
+    });
+    console.log('Create route clicked');
+  }
+
+  private updateButtonStates() {
+    if (this.hasRouteChanges) {
+      // Enable recalculate button and disable approve button
+      this.showRecalculateButton = true;
+      this.approveRouteDisabled = true;
+      this.recalculateRouteDisabled = false;
+      this.showCreateRouteButton = false;
+    } else {
+      // Default state
+      this.showRecalculateButton = false;
+      this.approveRouteDisabled = false;
+      this.recalculateRouteDisabled = false;
+      this.showCreateRouteButton = false;
+    }
   }
 
 }
