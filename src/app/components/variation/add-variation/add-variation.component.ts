@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { ToastService } from '../../../services/toast.service';
+import { VariationService } from '../../../services/variation.service';
+import { CreateVariationRequest, UpdateVariationRequest, Variation } from '../../../models/variation.model';
 
 @Component({
   selector: 'app-add-variation',
@@ -12,20 +14,29 @@ import { ToastService } from '../../../services/toast.service';
 export class AddVariationComponent implements OnInit {
   variationForm!: FormGroup;
   isLoading = false;
-  // Variation modal properties
   selectedValueType: 'dropdown' | 'text' | '' = '';
-
   isSaving = false;
+  isEditMode = false;
+  variationId: number | null = null;
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
+    private route: ActivatedRoute,
     private location: Location,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private variationService: VariationService
   ) { }
 
   ngOnInit(): void {
     this.initializeForm();
+    
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (idParam) {
+      this.isEditMode = true;
+      this.variationId = Number(idParam);
+      this.loadVariation(this.variationId);
+    }
   }
 
   private initializeForm(): void {
@@ -35,7 +46,7 @@ export class AddVariationComponent implements OnInit {
       dropdownOptions: this.fb.array([this.createDropdownOption()]),
       textInputRequired: [false],
       textInputPlaceholder: [''],
-      textInputMaxLength: [null]
+      textInputValue: ['']
     });
 
     // Watch for value type changes
@@ -50,9 +61,52 @@ export class AddVariationComponent implements OnInit {
     this.selectedValueType = 'dropdown';
   }
 
-  private createDropdownOption(): FormGroup {
+  private createDropdownOption(name: string = '', value: string = '', id?: number): FormGroup {
     return this.fb.group({
-      value: ['', Validators.required]
+      id: [id || null],
+      name: [name, Validators.required],
+      value: [value, Validators.required],
+      isActive: [true]
+    });
+  }
+
+  private loadVariation(id: number): void {
+    this.isLoading = true;
+    this.variationService.getVariationById(id).subscribe({
+      next: (variation: Variation) => {
+        this.variationForm.patchValue({
+          variationName: variation.name,
+          valueType: variation.valueType
+        });
+        
+        this.selectedValueType = variation.valueType === 'Dropdown' ? 'dropdown' : 'text';
+        
+        // Clear existing options
+        while (this.dropdownOptions.length !== 0) {
+          this.dropdownOptions.removeAt(0);
+        }
+        
+        // Load options
+        if (variation.valueType === 'Dropdown' && variation.options.length > 0) {
+          variation.options.forEach(option => {
+            this.dropdownOptions.push(this.createDropdownOption(option.name, option.value || '', option.id));
+          });
+        } else if (variation.valueType === 'TextInput' && variation.options.length > 0) {
+          // For text input, load name and value from first option
+          const firstOption = variation.options[0];
+          this.variationForm.patchValue({
+            textInputPlaceholder: firstOption.name,
+            textInputValue: firstOption.value || ''
+          });
+        }
+        
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.toastService.error('Error', 'Failed to load variation');
+        this.router.navigate(['/variation']);
+      }
     });
   }
 
@@ -61,7 +115,7 @@ export class AddVariationComponent implements OnInit {
   }
 
   addDropdownOption(): void {
-    this.dropdownOptions.push(this.createDropdownOption());
+    this.dropdownOptions.push(this.createDropdownOption('', ''));
   }
 
   removeDropdownOption(index: number): void {
@@ -76,35 +130,85 @@ export class AddVariationComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.variationForm.valid) {
-      this.isSaving = true;
+    if (this.variationForm.invalid || this.isSaving) {
+      this.markFormGroupTouched();
+      return;
+    }
 
-      const formData = this.variationForm.value;
-      const variationData = {
-        variationName: formData.variationName,
-        valueType: formData.valueType,
-        options: formData.valueType === 'dropdown' ? formData.dropdownOptions.map((opt: any) => opt.value) : [],
-        textConfig: formData.valueType === 'text' ? {
-          required: formData.textInputRequired,
-          placeholder: formData.textInputPlaceholder,
-          maxLength: formData.textInputMaxLength
-        } : null
+    const formData = this.variationForm.value;
+    this.isSaving = true;
+
+    if (this.isEditMode && this.variationId !== null) {
+      // Update existing variation
+      const updatePayload: UpdateVariationRequest = {
+        name: formData.variationName,
+        valueType: this.selectedValueType === 'dropdown' ? 'Dropdown' : 'TextInput',
+        isActive: true,
+        options: this.selectedValueType === 'dropdown' 
+          ? formData.dropdownOptions.map((opt: any) => ({
+              id: opt.id || undefined,
+              name: opt.name || opt.value,
+              value: opt.value,
+              isActive: opt.isActive !== false
+            }))
+          : [{
+              name: formData.textInputPlaceholder || 'Value',
+              value: formData.textInputValue || null,
+              isActive: true
+            }]
       };
 
-      console.log('Creating variation:', variationData);
-
-      // Simulate API call
-      setTimeout(() => {
-        this.isSaving = false;
-        this.toastService.success('Success', 'Variation created successfully!');
-        this.router.navigate(['/variation']);
-      }, 1000);
+      this.toastService.info('Saving', 'Updating variation...');
+      this.variationService.updateVariation(this.variationId, updatePayload).subscribe({
+        next: () => {
+          this.isSaving = false;
+          this.toastService.success('Success', 'Variation has been updated successfully');
+          this.router.navigate(['/variation']);
+        },
+        error: (error) => {
+          this.isSaving = false;
+          const message = error?.error?.message || 'Failed to update variation';
+          this.toastService.error('Error', message);
+        }
+      });
     } else {
-      this.markFormGroupTouched();
+      // Create new variation
+      const createPayload: CreateVariationRequest = {
+        name: formData.variationName,
+        valueType: this.selectedValueType === 'dropdown' ? 'Dropdown' : 'TextInput',
+        options: this.selectedValueType === 'dropdown'
+          ? formData.dropdownOptions.map((opt: any) => ({
+              name: opt.name || opt.value,
+              value: opt.value
+            }))
+          : [{
+              name: formData.textInputPlaceholder || 'Value',
+              value: formData.textInputValue || null
+            }]
+      };
+
+      this.toastService.info('Saving', 'Creating variation...');
+      this.variationService.createVariation(createPayload).subscribe({
+        next: () => {
+          this.isSaving = false;
+          this.toastService.success('Success', 'Variation has been created successfully');
+          this.router.navigate(['/variation']);
+        },
+        error: (error) => {
+          this.isSaving = false;
+          const message = error?.error?.message || 'Failed to create variation';
+          this.toastService.error('Error', message);
+        }
+      });
     }
   }
 
   onCancel(): void {
+    if (this.isEditMode) {
+      this.router.navigate(['/variation']);
+      return;
+    }
+    this.variationForm.reset();
     this.router.navigate(['/variation']);
   }
 
@@ -166,12 +270,7 @@ export class AddVariationComponent implements OnInit {
 
     // Add new options to FormArray
     templateOptions.forEach(optionValue => {
-      const optionGroup = this.fb.group({
-        value: [optionValue, Validators.required]
-      });
-      this.dropdownOptions.push(optionGroup);
+      this.dropdownOptions.push(this.createDropdownOption(optionValue, optionValue));
     });
   }
-
-
 }

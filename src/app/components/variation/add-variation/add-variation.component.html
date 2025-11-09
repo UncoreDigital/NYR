@@ -11,9 +11,15 @@
                 <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
 
                 <span class="breadcrumb-item text-gray-800 font-semibold active">
-                    {{ 'Add Variation' }}
+                    {{ isEditMode ? 'Edit Variation' : 'Add Variation' }}
                 </span>
             </div>
+            <!-- Loading Spinner -->
+            <div *ngIf="isLoading" class="loading-container">
+                <mat-spinner diameter="50"></mat-spinner>
+                <p>Loading variation...</p>
+            </div>
+
             <div class="table-container" *ngIf="!isLoading">
 
                 <form [formGroup]="variationForm" class="user-form" (ngSubmit)="onSubmit()">
@@ -59,9 +65,12 @@
                                     <label>Variation Options</label>
                                     <div class="options-container">
                                         <div class="option-input-row"
-                                            *ngFor="let option of dropdownOptions.controls; let i = index">
-                                            <input type="text" [formControl]="$any(option.get('value'))"
-                                                class="form-control option-input" [placeholder]="'Option ' + (i + 1)">
+                                            *ngFor="let option of dropdownOptions.controls; let i = index"
+                                            [formGroup]="$any(option)">
+                                            <input type="text" formControlName="name"
+                                                class="form-control option-input" [placeholder]="'Name ' + (i + 1)" style="margin-right: 8px;">
+                                            <input type="text" formControlName="value"
+                                                class="form-control option-input" [placeholder]="'Value ' + (i + 1)">
                                             <button type="button" class="remove-option-btn"
                                                 (click)="removeDropdownOption(i)"
                                                 [disabled]="dropdownOptions.length <= 1">
@@ -75,8 +84,8 @@
                                     </div>
                                 </div>
 
-                                <!-- Quick Templates -->
-                                <div class="form-group">
+                                <!-- Quick Templates (Hidden in Edit Mode) -->
+                                <div class="form-group" *ngIf="!isEditMode">
                                     <label>Quick Templates</label>
                                     <div class="template-buttons">
                                         <button type="button" class="template-btn" (click)="applyTemplate('size')">
@@ -107,9 +116,9 @@
                                                 class="form-control" placeholder="Enter placeholder text">
                                         </div>
                                         <div class="input-group">
-                                            <label>Maximum Length</label>
-                                            <input type="number" formControlName="textInputMaxLength"
-                                                class="form-control" placeholder="Optional (e.g., 50)" min="1">
+                                            <label>Value</label>
+                                            <input type="text" formControlName="textInputValue"
+                                                class="form-control" placeholder="Enter value">
                                         </div>
                                     </div>
                                 </div>
@@ -119,10 +128,10 @@
 
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary" [disabled]="isSaving">
-                            <span *ngIf="!isSaving">Save</span>
-                            <span *ngIf="isSaving">Saving...</span>
+                            <span *ngIf="!isSaving">{{ isEditMode ? 'Update' : 'Save' }}</span>
+                            <span *ngIf="isSaving">{{ isEditMode ? 'Updating...' : 'Saving...' }}</span>
                         </button>
-                        <button type="reset" class="btn btn-outline" [disabled]="isSaving"
+                        <button type="button" class="btn btn-outline" [disabled]="isSaving"
                             (click)="onCancel()">Cancel</button>
                     </div>
                 </form>

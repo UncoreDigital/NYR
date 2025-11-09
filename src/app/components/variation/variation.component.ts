@@ -6,6 +6,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { ToastService } from 'src/app/services/toast.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { VariationService } from '../../services/variation.service';
+import { Variation as VariationApiModel } from '../../models/variation.model';
 
 export interface Variation {
   id: number;
@@ -25,11 +27,7 @@ export class VariationComponent implements OnInit {
 
   isLoading = false;
   errorMessage = '';
-  variations: Variation[] = [
-    { id: 1, variationName: 'Variation A', variationType: 'Select' },
-    { id: 2, variationName: 'Variation B', variationType: 'Text' },
-    { id: 3, variationName: 'Variation C', variationType: 'Select' }  
-  ];
+  variations: Variation[] = [];
   deletingVariationId: number | null = null;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -39,6 +37,7 @@ export class VariationComponent implements OnInit {
     private router: Router,
     private toastService: ToastService,
     private dialog: MatDialog,
+    private variationService: VariationService
   ) { }
 
   ngOnInit(): void {
@@ -46,8 +45,26 @@ export class VariationComponent implements OnInit {
   }
 
   loadVariations(): void {
+    this.isLoading = true;
     this.errorMessage = '';
-    this.dataSource.data = this.variations;
+    
+    this.variationService.getVariations().subscribe({
+      next: (variations: VariationApiModel[]) => {
+        const mapped: Variation[] = variations.map(v => ({
+          id: v.id,
+          variationName: v.name,
+          variationType: v.valueType
+        }));
+        this.variations = mapped;
+        this.dataSource.data = this.variations;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Failed to load variations', error);
+        this.toastService.error('Error', 'Failed to load variations');
+        this.isLoading = false;
+      }
+    });
   }
 
   ngAfterViewInit() {
@@ -94,6 +111,20 @@ export class VariationComponent implements OnInit {
 
   private performDelete(variation: Variation): void {
     this.deletingVariationId = variation.id;
+    
+    this.variationService.deleteVariation(variation.id).subscribe({
+      next: () => {
+        this.toastService.success('Success', 'Variation has been deleted successfully');
+        this.deletingVariationId = null;
+        this.loadVariations(); // Refresh the list
+      },
+      error: (error) => {
+        console.error('Failed to delete variation', error);
+        const message = error?.error?.message || 'Failed to delete variation. Please try again.';
+        this.toastService.error('Error', message);
+        this.deletingVariationId = null;
+      }
+    });
   }
 }
 
