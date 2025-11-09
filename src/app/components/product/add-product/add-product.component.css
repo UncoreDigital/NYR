@@ -942,3 +942,135 @@ select:disabled {
     width: 100%;
     text-align: center;
   }
+
+/* Variation Type Badge in Dropdown */
+.variation-type-badge {
+  font-size: 11px;
+  color: #666;
+  font-weight: normal;
+  margin-left: 4px;
+}
+
+/* No Variations Message */
+.no-variations-message {
+  padding: 16px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
+
+.no-variations-message p {
+  margin: 0;
+}
+
+/* Variation Type Cell */
+.variation-type-cell {
+  padding: 12px;
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.type-badge.dropdown {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.type-badge.textinput {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+/* Variation Options Cell */
+.variation-options-cell {
+  padding: 12px;
+}
+
+.options-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.option-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  font-size: 12px;
+  color: #333;
+}
+
+.text-input-info {
+  font-size: 13px;
+  color: #666;
+  font-style: italic;
+}
+
+.text-input-label {
+  display: inline-block;
+  padding: 4px 10px;
+  background-color: #fff3e0;
+  border: 1px solid #ffe0b2;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #e65100;
+}
+
+/* Variation Type Header */
+.variation-type-header {
+  width: 120px;
+}
+
+/* Variation Options Header */
+.variation-options-header {
+  min-width: 200px;
+}
+
+/* Error Message Styles */
+.error-message {
+  color: #d32f2f;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.required {
+  color: #d32f2f;
+  margin-left: 2px;
+}
+
+/* Validation Styles */
+.form-control.ng-invalid.ng-touched {
+  border-color: #d32f2f;
+}
+
+.form-control.ng-invalid.ng-touched:focus {
+  border-color: #d32f2f;
+  box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.1);
+}
+
+/* Field Hint */
+.field-hint {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Input Group Spacing */
+.input-group {
+  margin-bottom: 16px;
+}
+
+.input-group:last-child {
+  margin-bottom: 0;
+}

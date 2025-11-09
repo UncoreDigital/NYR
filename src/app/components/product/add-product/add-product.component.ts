@@ -12,9 +12,11 @@ import { ProductApiModel } from '../../../models/product.model';
 import { BrandService } from '../../../services/brand.service';
 import { CategoryService } from '../../../services/category.service';
 import { SupplierService } from '../../../services/supplier.service';
+import { VariationService } from '../../../services/variation.service';
 import { Brand } from '../../../models/brand.model';
 import { Category } from '../../../models/category.model';
 import { SupplierApiModel } from '../../../models/supplier.model';
+import { Variation } from '../../../models/variation.model';
 
 @Component({
   selector: 'app-add-product',
@@ -26,8 +28,8 @@ export class AddProductComponent implements OnInit {
   categories: Category[] = [];
   brands: Brand[] = [];
   suppliers: SupplierApiModel[] = [];
-  variations = ['Variation 1', 'Variation 2'];
-  availableVariations = ['Size', 'Color', 'Material', 'Weight', 'Brand', 'Style', 'Pattern', 'Texture'];
+  masterVariations: Variation[] = []; // From Variation Master
+  availableVariations: Variation[] = []; // Filtered active variations
   selectedVariations: any[] = [];
   showVariationDropdown = false;
   showInCatalogue = false;
@@ -67,7 +69,7 @@ export class AddProductComponent implements OnInit {
   textInputConfig = {
     required: false,
     placeholder: '',
-    maxLength: null as number | null
+    value: ''
   };
 
   constructor(
@@ -78,7 +80,8 @@ export class AddProductComponent implements OnInit {
     private toastService: ToastService,
     private brandService: BrandService,
     private categoryService: CategoryService,
-    private supplierService: SupplierService
+    private supplierService: SupplierService,
+    private variationService: VariationService
   ) {
     this.productForm = this.fb.group({
       productName: ['', [Validators.required, Validators.minLength(2)]],
@@ -147,24 +150,63 @@ export class AddProductComponent implements OnInit {
         this.isLoadingDropdowns = false;
       }
     });
+
+    // Load variations from Variation Master
+    this.variationService.getActiveVariations().subscribe({
+      next: (variations: Variation[]) => {
+        this.masterVariations = variations;
+        this.availableVariations = variations;
+      },
+      error: (error) => {
+        console.error('Failed to load variations', error);
+        this.toastService.error('Error', 'Failed to load variations');
+      }
+    });
   }
 
   loadProductForEdit(): void {
     if (!this.productId) return;
     
     this.isLoadingProduct = true;
-    this.productService.getProductById(this.productId).subscribe({
-      next: (product: ProductApiModel) => {
-        this.populateFormWithProduct(product);
-        this.isLoadingProduct = false;
-      },
-      error: (error) => {
-        this.isLoadingProduct = false;
-        console.error('Failed to load product', error);
-        this.toastService.error('Error', 'Failed to load product for editing');
-        this.router.navigate(['/product']);
+    
+    // Wait for master variations to load first
+    const checkVariationsLoaded = setInterval(() => {
+      if (this.masterVariations.length > 0 || this.isLoadingDropdowns === false) {
+        clearInterval(checkVariationsLoaded);
+        
+        this.productService.getProductById(this.productId!).subscribe({
+          next: (product: ProductApiModel) => {
+            this.populateFormWithProduct(product);
+            this.isLoadingProduct = false;
+          },
+          error: (error) => {
+            this.isLoadingProduct = false;
+            console.error('Failed to load product', error);
+            this.toastService.error('Error', 'Failed to load product for editing');
+            this.router.navigate(['/product']);
+          }
+        });
       }
-    });
+    }, 100);
+    
+    // Timeout after 5 seconds
+    setTimeout(() => {
+      clearInterval(checkVariationsLoaded);
+      if (this.isLoadingProduct) {
+        this.productService.getProductById(this.productId!).subscribe({
+          next: (product: ProductApiModel) => {
+            this.populateFormWithProduct(product);
+            this.isLoadingProduct = false;
+          },
+          error: (error) => {
+            this.isLoadingProduct = false;
+            console.error('Failed to load product', error);
+            this.toastService.error('Error', 'Failed to load product for editing');
+            this.router.navigate(['/product']);
+          }
+        });
+      }
+    }, 5000);
   }
 
   populateFormWithProduct(product: ProductApiModel): void {
@@ -225,26 +267,93 @@ export class AddProductComponent implements OnInit {
       }
     }, 1000); // Wait for dropdowns to load
 
-    // Set variations
-    this.productVariations = product.variations.map(v => ({
-      variationType: v.variationType,
-      variationValue: v.variationValue,
-      sku: v.sku,
-      priceAdjustment: v.priceAdjustment,
-      stockQuantity: v.stockQuantity
-    }));
+    // Set universal flag
+    this.universal = product.isUniversal;
+
+    // Set variations - group by variation type
+    if (product.variations && product.variations.length > 0) {
+      const variationGroups = new Map<string, any>();
+      
+      product.variations.forEach(v => {
+        if (!variationGroups.has(v.variationType)) {
+          // Find the master variation
+          const masterVar = this.masterVariations.find(mv => mv.name === v.variationType);
+          if (masterVar) {
+            variationGroups.set(v.variationType, {
+              id: masterVar.id,
+              name: masterVar.name,
+              valueType: masterVar.valueType,
+              options: masterVar.options,
+              mandatory: false,
+              selectedValues: []
+            });
+          } else {
+            // If master variation not found, create a temporary one
+            console.warn(`Master variation not found for: ${v.variationType}`);
+            variationGroups.set(v.variationType, {
+              id: 0,
+              name: v.variationType,
+              valueType: 'Dropdown',
+              options: [{ id: 0, name: v.variationValue, value: v.variationValue, isActive: true }],
+              mandatory: false,
+              selectedValues: []
+            });
+          }
+        }
+      });
+      
+      this.selectedVariations = Array.from(variationGroups.values());
+      this.updateVariationFormControl();
+      
+      console.log('Loaded variations for edit:', this.selectedVariations);
+    }
   }
 
   onSubmit() {
+    // Validate form
+    if (!this.productForm.valid) {
+      this.productForm.markAllAsTouched();
+      this.toastService.warning('Validation Error', 'Please fill in all required fields.');
+      return;
+    }
+
+    // Validate variations for non-universal products
+    if (!this.universal && this.selectedVariations.length === 0) {
+      this.toastService.warning('Validation Error', 'Please select at least one variation for non-universal products.');
+      return;
+    }
+
     if (this.productForm.valid) {
       this.isLoading = true;
       const formData = this.productForm.value;
       
       // Map form data to API payload
+      // Generate variations from selected variations
+      const generatedVariations: any[] = [];
+      this.selectedVariations.forEach(variation => {
+        if (variation.valueType === 'Dropdown') {
+          // For dropdown, create a variation for each option
+          variation.options.forEach((option: any) => {
+            generatedVariations.push({
+              productId: 0,
+              variationType: variation.name,
+              variationValue: option.name
+            });
+          });
+        } else if (variation.valueType === 'TextInput') {
+          // For text input, create a single variation entry
+          generatedVariations.push({
+            productId: 0,
+            variationType: variation.name,
+            variationValue: variation.options[0]?.name || 'Custom Value'
+          });
+        }
+      });
+
       const payload = {
         name: formData.productName,
         description: formData.description,
-        imageUrl: this.imageUrl || '', // Use the server-returned URL
+        imageUrl: this.imageUrl || '',
         barcodeSKU: formData.sku1 || '',
         barcodeSKU2: formData.sku2 || '',
         barcodeSKU3: formData.sku3 || '',
@@ -255,14 +364,7 @@ export class AddProductComponent implements OnInit {
         price: parseFloat(formData.price) || 0,
         showInCatalogue: formData.showInCatalogue,
         isUniversal: formData.universal,
-        variations: this.productVariations.map(v => ({
-          productId: 0, // Will be set by backend
-          variationType: v.variationType,
-          variationValue: v.variationValue,
-          sku: v.sku || '',
-          priceAdjustment: v.priceAdjustment || 0,
-          stockQuantity: v.stockQuantity || 0
-        }))
+        variations: generatedVariations
       };
 
       if (this.isEditMode && this.productId) {
@@ -296,9 +398,6 @@ export class AddProductComponent implements OnInit {
           }
         });
       }
-    } else {
-      this.productForm.markAllAsTouched();
-      this.toastService.warning('Validation Error', 'Please fill in all required fields.');
     }
   }
 
@@ -362,33 +461,9 @@ export class AddProductComponent implements OnInit {
   }
 
   addVariationClick() {
+    // Open quick add variation modal
     this.addVariation = true;
-  }
-
-  addAnotherProduct() {
-    this.showSuccess = false;
-    this.productForm.reset();
-  }
-
-  goToProductsList() {
-    this.router.navigate(['/product']);
-  }
-
-  saveProductAvailability() {
-    if (this.variationNm.trim()) {
-      this.productVariations.push({
-        variationType: this.productForm.get('variation')?.value,
-        variationValue: this.variationNm,
-        sku: '',
-        priceAdjustment: 0,
-        stockQuantity: 0
-      });
-      this.variationNm = '';
-      this.addVariation = false;
-      this.toastService.info('Info', 'Variation added successfully.');
-    } else {
-      this.toastService.warning('Validation Error', 'Please enter a variation name.');
-    }
+    this.resetVariationModal();
   }
 
   closeProductAvailability() {
@@ -396,7 +471,7 @@ export class AddProductComponent implements OnInit {
     this.resetVariationModal();
   }
 
-  // New dynamic variation methods
+  // Quick add variation methods
   selectValueType(type: 'dropdown' | 'text') {
     this.selectedValueType = type;
     if (type === 'dropdown' && this.variationOptions.length === 0) {
@@ -458,6 +533,10 @@ export class AddProductComponent implements OnInit {
       return this.getValidOptions().length > 0;
     }
     
+    if (this.selectedValueType === 'text') {
+      return this.textInputConfig.placeholder.trim() !== '';
+    }
+    
     return true;
   }
 
@@ -467,16 +546,49 @@ export class AddProductComponent implements OnInit {
       return;
     }
 
-    const variationData = {
+    this.toastService.info('Saving', 'Creating variation...');
+
+    // Create variation via API
+    const createPayload = {
       name: this.variationNm,
-      type: this.selectedValueType,
-      options: this.selectedValueType === 'dropdown' ? this.getValidOptions().map(opt => opt.value) : null,
-      config: this.selectedValueType === 'text' ? this.textInputConfig : null
+      valueType: this.selectedValueType === 'dropdown' ? 'Dropdown' : 'TextInput',
+      options: this.selectedValueType === 'dropdown'
+        ? this.getValidOptions().map(opt => ({
+            name: opt.value,
+            value: opt.value
+          }))
+        : [{
+            name: this.textInputConfig.placeholder || 'Value',
+            value: this.textInputConfig.value || null
+          }]
     };
 
-    this.productVariations.push(variationData);
-    this.toastService.success('Success', `Variation "${this.variationNm}" created successfully.`);
-    this.closeProductAvailability();
+    this.variationService.createVariation(createPayload).subscribe({
+      next: (newVariation: Variation) => {
+        this.toastService.success('Success', `Variation "${this.variationNm}" created successfully.`);
+        
+        // Add to master variations list
+        this.masterVariations.push(newVariation);
+        this.availableVariations = [...this.masterVariations];
+        
+        // Auto-select the newly created variation
+        this.selectedVariations.push({
+          id: newVariation.id,
+          name: newVariation.name,
+          valueType: newVariation.valueType,
+          options: newVariation.options,
+          mandatory: false,
+          selectedValues: []
+        });
+        this.updateVariationFormControl();
+        
+        this.closeProductAvailability();
+      },
+      error: (error) => {
+        const message = error?.error?.message || 'Failed to create variation';
+        this.toastService.error('Error', message);
+      }
+    });
   }
 
   resetVariationModal() {
@@ -486,8 +598,21 @@ export class AddProductComponent implements OnInit {
     this.textInputConfig = {
       required: false,
       placeholder: '',
-      maxLength: null
+      value: ''
     };
+  }
+
+  addAnotherProduct() {
+    this.showSuccess = false;
+    this.productForm.reset();
+    this.selectedVariations = [];
+    this.imageFile = null;
+    this.imagePreview = null;
+    this.imageUrl = '';
+  }
+
+  goToProductsList() {
+    this.router.navigate(['/product']);
   }
 
   onUniversalToggle(event: any) {
@@ -634,25 +759,35 @@ export class AddProductComponent implements OnInit {
   }
 
   // Multi-select variation methods
-  toggleVariationDropdown() {
+  toggleVariationDropdown(event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
     this.showVariationDropdown = !this.showVariationDropdown;
   }
 
-  toggleVariationSelection(variation: string) {
-    const existingIndex = this.selectedVariations.findIndex(v => v.name === variation);
+  toggleVariationSelection(variation: Variation) {
+    const existingIndex = this.selectedVariations.findIndex(v => v.id === variation.id);
     if (existingIndex > -1) {
       this.selectedVariations.splice(existingIndex, 1);
+      this.toastService.info('Info', `Variation "${variation.name}" removed`);
     } else {
       this.selectedVariations.push({
-        name: variation,
-        mandatory: false
+        id: variation.id,
+        name: variation.name,
+        valueType: variation.valueType,
+        options: variation.options,
+        mandatory: false,
+        selectedValues: [] // For storing user selections
       });
+      this.toastService.success('Success', `Variation "${variation.name}" added`);
     }
     this.updateVariationFormControl();
+    // Keep dropdown open for multiple selections
   }
 
-  isVariationSelected(variation: string): boolean {
-    return this.selectedVariations.some(v => v.name === variation);
+  isVariationSelected(variation: Variation): boolean {
+    return this.selectedVariations.some(v => v.id === variation.id);
   }
 
   removeSelectedVariation(index: number) {

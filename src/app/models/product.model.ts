@@ -3,9 +3,6 @@ export interface ProductVariation {
   productId: number;
   variationType: string;
   variationValue: string;
-  sku: string;
-  priceAdjustment: number;
-  stockQuantity: number;
   createdAt: string;
   isActive: boolean;
 }

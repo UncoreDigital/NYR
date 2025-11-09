@@ -295,21 +295,24 @@
                         <div class="form-group" style="flex:1;">
                             <label>Add Variation</label>
                             <div class="multi-select-dropdown" [class.active]="showVariationDropdown">
-                                <div class="multi-select-trigger" (click)="toggleVariationDropdown()">
+                                <div class="multi-select-trigger" (click)="toggleVariationDropdown($event)">
                                     <span class="selected-text">
                                         <span *ngIf="selectedVariations.length === 0" class="placeholder">Select Variation</span>
-                                        <span *ngIf="selectedVariations.length === 1">{{ selectedVariations[0] }}</span>
+                                        <span *ngIf="selectedVariations.length === 1">{{ selectedVariations[0].name }}</span>
                                         <span *ngIf="selectedVariations.length > 1">{{ selectedVariations.length }} variations selected</span>
                                     </span>
                                     <mat-icon class="dropdown-arrow" [class.rotated]="showVariationDropdown">expand_more</mat-icon>
                                 </div>
                                 <div class="multi-select-dropdown-menu" *ngIf="showVariationDropdown">
                                     <div class="multi-select-option" *ngFor="let variation of availableVariations" 
-                                         (click)="toggleVariationSelection(variation)">
+                                         (mousedown)="toggleVariationSelection(variation); $event.preventDefault()">
                                         <input type="checkbox" 
                                                [checked]="isVariationSelected(variation)"
-                                               (click)="$event.stopPropagation()">
-                                        <span>{{ variation }}</span>
+                                               readonly>
+                                        <span>{{ variation.name }} <span class="variation-type-badge">({{ variation.valueType }})</span></span>
+                                    </div>
+                                    <div *ngIf="availableVariations.length === 0" class="no-variations-message">
+                                        <p>No variations available. Please create variations in the Variation Master module first.</p>
                                     </div>
                                 </div>
                             </div>
@@ -317,7 +320,7 @@
                         <div class="form-group" style="flex:1;">
                             <label>&nbsp;</label>
                             <button type="button" class="btn btn-outline" style="height:40px; width:40px; padding:0;"
-                                (click)="addVariationClick()">
+                                (click)="addVariationClick()" title="Create new variation in Variation Master">
                                 <mat-icon>add</mat-icon>
                             </button>
                         </div>
@@ -327,15 +330,16 @@
                     <div class="selected-variations-section" *ngIf="selectedVariations.length > 0 && !universal">
                         <div class="section-header">
                             <h3>Selected Variations</h3>
-                            <p>Configure mandatory settings for each selected variation</p>
+                            <p>Configure options for each selected variation</p>
                         </div>
                         <div class="variations-table-container">
                             <table class="variations-table">
                                 <thead>
                                     <tr>
                                         <th class="variation-name-header">Variation Name</th>
-                                        <th class="mandatory-header">Mandatory Selection</th>
-                                        <th class="status-header">Status</th>
+                                        <th class="variation-type-header">Type</th>
+                                        <th class="variation-options-header">Available Options</th>
+                                        <th class="mandatory-header">Mandatory</th>
                                         <th class="actions-header">Actions</th>
                                     </tr>
                                 </thead>
@@ -347,6 +351,23 @@
                                                 <span class="variation-text">{{ variation.name }}</span>
                                             </div>
                                         </td>
+                                        <td class="variation-type-cell">
+                                            <span class="type-badge" [class.dropdown]="variation.valueType === 'Dropdown'" [class.textinput]="variation.valueType === 'TextInput'">
+                                                {{ variation.valueType }}
+                                            </span>
+                                        </td>
+                                        <td class="variation-options-cell">
+                                            <!-- Dropdown Options -->
+                                            <div *ngIf="variation.valueType === 'Dropdown'" class="options-list">
+                                                <span class="option-chip" *ngFor="let option of variation.options">
+                                                    {{ option.name }}
+                                                </span>
+                                            </div>
+                                            <!-- TextInput Info -->
+                                            <div *ngIf="variation.valueType === 'TextInput'" class="text-input-info">
+                                                <span class="text-input-label">Free text input</span>
+                                            </div>
+                                        </td>
                                         <td class="mandatory-cell">
                                             <label class="checkbox-container">
                                                 <input type="checkbox" 
@@ -354,14 +375,7 @@
                                                        (change)="updateVariationMandatory(i, $event)"
                                                        class="mandatory-checkbox">
                                                 <span class="checkmark"></span>
-                                                <span class="checkbox-label">Customer must select this variation</span>
                                             </label>
-                                        </td>
-                                        <td class="status-cell">
-                                            <div class="status-badge" [class.mandatory]="variation.mandatory">
-                                                <mat-icon>{{ variation.mandatory ? 'lock' : 'lock_open' }}</mat-icon>
-                                                <span>{{ variation.mandatory ? 'Required' : 'Optional' }}</span>
-                                            </div>
                                         </td>
                                         <td class="actions-cell">
                                             <button type="button" 
@@ -369,7 +383,6 @@
                                                     (click)="removeSelectedVariation(i)" 
                                                     title="Remove variation">
                                                 <mat-icon>delete</mat-icon>
-                                                Remove
                                             </button>
                                         </td>
                                     </tr>
@@ -389,10 +402,12 @@
         </div>
     </div>
 </div>
+
+<!-- Quick Add Variation Modal -->
 <div class="modal-backdrop" id="addVariation" *ngIf="addVariation">
     <div class="variation-modal">
         <div class="variation-header">
-            <h2>Add Variation</h2>
+            <h2>Quick Add Variation</h2>
             <button type="button" class="close-btn" (click)="closeProductAvailability()">
                 <mat-icon>close</mat-icon>
             </button>
@@ -404,6 +419,9 @@
                 <label>Variation Name <span class="required">*</span></label>
                 <input type="text" [(ngModel)]="variationNm" class="form-control" 
                        placeholder="e.g., Size, Color, Material, etc." />
+                <div *ngIf="!variationNm.trim() && variationNm !== ''" class="error-message">
+                    Variation name is required
+                </div>
             </div>
 
             <!-- Value Type Selection -->
@@ -434,7 +452,7 @@
             <!-- Dropdown Options Configuration -->
             <div *ngIf="selectedValueType === 'dropdown'" class="dropdown-config">
                 <div class="form-group">
-                    <label>Variation Options</label>
+                    <label>Variation Options <span class="required">*</span></label>
                     <div class="options-container">
                         <div class="option-input-row" *ngFor="let option of variationOptions; let i = index">
                             <input type="text" 
@@ -454,6 +472,9 @@
                             <mat-icon>add</mat-icon>
                             Add Option
                         </button>
+                    </div>
+                    <div *ngIf="selectedValueType === 'dropdown' && getValidOptions().length === 0" class="error-message">
+                        At least one option is required
                     </div>
                 </div>
 
@@ -486,43 +507,26 @@
                             <label for="required">Required field</label>
                         </div>
                         <div class="input-group">
-                            <label>Placeholder Text</label>
+                            <label>Placeholder Text <span class="required">*</span></label>
                             <input type="text" 
                                    [(ngModel)]="textInputConfig.placeholder" 
                                    class="form-control"
-                                   placeholder="Enter placeholder text">
+                                   placeholder="Enter placeholder text (e.g., Enter weight in kg)">
+                            <div *ngIf="selectedValueType === 'text' && !textInputConfig.placeholder.trim()" class="error-message">
+                                Placeholder text is required
+                            </div>
                         </div>
                         <div class="input-group">
-                            <label>Maximum Length</label>
-                            <input type="number" 
-                                   [(ngModel)]="textInputConfig.maxLength" 
+                            <label>Value</label>
+                            <input type="text" 
+                                   [(ngModel)]="textInputConfig.value" 
                                    class="form-control"
-                                   placeholder="Optional (e.g., 50)"
-                                   min="1">
+                                   placeholder="Enter default value (optional)">
+                            <small class="field-hint">Optional: Default value for this text input</small>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Preview Section -->
-            <!-- <div class="preview-section" *ngIf="selectedValueType">
-                <label>Preview</label>
-                <div class="preview-container">
-                    <div class="preview-label">{{ variationNm || 'Variation Name' }}</div>
-                    
-                    <select *ngIf="selectedValueType === 'dropdown'" class="form-control preview-select" disabled>
-                        <option>Select {{ variationNm || 'variation' }}</option>
-                        <option *ngFor="let option of getValidOptions()">{{ option.value }}</option>
-                    </select>
-                    
-                    <input *ngIf="selectedValueType === 'text'" 
-                           type="text" 
-                           class="form-control preview-input" 
-                           [placeholder]="textInputConfig.placeholder || 'Enter ' + (variationNm || 'variation')"
-                           [attr.maxlength]="textInputConfig.maxLength"
-                           disabled>
-                </div>
-            </div> -->
         </div>
 
         <div class="variation-footer">
@@ -538,6 +542,7 @@
         </div>
     </div>
 </div>
+
 <div class="modal-backdrop" *ngIf="showSuccess">
     <div class="modal-success">
         <div class="modal-icon">
