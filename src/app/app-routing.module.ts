@@ -207,6 +207,11 @@ const routes: Routes = [
     canActivate: [AuthGuard] 
   },
   { 
+    path: 'inwarehouse/edit/:id', 
+    component: AddInventoryComponent, 
+    canActivate: [AuthGuard] 
+  },
+  { 
     path: 'invans', 
     component: InventoryVanComponent, 
     canActivate: [AuthGuard] 
