@@ -94,10 +94,10 @@ export class RouteDetailComponent implements OnInit {
   @ViewChild(RouteMapComponent) routeMapComponent!: RouteMapComponent;
 
   routeDetail: routeDetail[] = [
-    { stop: 'Stop 1', deliveryDate: '2023-10-01', location: 'Howard University', inventoryItem: '2 Items', shippingItem: '2 Items', distance: '5.2 Miles', travelTime: '1 hr', deliveryTime: '10:00 AM', status: 'Completed' },
+    { stop: 'Stop 1', deliveryDate: '2023-10-01', location: 'Howard University', inventoryItem: '2 Items', shippingItem: '2 Items', distance: '5.2 Miles', travelTime: '1 hr', deliveryTime: '10:00 AM', status: 'Pending' },
     { stop: 'Stop 2', deliveryDate: '2023-10-02', location: 'Bryant Street', inventoryItem: '3 Items', shippingItem: '4 Items', distance: '12.8 Miles', travelTime: '2 hr', deliveryTime: '10:30 AM', status: 'In Progress' },
-    { stop: 'Stop 3', deliveryDate: '2023-10-03', location: 'District Vet', inventoryItem: '4 Items', shippingItem: '3 Items', distance: '8.3 Miles', travelTime: '0.5 hr', deliveryTime: '11:40 AM', status: 'Pending' },
-    { stop: 'Stop 4', deliveryDate: '2023-10-04', location: 'Medical Center', inventoryItem: '5 Items', shippingItem: '2 Items', distance: '15.7 Miles', travelTime: '3 hr', deliveryTime: '1:00 PM', status: 'Pending' },
+    { stop: 'Stop 3', deliveryDate: '2023-10-03', location: 'District Vet', inventoryItem: '4 Items', shippingItem: '3 Items', distance: '8.3 Miles', travelTime: '0.5 hr', deliveryTime: '11:40 AM', status: 'Completed' },
+    { stop: 'Stop 4', deliveryDate: '2023-10-04', location: 'Medical Center', inventoryItem: '5 Items', shippingItem: '2 Items', distance: '15.7 Miles', travelTime: '3 hr', deliveryTime: '1:00 PM', status: 'Not Started' },
   ];
   showRouteDetail = false;
 
@@ -117,6 +117,7 @@ export class RouteDetailComponent implements OnInit {
   // Route status for conditional button display
   routeStatus: string = '';
   isFromCompletedRoute: boolean = false;
+  isFromNotStartedRoute: boolean = false;
   
   // Button state management for route modifications
   hasRouteChanges: boolean = false;
@@ -151,9 +152,13 @@ export class RouteDetailComponent implements OnInit {
       // Check if we're coming from a completed route
       this.isFromCompletedRoute = this.routeStatus.toLowerCase() === 'completed';
       
+      // Check if we're coming from a not started route
+      this.isFromNotStartedRoute = this.routeStatus.toLowerCase() === 'not started';
+      
       console.log('Received route data from routes table:', routeData);
       console.log('Route status:', this.routeStatus);
       console.log('Is from completed route:', this.isFromCompletedRoute);
+      console.log('Is from not started route:', this.isFromNotStartedRoute);
       
       // Use default data but update with received route info
       this.dataSource.data = this.routeDetail;
@@ -548,20 +553,17 @@ export class RouteDetailComponent implements OnInit {
   }
 
   getDisplayStatus(originalStatus: string): string {
-    // If we're coming from a completed route, show more specific status
+    // If we're coming from a completed route, all stops show as "Completed"
     if (this.isFromCompletedRoute) {
-      // For individual stops, if the original status indicates failure, show Failed
-      if (originalStatus === 'Not Started') {
-        return 'InComplete';
-      } else {
-        return 'Completed';
-      }
-    } else if (this.routeStatus.toLowerCase() === 'not started') {
-      if (originalStatus === 'In Progress') {
-        return 'Pending';
-      }
+      return 'Completed';
     }
-    // For non-completed routes, return the original status
+    
+    // If we're coming from a not started route, all stops should show as "Pending"
+    if (this.isFromNotStartedRoute) {
+      return 'Pending';
+    }
+    
+    // For other route statuses, return the original status
     return originalStatus || 'Not Started';
   }
 
@@ -571,12 +573,8 @@ export class RouteDetailComponent implements OnInit {
       return this.routeStatus;
     }
     
-    // Check if any stops failed
-    const hasFailedStops = this.routeDetail.some(route => 
-      route.status === 'InComplete' || route.status === 'Cancelled'
-    );
-    
-    return hasFailedStops ? 'InComplete' : 'Completed';
+    // If coming from completed route, overall status is always "Completed"
+    return 'Completed';
   }
 
   // Route modification methods
@@ -660,6 +658,16 @@ export class RouteDetailComponent implements OnInit {
 
   // Helper method to map route-map status to table status
   private mapRouteStatusToTableStatus(mapStatus: string): string {
+    // If we're coming from a completed route, all stops should be "Completed"
+    if (this.isFromCompletedRoute) {
+      return 'Completed';
+    }
+    
+    // If we're coming from a not started route, all stops should be "Pending"
+    if (this.isFromNotStartedRoute) {
+      return 'Pending';
+    }
+    
     const statusMapping: { [key: string]: string } = {
       'completed': 'Completed',
       'in-transit': 'In Progress',

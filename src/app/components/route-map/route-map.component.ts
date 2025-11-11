@@ -53,6 +53,8 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
   routeData: any = null;
   showAddStopModal = false;
   isDraftRoute = false;
+  isCompletedRoute = false;
+  isNotStartedRoute = false;
   
   // Modal properties for product details
   showModal = false;
@@ -136,15 +138,27 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
         };
         // Check if this is a draft route
         this.isDraftRoute = params['status']?.toLowerCase() === 'draft';
+        this.isCompletedRoute = params['status']?.toLowerCase() === 'completed';
+        this.isNotStartedRoute = params['status']?.toLowerCase() === 'not started';
+        console.log('Route status from params:', params['status']);
+        console.log('Is draft route:', this.isDraftRoute);
+        console.log('Is completed route:', this.isCompletedRoute);
       }
     });
 
     // Check route data status if available
     if (this.routeData?.status) {
       this.isDraftRoute = this.routeData.status.toLowerCase() === 'draft';
+      this.isCompletedRoute = this.routeData.status.toLowerCase() === 'completed';
+      this.isNotStartedRoute = this.routeData.status.toLowerCase() === 'not started';
       console.log('Route status:', this.routeData.status);
       console.log('Is draft route:', this.isDraftRoute);
+      console.log('Is completed route:', this.isCompletedRoute);
+      console.log('Is not started route:', this.isNotStartedRoute);
     }
+
+    // Update route stops status based on route completion status
+    this.updateRouteStopsStatus();
 
     // Fallback data if no route data is available
     if (!this.routeData) {
@@ -418,5 +432,24 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
   // Check if delete is allowed (only for draft routes)
   canDeleteStop(): boolean {
     return this.isDraftRoute;
+  }
+
+  // Update route stops status based on route completion status
+  updateRouteStopsStatus(): void {
+    if (this.isCompletedRoute) {
+      // Set all route stops to completed status
+      this.routeStops = this.routeStops.map(stop => ({
+        ...stop,
+        status: 'completed' as const
+      }));
+      console.log('Updated all route stops to completed status');
+    } else if (this.isNotStartedRoute) {
+      // Set all route stops to pending status
+      this.routeStops = this.routeStops.map(stop => ({
+        ...stop,
+        status: 'pending' as const
+      }));
+      console.log('Updated all route stops to pending status');
+    }
   }
 }
