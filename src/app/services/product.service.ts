@@ -35,4 +35,12 @@ export class ProductService {
     formData.append('file', file);
     return this.http.post<{ imageUrl: string }>(`${this.API_URL}/Products/upload-image`, formData);
   }
+
+  getProductVariations(productId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/Products/${productId}/variations`);
+  }
+
+  getAllProductVariations(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/Products/variations`);
+  }
 }

@@ -39,6 +39,9 @@
                                             <mat-icon>close</mat-icon>
                                         </button>
                                     </div>
+                                    <div *ngIf="loading" class="loading-indicator">
+                                        Loading products...
+                                    </div>
                                     <div class="product-multiselect-option" *ngFor="let product of getFilteredProducts()" 
                                          (click)="toggleProduct(product.id)">
                                         <input type="checkbox" 
@@ -47,7 +50,7 @@
                                                class="product-multiselect-checkbox">
                                         <span class="product-multiselect-option-text">{{ product.name }}</span>
                                     </div>
-                                    <div *ngIf="getFilteredProducts().length === 0" class="no-results">
+                                    <div *ngIf="getFilteredProducts().length === 0 && !loading" class="no-results">
                                         No products found
                                     </div>
                                 </div>
@@ -78,6 +81,9 @@
                                     </button>
                                 </div>
                                 <div class="dropdown-list" *ngIf="showSupplierDropdown && !selectedSupplier">
+                                    <div *ngIf="loading" class="loading-indicator">
+                                        Loading suppliers...
+                                    </div>
                                     <div 
                                         class="dropdown-item" 
                                         *ngFor="let supplier of getFilteredSuppliers()"
@@ -86,7 +92,7 @@
                                     >
                                         {{ supplier.name }}
                                     </div>
-                                    <div *ngIf="getFilteredSuppliers().length === 0" class="no-results">
+                                    <div *ngIf="getFilteredSuppliers().length === 0 && !loading" class="no-results">
                                         No suppliers found
                                     </div>
                                 </div>
@@ -103,60 +109,62 @@
                     <!-- All Variation List Table -->
                     <div class="variation-section">
                         <h3 class="variation-title">All Variation list</h3>
-                        <div class="variation-table-wrapper">
+                        
+                        <!-- Loading indicator for variations -->
+                        <div *ngIf="loadingVariations" class="loading-section">
+                            <div class="loading-indicator">Loading product variations...</div>
+                        </div>
+                        
+                        <div class="variation-table-wrapper" *ngIf="!loadingVariations">
                             <div class="variation-table-container">
                                 <table class="variation-table">
                                 <thead>
                                     <tr>
-                                        <th>Product Name</th>
-                                        <th>Size</th>
-                                        <th>Side</th>
-                                        <th>Colour</th>
-                                        <th>In stock</th>
-                                        <th>Quantity</th>
-                                        <!-- <th>Status</th> -->
-                                        <th>Action</th>
+                                        <th>PRODUCT NAME</th>
+                                        <th>VARIATION TYPE</th>
+                                        <th>VARIATION VALUE</th>
+                                        <th>QUANTITY</th>
+                                        <th>ACTION</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr *ngFor="let variation of productVariations">
-                                        <td>{{ variation.productName }}</td>
-                                        <td>{{ variation.size }}</td>
-                                        <td>{{ variation.side }}</td>
-                                        <td>{{ variation.colour }}</td>
-                                        <td>{{ variation.inStock }}</td>
-                                        <td>
-                                            <input 
-                                                type="number" 
-                                                class="quantity-input"
-                                                [value]="variation.quantity"
-                                                (input)="updateQuantity(variation.id, +$any($event.target).value)"
-                                                min="0"
-                                                [max]="variation.inStock"
-                                            />
-
-                                        </td>
-                                        <!-- <td>
-                                            <span class="status-badge" [class]="getStatusClass(variation.status)">
-                                                {{ getStatusDisplayText(variation.status) }}
-                                                <mat-icon *ngIf="getStatusIcon(variation.status)" class="status-icon">
-                                                    {{ getStatusIcon(variation.status) }}
-                                                </mat-icon>
-                                            </span>
-                                        </td> -->
-                                        <td>
-                                            <button 
-                                                type="button"
-                                                class="btn-add"
-                                                (click)="addVariation(variation.id)"
-                                                [disabled]="variation.quantity <= 0"
-                                            >
-                                                Add
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    <ng-container *ngFor="let productData of productVariationTypeData">
+                                        <tr *ngFor="let variation of productData.variations; let i = index" class="variation-row">
+                                            <!-- <td class="product-name-cell">
+                                                <span *ngIf="i === 0" class="product-name">{{ variation.productName }}</span>
+                                            </td> -->
+                                            <td class="variation-type-cell">{{ variation.productName }}</td>
+                                            <td class="variation-type-cell">{{ variation.variationType }}</td>
+                                            <td class="variation-value-cell">{{ variation.variationValue }}</td>
+                                            <td class="quantity-cell">
+                                                <input 
+                                                    type="number" 
+                                                    class="quantity-input"
+                                                    [value]="variation.quantity"
+                                                    (input)="updateVariationQuantity(productData.productId, variation.id, +$any($event.target).value)"
+                                                    min="0"
+                                                    placeholder="0"
+                                                />
+                                            </td>
+                                            <td class="action-cell">
+                                                <button 
+                                                    type="button"
+                                                    class="btn-add"
+                                                    (click)="addVariationToSelected(productData.productId, variation)"
+                                                    [disabled]="variation.quantity <= 0"
+                                                >
+                                                    Add
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </ng-container>
                                 </tbody>
                             </table>
+                            </div>
+                            
+                            <!-- Show message when no variations available -->
+                            <div *ngIf="productVariations.length === 0" class="no-results-section">
+                                <p class="no-results-message">No product variations available for selected products.</p>
                             </div>
                         </div>
                     </div>
@@ -168,30 +176,28 @@
                             <table class="selected-table">
                                 <thead>
                                     <tr>
-                                        <th>Product Name</th>
-                                        <th>Size</th>
-                                        <th>Side</th>
-                                        <th>Colour</th>
-                                        <th>Quantity</th>
-                                        <!-- <th>Status</th> -->
-                                        <th>Action</th>
+                                        <th>PRODUCT NAME</th>
+                                        <th>VARIATION TYPE</th>
+                                        <th>VARIATION VALUE</th>
+                                        <th>QUANTITY</th>
+                                        <th>ACTION</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr *ngFor="let selectedProduct of selectedProducts">
                                         <td>{{ selectedProduct.productName }}</td>
-                                        <td>{{ selectedProduct.size }}</td>
-                                        <td>{{ selectedProduct.side }}</td>
-                                        <td>{{ selectedProduct.colour }}</td>
+                                        <td>{{ selectedProduct.variationType }}</td>
+                                        <td>{{ selectedProduct.variationValue }}</td>
                                         <td>{{ selectedProduct.quantity }}</td>
-                                        <!-- <td>
+                                        <td>
                                             <span class="status-badge" [class]="getStatusClass(selectedProduct.status)">
                                                 {{ getStatusDisplayText(selectedProduct.status) }}
                                                 <mat-icon *ngIf="getStatusIcon(selectedProduct.status)" class="status-icon">
                                                     {{ getStatusIcon(selectedProduct.status) }}
                                                 </mat-icon>
                                             </span>
-                                        </td> -->
+                                        </td>
                                         <td>
                                             <button 
                                                 type="button"
@@ -272,9 +278,26 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Error Message Display -->
+                    <div *ngIf="saveError" class="error-message">
+                        <mat-icon>error</mat-icon>
+                        <span>{{ saveError }}</span>
+                    </div>
+
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Save</button>
-                        <button type="reset" class="btn btn-outline">Cancel</button>
+                        <button type="submit" 
+                                class="btn btn-primary" 
+                                [disabled]="saving || !suppliesForm.valid || !selectedSupplier">
+                            <span *ngIf="saving" class="spinner"></span>
+                            <mat-icon *ngIf="saving">hourglass_empty</mat-icon>
+                            {{ saving ? 'Saving...' : 'Save' }}
+                        </button>
+                        <button type="button" 
+                                class="btn btn-outline" 
+                                (click)="resetForm()" 
+                                [disabled]="saving">
+                            Cancel
+                        </button>
                     </div>
                 </form>
             </div>
@@ -287,7 +310,9 @@
             <mat-icon>check_circle</mat-icon>
         </div>
         <div class="modal-message">
-            <h2>Supplies has been successfully added.</h2>
+            <h2>Supplies Request Successfully Submitted!</h2>
+            <p *ngIf="selectedSupplier">Request sent to: <strong>{{ selectedSupplier.name }}</strong></p>
+            <p>Total items requested: <strong>{{ getTotalRequestedItems() }}</strong></p>
         </div>
         <div class="modal-actions">
             <button class="btn btn-primary" (click)="addAnotherSupplies()">Add Another Supplies</button>
