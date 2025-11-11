@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, Input } from '@angular/core';
+import { Component, OnInit, AfterViewInit, Input, Output, EventEmitter } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -48,6 +48,8 @@ export interface ProductDetail {
 })
 export class RouteMapComponent implements OnInit, AfterViewInit {
   @Input() showFullLayout: boolean = true; // Default to true for standalone usage
+  @Output() routeDataChanged = new EventEmitter<RouteStop[]>();
+  
   routeData: any = null;
   showAddStopModal = false;
   isDraftRoute = false;
@@ -380,6 +382,9 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
 
     // Close modal and reset selections
     this.closeAddStopModal();
+    
+    // Emit the updated route data
+    this.routeDataChanged.emit(this.routeStops);
   }
 
   private generateNextETA(): string {
@@ -403,6 +408,9 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
       if (confirmed) {
         this.routeStops.splice(index, 1);
         console.log('Stop deleted, remaining stops:', this.routeStops.length);
+        
+        // Emit the updated route data
+        this.routeDataChanged.emit(this.routeStops);
       }
     }
   }

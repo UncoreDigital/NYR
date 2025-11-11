@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
+import { RouteMapComponent } from '../route-map/route-map.component';
 
 export interface routeDetail {
   stop: string;
@@ -90,12 +91,13 @@ export class RouteDetailComponent implements OnInit {
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild(RouteMapComponent) routeMapComponent!: RouteMapComponent;
 
   routeDetail: routeDetail[] = [
-    { stop: 'Stop 1', deliveryDate: '2023-10-01', location: 'New York, NY', inventoryItem: '2 Items', shippingItem: '2 Items', distance: '5.2 Miles', travelTime: '1 hr', deliveryTime: '12 PM', status: 'Pending' },
-    { stop: 'Stop 2', deliveryDate: '2023-10-02', location: 'Los Angeles, CA', inventoryItem: '3 Items', shippingItem: '4 Items', distance: '12.8 Miles', travelTime: '2 hr', deliveryTime: '2 PM', status: 'In Progress' },
-    { stop: 'Stop 3', deliveryDate: '2023-10-03', location: 'Chicago, IL', inventoryItem: '4 Items', shippingItem: '3 Items', distance: '8.3 Miles', travelTime: '0.5 hr', deliveryTime: '5 PM', status: 'Not Started' },
-    { stop: 'Stop 12', deliveryDate: '2023-10-12', location: 'Jacksonville, FL', inventoryItem: '5 Items', shippingItem: '2 Items', distance: '15.7 Miles', travelTime: '3 hr', deliveryTime: '1 PM', status: 'Pending' },
+    { stop: 'Stop 1', deliveryDate: '2023-10-01', location: 'Howard University', inventoryItem: '2 Items', shippingItem: '2 Items', distance: '5.2 Miles', travelTime: '1 hr', deliveryTime: '10:00 AM', status: 'Completed' },
+    { stop: 'Stop 2', deliveryDate: '2023-10-02', location: 'Bryant Street', inventoryItem: '3 Items', shippingItem: '4 Items', distance: '12.8 Miles', travelTime: '2 hr', deliveryTime: '10:30 AM', status: 'In Progress' },
+    { stop: 'Stop 3', deliveryDate: '2023-10-03', location: 'District Vet', inventoryItem: '4 Items', shippingItem: '3 Items', distance: '8.3 Miles', travelTime: '0.5 hr', deliveryTime: '11:40 AM', status: 'Pending' },
+    { stop: 'Stop 4', deliveryDate: '2023-10-04', location: 'Medical Center', inventoryItem: '5 Items', shippingItem: '2 Items', distance: '15.7 Miles', travelTime: '3 hr', deliveryTime: '1:00 PM', status: 'Pending' },
   ];
   showRouteDetail = false;
 
@@ -525,6 +527,11 @@ export class RouteDetailComponent implements OnInit {
   // View toggle methods
   switchView(view: 'table' | 'map') {
     this.currentView = view;
+    
+    // When switching to table view, sync data from route-map component
+    if (view === 'table' && this.routeMapComponent) {
+      this.syncWithRouteMapData(this.routeMapComponent.routeStops);
+    }
   }
 
   // Status styling methods
@@ -624,5 +631,42 @@ export class RouteDetailComponent implements OnInit {
     }
   }
 
+  // Method to sync data with route-map component
+  syncWithRouteMapData(routeStops: any[]): void {
+    if (routeStops && routeStops.length > 0) {
+      this.routeDetail = routeStops.map((stop, index) => ({
+        stop: `Stop ${index + 1}`,
+        deliveryDate: new Date().toISOString().split('T')[0], // Current date
+        location: stop.location,
+        inventoryItem: stop.locationInventory || '0 Items',
+        shippingItem: stop.shippingInventory || '0 Items',
+        distance: stop.distance || '0 Miles',
+        travelTime: '1 hr', // Default travel time
+        deliveryTime: stop.eta || 'N/A',
+        status: this.mapRouteStatusToTableStatus(stop.status)
+      }));
+      
+      // Update the data source for the table
+      this.dataSource.data = this.routeDetail;
+      console.log('Synced route data from map to table:', this.routeDetail);
+    }
+  }
+
+  // Handle route data changes from route-map component
+  onRouteDataChanged(routeStops: any[]): void {
+    console.log('Route data changed from map view:', routeStops);
+    this.syncWithRouteMapData(routeStops);
+  }
+
+  // Helper method to map route-map status to table status
+  private mapRouteStatusToTableStatus(mapStatus: string): string {
+    const statusMapping: { [key: string]: string } = {
+      'completed': 'Completed',
+      'in-transit': 'In Progress',
+      'pending': 'Pending',
+      'draft': 'Not Started'
+    };
+    return statusMapping[mapStatus] || 'Not Started';
+  }
 }
 
