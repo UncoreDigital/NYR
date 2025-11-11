@@ -26,7 +26,7 @@
                         <div class="dropdown-divider"></div>
                         <mat-select class="select-filter" placeholder="Driver Name" [(value)]="selectedDriverName"
                             (selectionChange)="onWarehouseNameFilterChange()">
-                            <mat-option class="select-option" value="">Driver</mat-option>
+                            <mat-option class="select-option" value="">All Drivers</mat-option>
                             <mat-option class="select-option" *ngFor="let driver of getFilteredDrivers()"
                                 [value]="driver.name">{{driver.name}}</mat-option>
                         </mat-select>
