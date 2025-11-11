@@ -29,13 +29,14 @@
                     <!-- <button class="btn btn-primary mr-15 viewIcon" title="View" (click)="openRouteDetail()">
                         <mat-icon>visibility</mat-icon>
                     </button> -->
-                    <button class="toggle-btn" [class.active]="currentView === 'table'" (click)="switchView('table')"
-                        matTooltip="Table View" matTooltipPosition="below" style="display: inline;">
-                        <mat-icon>table_view</mat-icon>
-                    </button>
+                    
                     <button class="toggle-btn" [class.active]="currentView === 'map'" (click)="switchView('map')"
-                        matTooltip="Map View" matTooltipPosition="below" style="display: inline; margin-right: 10px;">
+                        matTooltip="Map View" matTooltipPosition="below" style="display: inline;">
                         <mat-icon>map</mat-icon>
+                    </button>
+                    <button class="toggle-btn" [class.active]="currentView === 'table'" (click)="switchView('table')"
+                        matTooltip="Table View" matTooltipPosition="below" style="display: inline; margin-right: 10px;">
+                        <mat-icon>table_view</mat-icon>
                     </button>
                     <button *ngIf="routeStatus.toLowerCase() !== 'completed'"
                         class="btn btn-primary mr-15"

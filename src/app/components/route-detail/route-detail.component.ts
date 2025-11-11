@@ -111,7 +111,7 @@ export class RouteDetailComponent implements OnInit {
   selectedLocations: any[] = [];
   routeCreationData: any = {};
   // View toggle properties
-  currentView: 'table' | 'map' = 'table';
+  currentView: 'table' | 'map' = 'map';
   // Route status for conditional button display
   routeStatus: string = '';
   isFromCompletedRoute: boolean = false;
