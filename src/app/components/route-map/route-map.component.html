@@ -77,10 +77,21 @@
                                     <div style="color: #02c3b4; font-weight: 500;">
                                         <span>Stop {{ i + 1 }}</span>
                                     </div>
-                                    <div class="stop-status">
-                                        <span class="status-badge" [class]="stop.status">
-                                            {{ stop.status | titlecase }}
-                                        </span>
+                                    <div class="stop-actions">
+                                        <!-- Status only shown for non-draft routes -->
+                                        <div class="stop-status" *ngIf="!isDraftRoute">
+                                            <span class="status-badge" [class]="stop.status">
+                                                {{ stop.status | titlecase }}
+                                            </span>
+                                        </div>
+                                        <!-- Delete button only shown for draft routes -->
+                                        <button *ngIf="isDraftRoute" 
+                                                class="delete-stop-btn" 
+                                                (click)="deleteStop(i)"
+                                                matTooltip="Delete Stop"
+                                                matTooltipPosition="above">
+                                            <mat-icon>delete</mat-icon>
+                                        </button>
                                     </div>
                                 </div>
                                 <div class="stop-details">
@@ -104,8 +115,8 @@
                         </div>
                     </div>
 
-                    <!-- Add Stop Button -->
-                    <div class="add-stop-section">
+                    <!-- Add Stop Button - Only shown for non-draft routes -->
+                    <div class="add-stop-section" *ngIf="!isDraftRoute">
                         <button class="btn btn-primary add-stop-btn" (click)="openAddStopModal()">
                             Add Stop
                         </button>
@@ -237,10 +248,10 @@
                         <td mat-cell *matCellDef="let product">{{product.colour}}</td>
                     </ng-container>
 
-                    <ng-container matColumnDef="quantity">
+                    <!-- <ng-container matColumnDef="quantity">
                         <th mat-header-cell *matHeaderCellDef>QUANTITY</th>
                         <td mat-cell *matCellDef="let product">{{product.quantity}}</td>
-                    </ng-container>
+                    </ng-container> -->
 
                     <ng-container matColumnDef="inStock">
                         <th mat-header-cell *matHeaderCellDef>IN STOCK</th>

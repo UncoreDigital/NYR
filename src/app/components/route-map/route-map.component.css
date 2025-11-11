@@ -266,6 +266,37 @@
   align-items: center;
 }
 
+.stop-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.delete-stop-btn {
+  background: none;
+  border: none;
+  color: #dc2626;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-size: 18px;
+}
+
+.delete-stop-btn:hover {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.delete-stop-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
 .status-badge {
   padding: 4px 12px;
   border-radius: 16px;

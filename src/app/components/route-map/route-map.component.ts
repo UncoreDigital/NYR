@@ -3,6 +3,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
@@ -41,7 +42,7 @@ export interface ProductDetail {
 @Component({
   selector: 'app-route-map',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, MatTableModule, SidebarComponent, HeaderComponent, RouterModule],
+  imports: [CommonModule, FormsModule, MatIconModule, MatTooltipModule, MatTableModule, SidebarComponent, HeaderComponent, RouterModule],
   templateUrl: './route-map.component.html',
   styleUrl: './route-map.component.css'
 })
@@ -49,6 +50,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
   @Input() showFullLayout: boolean = true; // Default to true for standalone usage
   routeData: any = null;
   showAddStopModal = false;
+  isDraftRoute = false;
   
   // Modal properties for product details
   showModal = false;
@@ -130,8 +132,17 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
           shippingDate: params['shippingDate'],
           status: params['status']
         };
+        // Check if this is a draft route
+        this.isDraftRoute = params['status']?.toLowerCase() === 'draft';
       }
     });
+
+    // Check route data status if available
+    if (this.routeData?.status) {
+      this.isDraftRoute = this.routeData.status.toLowerCase() === 'draft';
+      console.log('Route status:', this.routeData.status);
+      console.log('Is draft route:', this.isDraftRoute);
+    }
 
     // Fallback data if no route data is available
     if (!this.routeData) {
@@ -139,10 +150,12 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
         driverName: 'James Miller',
         totalStops: 3,
         shippingDate: '20/06/2025',
-        status: 'In Transit',
+        status: 'Draft', // Set to Draft for testing
         startPoint: 'Warehouse 1',
         distance: '5.1 miles'
       };
+      // Set isDraftRoute for fallback data
+      this.isDraftRoute = true;
     }
 
     // Initialize customer data for location modal
@@ -229,7 +242,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
     ];
     this.modalTitle = `Location Inventory - ${stop.location}`;
     this.showModal = true;
-    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
+    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'inStock'];
     console.log('Modal should be showing:', this.showModal);
   }
 
@@ -241,7 +254,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
     ];
     this.modalTitle = `Shipping Inventory - ${stop.location}`;
     this.showModal = true;
-    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
+    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'inStock'];
     console.log('Modal should be showing:', this.showModal);
   }
 
@@ -379,5 +392,23 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
       minute: '2-digit',
       hour12: true 
     });
+  }
+
+  // Delete stop functionality for draft routes
+  deleteStop(index: number): void {
+    if (this.isDraftRoute && this.routeStops.length > index) {
+      const stopLocation = this.routeStops[index].location;
+      const confirmed = confirm(`Are you sure you want to delete "${stopLocation}" from this route?`);
+      
+      if (confirmed) {
+        this.routeStops.splice(index, 1);
+        console.log('Stop deleted, remaining stops:', this.routeStops.length);
+      }
+    }
+  }
+
+  // Check if delete is allowed (only for draft routes)
+  canDeleteStop(): boolean {
+    return this.isDraftRoute;
   }
 }
