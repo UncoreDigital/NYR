@@ -58,7 +58,7 @@ export class RouteDetailComponent implements OnInit {
     let columns = [...this.baseColumns];
     
     // Add status column if route status is not "Completed"
-    if (this.routeStatus && this.routeStatus.toLowerCase() !== 'completed') {
+    if (this.routeStatus && this.routeStatus.toLowerCase() !== 'draft') {
       columns.push('status');
     }
     
@@ -114,6 +114,7 @@ export class RouteDetailComponent implements OnInit {
   currentView: 'table' | 'map' = 'table';
   // Route status for conditional button display
   routeStatus: string = '';
+  isFromCompletedRoute: boolean = false;
   
   // Button state management for route modifications
   hasRouteChanges: boolean = false;
@@ -145,8 +146,12 @@ export class RouteDetailComponent implements OnInit {
       const routeData = state.routeData;
       this.routeStatus = routeData.status || '';
       
+      // Check if we're coming from a completed route
+      this.isFromCompletedRoute = this.routeStatus.toLowerCase() === 'completed';
+      
       console.log('Received route data from routes table:', routeData);
       console.log('Route status:', this.routeStatus);
+      console.log('Is from completed route:', this.isFromCompletedRoute);
       
       // Use default data but update with received route info
       this.dataSource.data = this.routeDetail;
@@ -526,12 +531,45 @@ export class RouteDetailComponent implements OnInit {
   getStatusClass(status: string): string {
     const classMap: { [key: string]: string } = {
       'Completed': 'status-completed',
+      'InComplete': 'status-inComplete',
       'In Progress': 'status-in-progress',
       'Not Started': 'status-not-started',
       'Pending': 'status-pending',
       'Draft': 'status-draft',
     };
     return classMap[status] || 'status-default';
+  }
+
+  getDisplayStatus(originalStatus: string): string {
+    // If we're coming from a completed route, show more specific status
+    if (this.isFromCompletedRoute) {
+      // For individual stops, if the original status indicates failure, show Failed
+      if (originalStatus === 'Not Started') {
+        return 'InComplete';
+      } else {
+        return 'Completed';
+      }
+    } else if (this.routeStatus.toLowerCase() === 'not started') {
+      if (originalStatus === 'In Progress') {
+        return 'Pending';
+      }
+    }
+    // For non-completed routes, return the original status
+    return originalStatus || 'Not Started';
+  }
+
+  // Method to get overall route completion status
+  getOverallRouteStatus(): string {
+    if (!this.isFromCompletedRoute) {
+      return this.routeStatus;
+    }
+    
+    // Check if any stops failed
+    const hasFailedStops = this.routeDetail.some(route => 
+      route.status === 'InComplete' || route.status === 'Cancelled'
+    );
+    
+    return hasFailedStops ? 'InComplete' : 'Completed';
   }
 
   // Route modification methods

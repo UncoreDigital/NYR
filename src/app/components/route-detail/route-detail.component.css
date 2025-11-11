@@ -1008,6 +1008,12 @@
   border-color: #CCF3F0;
 }
 
+.status-inComplete {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
 .status-in-progress {
   background-color: #fcead8;
   color: #FF8C00;

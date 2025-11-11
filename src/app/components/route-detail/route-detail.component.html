@@ -17,7 +17,14 @@
 
             <!-- Page Header -->
             <div class="page-header">
-                <h1>Route Details</h1>
+                <div class="header-left">
+                    <h1>Route Details</h1>
+                    <div *ngIf="isFromCompletedRoute" class="route-status-indicator">
+                        <span class="status-badge" [class]="getStatusClass(getOverallRouteStatus())">
+                            Route {{ getOverallRouteStatus() }}
+                        </span>
+                    </div>
+                </div>
                 <div class="button-group">
                     <!-- <button class="btn btn-primary mr-15 viewIcon" title="View" (click)="openRouteDetail()">
                         <mat-icon>visibility</mat-icon>
@@ -181,8 +188,8 @@
                     <ng-container matColumnDef="status">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header>STATUS</th>
                         <td mat-cell *matCellDef="let route">
-                            <span class="status-badge" [class]="getStatusClass(route.status || 'Not Started')">
-                                {{route.status || 'Not Started'}}
+                            <span class="status-badge" [class]="getStatusClass(getDisplayStatus(route.status || 'Not Started'))">
+                                {{getDisplayStatus(route.status || 'Not Started')}}
                             </span>
                         </td>
                     </ng-container>
