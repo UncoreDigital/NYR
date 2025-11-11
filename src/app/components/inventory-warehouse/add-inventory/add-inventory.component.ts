@@ -4,6 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { WarehouseInventoryService } from '../../../services/warehouse-inventory.service';
 import { WarehouseService } from '../../../services/warehouse.service';
 import { ProductService } from '../../../services/product.service';
+import { ToastService } from '../../../services/toast.service';
 import { AddInventoryRequest, AddBulkInventoryRequest, BulkInventoryItem, WarehouseInventoryResponse } from '../../../models/warehouse-inventory.model';
 import { WarehouseResponse } from '../../../models/warehouse.model';
 import { ProductApiModel, ProductVariation } from '../../../models/product.model';
@@ -78,7 +79,8 @@ export class AddInventoryComponent implements OnInit {
     private route: ActivatedRoute,
     private warehouseInventoryService: WarehouseInventoryService,
     private warehouseService: WarehouseService,
-    private productService: ProductService
+    private productService: ProductService,
+    private toastService: ToastService
   ) {
     this.inventoryForm = this.fb.group({
       warehouseName: ['', Validators.required],
@@ -448,20 +450,28 @@ export class AddInventoryComponent implements OnInit {
         inventoryItems: bulkInventoryItems
       };
 
+      const actionText = this.isEditMode ? 'Updating' : 'Adding';
+      const successText = this.isEditMode ? 'updated' : 'added';
+      
+      this.toastService.info('Saving', `${actionText} inventory...`);
+
       // Execute bulk inventory addition
       this.warehouseInventoryService.addBulkInventory(addBulkInventoryRequest).subscribe({
         next: (responses) => {
           console.log('All inventory items added successfully:', responses);
           this.loading = false;
+          this.toastService.success('Success', `Inventory has been ${successText} successfully`);
           this.router.navigate(['/inwarehouse']);
         },
         error: (error) => {
           console.error('Error adding inventory items:', error);
           this.loading = false;
+          const message = error?.error?.message || `Failed to ${actionText.toLowerCase()} inventory`;
+          this.toastService.error('Error', message);
         }
       });
     } else {
-      console.log('Missing required selections or no items in cart');
+      this.toastService.error('Error', 'Please select warehouse, product and add items to cart');
     }
   }
 
