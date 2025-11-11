@@ -70,9 +70,9 @@
                         <div class="stops-list">
                             <div class="stop-item" 
                                  *ngFor="let stop of routeStops; let i = index"
-                                 [class.completed]="stop.status === 'completed'"
-                                 [class.in-transit]="stop.status === 'in-transit'"
-                                 [class.pending]="stop.status === 'pending'">
+                                 [class.completed]="!isDraftRoute ? stop.status === 'delivered' : false"
+                                 [class.in-transit]="!isDraftRoute ? stop.status === 'in-progress' : false"
+                                 [class.pending]="!isDraftRoute ? stop.status === 'pending' : false">
                                 <div class="stop-header">
                                     <div style="color: #02c3b4; font-weight: 500;">
                                         <span>Stop {{ i + 1 }}</span>
@@ -85,7 +85,7 @@
                                             </span>
                                         </div>
                                         <!-- Delete button only shown for draft routes -->
-                                        <button *ngIf="isDraftRoute" 
+                                        <button *ngIf="isDraftRoute || isNotStartedRoute" 
                                                 class="delete-stop-btn" 
                                                 (click)="deleteStop(i)"
                                                 matTooltip="Delete Stop"
@@ -116,7 +116,7 @@
                     </div>
 
                     <!-- Add Stop Button - Only shown for non-draft routes -->
-                    <div class="add-stop-section" *ngIf="!isDraftRoute">
+                    <div class="add-stop-section" *ngIf="isDraftRoute || isNotStartedRoute">
                         <button class="btn btn-primary add-stop-btn" (click)="openAddStopModal()">
                             Add Stop
                         </button>

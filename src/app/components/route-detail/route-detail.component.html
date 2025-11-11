@@ -38,11 +38,11 @@
                         matTooltip="Table View" matTooltipPosition="below" style="display: inline; margin-right: 10px;">
                         <mat-icon>table_view</mat-icon>
                     </button>
-                    <button *ngIf="routeStatus.toLowerCase() !== 'completed'"
+                    <button *ngIf="routeStatus.toLowerCase() == 'draft' || routeStatus.toLowerCase() == 'not started'"
                         class="btn btn-primary mr-15"
                         [disabled]="!(shouldShowActionButtons() && !showRecalculateButton)"
                         (click)="openApprovalModal()">Approve Route</button>
-                    <button *ngIf="routeStatus.toLowerCase() !== 'completed'"
+                    <button *ngIf="routeStatus.toLowerCase() == 'draft' || routeStatus.toLowerCase() == 'not started'"
                         class="btn btn-secondary mr-15"
                         [disabled]="!(shouldShowActionButtons() && showRecalculateButton)"
                         (click)="recalculateRoute()">Recalculate Route</button>

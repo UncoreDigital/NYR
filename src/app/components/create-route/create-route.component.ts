@@ -122,8 +122,8 @@ export class CreateRouteComponent implements OnInit {
 
   createRoute() {
     // Check if any data is available before proceeding
-    if (this.dataSource.data.length === 0) {
-      alert('No locations available to create a route.');
+    if (this.selectedDriverName == '' ||this.dataSource.data.length === 0) {
+      alert('Select Atleast one driver to create a route.');
       return;
     }
     this.saveRoute();

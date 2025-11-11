@@ -12,7 +12,7 @@ export interface RouteStop {
   location: string;
   eta: string;
   items?: number;
-  status: 'completed' | 'in-transit' | 'pending';
+  status: 'delivered' | 'in-progress' | 'not-delivered' | 'pending';
   distance?: string;
   locationInventory?: string;
   shippingInventory?: string;
@@ -82,7 +82,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
       location: 'Howard University',
       eta: '10:00 AM',
       items: 4,
-      status: 'completed',
+      status: 'delivered',
       distance: '5.2 Miles',
       locationInventory: '2 Items',
       shippingInventory: '2 Items'
@@ -90,7 +90,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
     {
       location: 'Bryant Street',
       eta: '10:30 AM',
-      status: 'in-transit',
+      status: 'in-progress',
       distance: '12.8 Miles',
       locationInventory: '3 Items',
       shippingInventory: '4 Items'
@@ -98,7 +98,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
     {
       location: 'District Vet',
       eta: '11:40 AM',
-      status: 'pending',
+      status: 'not-delivered',
       distance: '8.3 Miles',
       locationInventory: '4 Items',
       shippingInventory: '3 Items'
@@ -440,8 +440,9 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
       // Set all route stops to completed status
       this.routeStops = this.routeStops.map(stop => ({
         ...stop,
-        status: 'completed' as const
+        status: 'delivered' as const
       }));
+      this.routeStops[0].status = 'not-delivered' as const;
       console.log('Updated all route stops to completed status');
     } else if (this.isNotStartedRoute) {
       // Set all route stops to pending status

@@ -542,7 +542,7 @@ export class RouteDetailComponent implements OnInit {
   // Status styling methods
   getStatusClass(status: string): string {
     const classMap: { [key: string]: string } = {
-      'Completed': 'status-completed',
+      'Delivered': 'status-completed',
       'InComplete': 'status-inComplete',
       'In Progress': 'status-in-progress',
       'Not Started': 'status-not-started',
@@ -555,7 +555,7 @@ export class RouteDetailComponent implements OnInit {
   getDisplayStatus(originalStatus: string): string {
     // If we're coming from a completed route, all stops show as "Completed"
     if (this.isFromCompletedRoute) {
-      return 'Completed';
+      return 'Delivered';
     }
     
     // If we're coming from a not started route, all stops should show as "Pending"
@@ -574,7 +574,7 @@ export class RouteDetailComponent implements OnInit {
     }
     
     // If coming from completed route, overall status is always "Completed"
-    return 'Completed';
+    return 'Delivered';
   }
 
   // Route modification methods
@@ -660,7 +660,7 @@ export class RouteDetailComponent implements OnInit {
   private mapRouteStatusToTableStatus(mapStatus: string): string {
     // If we're coming from a completed route, all stops should be "Completed"
     if (this.isFromCompletedRoute) {
-      return 'Completed';
+      return 'Delivered';
     }
     
     // If we're coming from a not started route, all stops should be "Pending"
@@ -669,8 +669,8 @@ export class RouteDetailComponent implements OnInit {
     }
     
     const statusMapping: { [key: string]: string } = {
-      'completed': 'Completed',
-      'in-transit': 'In Progress',
+      'delivered': 'Delivered',
+      'in-progress': 'In Progress',
       'pending': 'Pending',
       'draft': 'Not Started'
     };
