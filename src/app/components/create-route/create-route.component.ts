@@ -98,20 +98,21 @@ export class CreateRouteComponent implements OnInit {
     let filteredData = [...this.createRoutes];
 
     // Apply warehouse name filter and search term filter
-    if (this.selectedWarehouseName || this.searchTerm) {
-      const warehouseLower = this.selectedWarehouseName?.toLowerCase() || '';
+    if (this.selectedDriverName || this.searchTerm) {
+      // Filter by selected driver name (if any) and by the search term across multiple fields
+      const driverLower = this.selectedDriverName?.toLowerCase() || '';
       const searchLower = this.searchTerm?.toLowerCase() || '';
 
       const filterFunction = (route: CreateRoutes) => {
-        const matchesWarehouse = !this.selectedWarehouseName ||
-          route.locationName.toLowerCase().includes(warehouseLower);
+        const matchesDriver = !this.selectedDriverName ||
+          route.driverName.toLowerCase().includes(driverLower);
         const matchesSearch = !this.searchTerm ||
           route.locationName.toLowerCase().includes(searchLower) ||
           route.locationAddress.toLowerCase().includes(searchLower) ||
           route.driverName.toLowerCase().includes(searchLower) ||
           route.status.toLowerCase().includes(searchLower);
 
-        return matchesWarehouse && matchesSearch;
+        return matchesDriver && matchesSearch;
       };
 
       filteredData = filteredData.filter(filterFunction);
