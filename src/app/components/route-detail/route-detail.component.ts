@@ -508,15 +508,16 @@ export class RouteDetailComponent implements OnInit {
       return `Distance from ${this.startPoint} to ${this.truncateLocation(currentRoute.location)}: ${distance}`;
     }
     // For middle rows, show distance from current stop to next stop
-    else if (currentIndex > 0 && currentIndex < currentData.length - 1) {
-      const nextRoute = currentData[currentIndex + 1];
+    else if (currentIndex > 0) {
+      const fromRoute = currentData[currentIndex - 1]
+      const nextRoute = currentData[currentIndex];
       const distance = currentRoute.distance || 'N/A';
-      return `Distance from ${this.truncateLocation(currentRoute.location)} to ${this.truncateLocation(nextRoute.location)}: ${distance}`;
+      return `Distance from ${this.truncateLocation(fromRoute.location)} to ${this.truncateLocation(nextRoute.location)}: ${distance}`;
     } 
-    // For the last row, show it's the final destination
-    else if (currentIndex === currentData.length - 1) {
-      return `Final destination: ${this.truncateLocation(currentRoute.location)} - No further stops`;
-    }
+    // // For the last row, show it's the final destination
+    // else if (currentIndex === currentData.length - 1) {
+    //   return `Final destination: ${this.truncateLocation(currentRoute.location)} - No further stops`;
+    // }
     
     const distance = currentRoute.distance || 'Unknown distance';
     return `Current location: ${this.truncateLocation(currentRoute.location)} - Distance: ${distance}`;
