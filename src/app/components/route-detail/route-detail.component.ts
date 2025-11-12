@@ -548,6 +548,7 @@ export class RouteDetailComponent implements OnInit {
       'Not Started': 'status-not-started',
       'Pending': 'status-pending',
       'Draft': 'status-draft',
+      'Not-delivered': 'status-inComplete',
     };
     return classMap[status] || 'status-default';
   }
@@ -555,7 +556,8 @@ export class RouteDetailComponent implements OnInit {
   getDisplayStatus(originalStatus: string): string {
     // If we're coming from a completed route, all stops show as "Completed"
     if (this.isFromCompletedRoute) {
-      return 'Delivered';
+      // return 'Delivered';
+      return originalStatus == 'delivered' ? 'Delivered' : 'Not-delivered';
     }
     
     // If we're coming from a not started route, all stops should show as "Pending"
@@ -660,7 +662,8 @@ export class RouteDetailComponent implements OnInit {
   private mapRouteStatusToTableStatus(mapStatus: string): string {
     // If we're coming from a completed route, all stops should be "Completed"
     if (this.isFromCompletedRoute) {
-      return 'Delivered';
+      // return 'Delivered';
+      return mapStatus;
     }
     
     // If we're coming from a not started route, all stops should be "Pending"

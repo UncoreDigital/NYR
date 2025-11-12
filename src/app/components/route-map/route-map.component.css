@@ -177,6 +177,11 @@
   border-color: #d1d5db;
 }
 
+.stop-item.not-delivered {
+  background: #f5dcdc;
+  border-color: #fc9f9f;
+}
+
 .stop-header {
   display: flex;
   justify-content: space-between;
