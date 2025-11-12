@@ -494,7 +494,7 @@ export class RouteDetailComponent implements OnInit {
 
   // Method to check if action buttons should be shown (only for Draft status)
   shouldShowActionButtons(): boolean {
-    return this.routeStatus === 'Draft' || this.routeStatus === '';
+    return this.routeStatus === 'Draft' || this.routeStatus === 'Not Started' || this.routeStatus === '';
   }
 
   // Method to get distance tooltip text
