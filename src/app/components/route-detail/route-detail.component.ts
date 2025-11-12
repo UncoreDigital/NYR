@@ -279,6 +279,16 @@ export class RouteDetailComponent implements OnInit {
   }
 
   openLocationModal() {
+    // If we're currently viewing the map, delegate opening the add-location modal to the map component
+    if (this.currentView === 'map' && this.routeMapComponent) {
+      try {
+        this.routeMapComponent.openAddStopModal();
+        return;
+      } catch (err) {
+        console.warn('Failed to open add-stop modal on RouteMapComponent, falling back to parent modal', err);
+      }
+    }
+
     // Sample assigned locations data - locations with assigned drivers
     this.assignedLocations = [
       { id: 1, locationName: 'Downtown Medical Center', locationAddress: '123 Main St, New York, NY 10001', driverName: 'John Smith', locationInventory: '5 Items', shippingInventory: '3 Items', status: 'Ready To Ship', selected: false },
@@ -471,6 +481,11 @@ export class RouteDetailComponent implements OnInit {
   }
 
   approveRoute() {
+    // If map view is active, ensure latest route data from map is synced before approving
+    if (this.currentView === 'map' && this.routeMapComponent) {
+      this.syncWithRouteMapData(this.routeMapComponent.routeStops);
+    }
+
     // Handle route approval logic here
     this.router.navigate(['/routes']);
     this.closeApprovalModal();
@@ -595,11 +610,16 @@ export class RouteDetailComponent implements OnInit {
   }
 
   recalculateRoute() {
+    // If we're viewing the map, make sure we sync the latest map stops into the table / route data
+    if (this.currentView === 'map' && this.routeMapComponent) {
+      this.syncWithRouteMapData(this.routeMapComponent.routeStops);
+    }
+
     // Disable recalculate button and enable create route
     this.recalculateRouteDisabled = true;
     this.showRecalculateButton = false;
     this.showCreateRouteButton = true;
-    
+
     console.log('Route recalculated');
     // Here you would typically call an API to recalculate the route
     // For now, we'll just update the UI state
@@ -657,6 +677,9 @@ export class RouteDetailComponent implements OnInit {
   onRouteDataChanged(routeStops: any[]): void {
     console.log('Route data changed from map view:', routeStops);
     this.syncWithRouteMapData(routeStops);
+    // Mark that the route has changed (enables Recalculate) and update button states
+    this.hasRouteChanges = true;
+    this.updateButtonStates();
   }
 
   // Helper method to map route-map status to table status

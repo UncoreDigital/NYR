@@ -415,7 +415,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
 
   // Delete stop functionality for draft routes
   deleteStop(index: number): void {
-    if (this.isDraftRoute && this.routeStops.length > index) {
+    if ((this.isDraftRoute || this.isNotStartedRoute) && this.routeStops.length > index) {
       const stopLocation = this.routeStops[index].location;
       const confirmed = confirm(`Are you sure you want to delete "${stopLocation}" from this route?`);
       
