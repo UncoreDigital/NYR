@@ -23,7 +23,7 @@
                         </button>
                         <mat-select class="select-filter" placeholder="Driver" [(value)]="selectedDriver"
                             (selectionChange)="onDriverFilterChange()">
-                            <mat-option class="select-option" value="">Driver</mat-option>
+                            <mat-option class="select-option" value="">All Drivers</mat-option>
                             <mat-option class="select-option" *ngFor="let driver of getUniqueDrivers()"
                                 [value]="driver">{{driver}}</mat-option>
                         </mat-select>
