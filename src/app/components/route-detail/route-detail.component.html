@@ -19,7 +19,7 @@
             <div class="page-header">
                 <div class="header-left">
                     <h1>Route Details</h1>
-                    <div *ngIf="isFromCompletedRoute" class="route-status-indicator">
+                    <div class="route-status-indicator">
                         <span class="status-badge" [class]="getStatusClass(getOverallRouteStatus())">
                             Route {{ getOverallRouteStatus() }}
                         </span>
