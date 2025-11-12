@@ -3,8 +3,12 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
+import { TransferInventoryService } from '../../services/transfer-inventory.service';
+import { TransferInventoryLocationResponse } from '../../models/transfer-inventory.model';
+import { ToastService } from '../../services/toast.service';
 
 export interface inventoryLocation {
+  locationId: number;
   location: string;
   customer: string;
   contactPerson: string;
@@ -23,37 +27,45 @@ export class InventoryLocationComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  inventoryLocation: inventoryLocation[] = [
-    {
-      location: 'New York Warehouse',
-      customer: 'ABC Supplies Ltd.',
-      contactPerson: 'John Doe',
-      locationNumber: 'LOC-1001'
-    },
-    {
-      location: 'Los Angeles Depot',
-      customer: 'XYZ Traders Inc.',
-      contactPerson: 'Jane Smith',
-      locationNumber: 'LOC-2002'
-    },
-    {
-      location: 'Chicago Distribution Center',
-      customer: 'FreshMart',
-      contactPerson: 'Michael Johnson',
-      locationNumber: 'LOC-3003'
-    }
-  ];
-
+  inventoryLocation: inventoryLocation[] = [];
   filteredLocations: inventoryLocation[] = [];
   selectedCustomerName = '';
   selectedLocation = '';
   searchTerm = '';
+  isLoading = false;
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private transferInventoryService: TransferInventoryService,
+    private toastService: ToastService
+  ) { }
 
   ngOnInit(): void {
-    this.filteredLocations = [...this.inventoryLocation];
-    this.applyFilters();
+    this.loadLocations();
+  }
+
+  loadLocations(): void {
+    this.isLoading = true;
+    
+    this.transferInventoryService.getLocationsWithTransfers().subscribe({
+      next: (locations: TransferInventoryLocationResponse[]) => {
+        this.inventoryLocation = locations.map(loc => ({
+          locationId: loc.locationId,
+          location: loc.locationName,
+          customer: loc.customerName,
+          contactPerson: loc.contactPerson || '',
+          locationNumber: loc.locationNumber || ''
+        }));
+        this.filteredLocations = [...this.inventoryLocation];
+        this.dataSource.data = this.filteredLocations;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading transfer inventory locations:', error);
+        this.toastService.error('Error', 'Failed to load locations. Please try again.');
+        this.isLoading = false;
+      }
+    });
   }
 
   ngAfterViewInit() {
@@ -126,12 +138,12 @@ export class InventoryLocationComponent implements OnInit {
     this.router.navigate(['/tolocation']);
   }
 
-  viewLocation(location: any): void {
+  viewLocation(location: inventoryLocation): void {
     this.router.navigate(['/inventory-detail'], {
       queryParams: {
         context: 'location',
         title: location.location || 'Location Details',
-        id: location.id
+        id: location.locationId
       }
     });
   }

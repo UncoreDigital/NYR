@@ -54,7 +54,13 @@
                 </div>
             </div>
 
-            <div class="table-container">
+            <!-- Loading Spinner -->
+            <div *ngIf="isLoading" class="loading-container">
+                <mat-spinner diameter="50"></mat-spinner>
+                <p>Loading locations...</p>
+            </div>
+
+            <div class="table-container" *ngIf="!isLoading">
                 <table mat-table [dataSource]="dataSource" matSort class="customer-table">
                     <ng-container matColumnDef="location">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header>LOCATION</th>
