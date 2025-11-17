@@ -217,7 +217,7 @@ export class SuppliesComponent implements OnInit {
   ngOnInit() {
     this.loadProducts();
     this.loadSuppliers();
-    this.loadProductVariations();
+    // this.loadProductVariations();
   }
 
   // Service methods to load data from API
