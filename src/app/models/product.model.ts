@@ -7,6 +7,20 @@ export interface ProductVariation {
   isActive: boolean;
 }
 
+export interface ProductVariationDetail {
+  id: number;
+  productId: number | string;
+  productName: string;
+  size: string;
+  side: string;
+  colour: string;
+  inStock: number;
+  quantity: number;
+  status: string;
+  variationType?: string;
+  variationValue?: string;
+}
+
 export interface ProductApiModel {
   id: number;
   name: string;

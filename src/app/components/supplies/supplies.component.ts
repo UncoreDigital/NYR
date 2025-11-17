@@ -7,6 +7,24 @@ import { HeaderComponent } from '../header/header.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
+import { ProductService } from '../../services/product.service';
+import { SupplierService } from '../../services/supplier.service';
+import { SuppliesService, SuppliesRequest } from '../../services/supplies.service';
+import { ProductApiModel, ProductVariationDetail } from '../../models/product.model';
+import { SupplierApiModel } from '../../models/supplier.model';
+
+// Interface for Product-Variation Type table
+interface ProductVariationTypeData {
+  productId: number;
+  productName: string;
+  variations: {
+    productName: string;
+    variationType: string;
+    variationValue: string;
+    id: number;
+    quantity: number;
+  }[];
+}
 
 @Component({
   selector: 'app-supplies',
@@ -16,11 +34,25 @@ import { MatSelectModule } from '@angular/material/select';
   templateUrl: './supplies.component.html',
   styleUrl: './supplies.component.css'
 })
-export class SuppliesComponent {
+export class SuppliesComponent implements OnInit {
   suppliesForm: FormGroup;
   showSuccess = false;
   startTime: string = '';
   endTime: string = '';
+  
+  // API data
+  apiProducts: ProductApiModel[] = [];
+  apiSuppliers: SupplierApiModel[] = [];
+  loading = false;
+  loadingVariations = false;
+  saving = false;
+  saveError = '';
+
+  // Product-Variation Type table data
+  productVariationTypeData: ProductVariationTypeData[] = [];
+  // Backup of full variation type data to allow resetting/filtered views
+  allProductVariationTypeData: ProductVariationTypeData[] = [];
+  showVariationTypeTable = false;
   
   // Multiselect dropdown properties
   isDropdownOpen = false;
@@ -47,8 +79,8 @@ export class SuppliesComponent {
     { value: 'supplier5', name: 'Supplier 5' }
   ];
 
-  // Product variations data
-  allProductVariations = [
+  // Product variations data (fallback/mock data)
+  allProductVariations: ProductVariationDetail[] = [
     // Pneumatic Walking Boot variations
     {
       id: 1,
@@ -144,7 +176,7 @@ export class SuppliesComponent {
   ];
 
   // Filtered variations based on selected products
-  productVariations: any[] = [];
+  productVariations: ProductVariationDetail[] = [];
 
   // Selected products data
   selectedProducts: any[] = [];
@@ -164,7 +196,13 @@ export class SuppliesComponent {
   emailTemplateContent: string = '';
   editorFocused: boolean = false;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder, 
+    private router: Router,
+    private productService: ProductService,
+    private supplierService: SupplierService,
+    private suppliesService: SuppliesService
+  ) {
     this.suppliesForm = this.fb.group({
       suppliesProduct: ['', Validators.required],
       suppliesName: [[]], // Changed to array for multiselect
@@ -176,24 +214,270 @@ export class SuppliesComponent {
     this.productVariations = [...this.allProductVariations];
   }
 
-  onSubmit() {
-    this.showSuccess = true;
-    if (this.suppliesForm.valid) {
-      // Handle form submission (e.g., send to API)
-      console.log('Customer Data:', this.suppliesForm.value);
-      this.showSuccess = true;
-    } else {
-      this.suppliesForm.markAllAsTouched();
+  ngOnInit() {
+    this.loadProducts();
+    this.loadSuppliers();
+    // this.loadProductVariations();
+  }
+
+  // Service methods to load data from API
+  loadProducts() {
+    this.loading = true;
+    this.productService.getProducts().subscribe({
+      next: (products: ProductApiModel[]) => {
+        this.apiProducts = products;
+        // Update the products array for dropdown
+        this.products = products.map(product => ({
+          id: product.id.toString(),
+          name: product.name
+        }));
+        
+        // Extract variations from products and update allProductVariations
+        this.extractVariationsFromProducts(products);
+        
+        // Show variation type table if we have data
+        if (this.productVariationTypeData.length > 0) {
+          this.showVariationTypeTable = true;
+        }
+        
+        this.loading = false;
+        console.log('Products loaded successfully:', products.length);
+      },
+      error: (error) => {
+        console.error('Error loading products:', error);
+        this.loading = false;
+        // Keep the mock data if API fails
+        console.log('Using fallback product data');
+      }
+    });
+  }
+
+  extractVariationsFromProducts(products: ProductApiModel[]) {
+    const extractedVariations: ProductVariationDetail[] = [];
+    const variationTypeData: ProductVariationTypeData[] = [];
+    
+    products.forEach(product => {
+      if (product.variations && product.variations.length > 0) {
+        // Create product variation type data for table
+        const productVariationTypeEntry: ProductVariationTypeData = {
+          productId: product.id,
+          productName: product.name,
+          variations: product.variations.map(variation => ({
+            productName: product.name,
+            variationType: variation.variationType,
+            variationValue: variation.variationValue,
+            id: variation.id,
+            quantity: 0 // Initialize quantity to 0
+          }))
+        };
+        variationTypeData.push(productVariationTypeEntry);
+
+        product.variations.forEach(variation => {
+          // Create a variation detail object
+          const variationDetail: ProductVariationDetail = {
+            id: variation.id,
+            productId: product.id,
+            productName: product.name,
+            size: this.extractVariationByType(product.variations, 'Size') || 'N/A',
+            side: this.extractVariationByType(product.variations, 'Side') || 'Universal',
+            colour: this.extractVariationByType(product.variations, 'Color') || 
+                   this.extractVariationByType(product.variations, 'Colour') || 'N/A',
+            inStock: Math.floor(Math.random() * 100), // Random stock for demo
+            quantity: 0,
+            status: 'available',
+            variationType: variation.variationType,
+            variationValue: variation.variationValue
+          };
+          extractedVariations.push(variationDetail);
+        });
+      }
+    });
+    console.log('Extracted variations from products:', extractedVariations);
+    // Update both variation arrays
+    this.productVariationTypeData = variationTypeData;
+    // keep a full backup to restore later when no filters applied
+    this.allProductVariationTypeData = variationTypeData.map(d => ({
+      productId: d.productId,
+      productName: d.productName,
+      variations: d.variations.map(v => ({ ...v }))
+    }));
+    
+    if (extractedVariations.length > 0) {
+      this.allProductVariations = extractedVariations;
+      this.productVariations = [...this.allProductVariations];
+      console.log('Variations extracted from products:', extractedVariations.length);
+      console.log('Product-Variation Type table created:', variationTypeData.length);
     }
   }
 
-  onCancel() {
+  extractVariationByType(variations: any[], type: string): string {
+    const variation = variations.find(v => 
+      v.variationType.toLowerCase() === type.toLowerCase()
+    );
+    return variation ? variation.variationValue : '';
+  }
+
+  loadSuppliers() {
+    this.loading = true;
+    this.supplierService.getSuppliers().subscribe({
+      next: (suppliers: SupplierApiModel[]) => {
+        this.apiSuppliers = suppliers;
+        // Update the suppliers array for dropdown
+        this.suppliers = suppliers.map(supplier => ({
+          value: supplier.id.toString(),
+          name: supplier.name
+        }));
+        this.loading = false;
+        console.log('Suppliers loaded successfully:', suppliers.length);
+      },
+      error: (error) => {
+        console.error('Error loading suppliers:', error);
+        this.loading = false;
+        // Keep the mock data if API fails
+        console.log('Using fallback supplier data');
+      }
+    });
+  }
+
+  loadProductVariations() {
+    this.loadingVariations = true;
+    this.productService.getAllProductVariations().subscribe({
+      next: (variations: any[]) => {
+        // Transform API variations to match our interface
+        this.allProductVariations = variations.map(variation => ({
+          id: variation.id,
+          productId: variation.productId,
+          productName: variation.productName || 'Unknown Product',
+          size: variation.size || 'N/A',
+          side: variation.side || 'Universal',
+          colour: variation.colour || variation.color || 'N/A',
+          inStock: variation.inStock || 0,
+          quantity: 0, // Default quantity for selection
+          status: variation.status || 'available',
+          variationType: variation.variationType,
+          variationValue: variation.variationValue
+        }));
+        
+        // Initialize filtered variations
+        this.productVariations = [...this.allProductVariations];
+        this.loadingVariations = false;
+        console.log('Product variations loaded successfully:', variations.length);
+      },
+      error: (error) => {
+        console.error('Error loading product variations:', error);
+        this.loadingVariations = false;
+        // Keep the mock data if API fails
+        console.log('Using fallback variation data');
+      }
+    });
+  }
+
+  onSubmit() {
+    if (this.suppliesForm.valid && this.selectedSupplier) {
+      this.saving = true;
+      this.saveError = '';
+      
+      // Collect all requested product variations from the variation type table
+      const requestedProducts = this.selectedProducts?.length > 0 ? this.selectedProducts.map(variation => ({
+        variationId: variation.variationId,
+        quantity: variation.quantity,
+      })) : [];
+
+      // Check if there are any items to save
+      if (this.selectedProducts.length === 0) {
+        this.saveError = 'Please add at least one product variation with quantity greater than 0.';
+        this.saving = false;
+        return;
+      }
+
+      // Prepare the supplies request payload
+      const suppliesRequest: SuppliesRequest = {
+        emailAddress: this.suppliesForm.value.email || '',
+        emailTemplate: this.suppliesForm.value.emailTemplate || '',
+        productId: Number(this.suppliesForm.value.suppliesProduct[0]),
+        supplierId: parseInt(this.selectedSupplier.value),
+        // supplierName: this.selectedSupplier.name,
+        items: requestedProducts
+      };
+
+      console.log('Submitting Supplies Request:', suppliesRequest);
+
+      // Submit to the API
+      this.suppliesService.createSuppliesRequest(suppliesRequest).subscribe({
+        next: (response) => {
+          console.log('Supplies Request Created Successfully:', response);
+          this.saving = false;
+          this.showSuccess = true;
+          
+          // Reset form and data
+          this.resetForm();
+        },
+        error: (error) => {
+          console.error('Error creating supplies request:', error);
+          this.saving = false;
+          this.saveError = error.error?.message || 'Failed to save supplies request. Please try again.';
+        }
+      });
+      
+    } else {
+      this.suppliesForm.markAllAsTouched();
+      if (!this.selectedSupplier) {
+        this.saveError = 'Please select a supplier before submitting.';
+      }
+    }
+  }
+
+  resetForm() {
+    // Reset the form
     this.suppliesForm.reset();
+    
+    // Clear supplier selection
+    this.selectedSupplier = null;
+    this.supplierSearchTerm = '';
+    
+    // Clear product selections
+    this.selectedProducts = [];
+    this.selectedProductsList = [];
+    this.productSearchTerm = '';
+    
+    // Clear variation type table data
+    this.productVariationTypeData = [];
+    
+    // Reset all quantities to 0
+    this.productVariationTypeData.forEach(productData => {
+      productData.variations.forEach(variation => {
+        variation.quantity = 0;
+      });
+    });
+    
+    // Clear error states
+    this.saveError = '';
+    // Reset dropdowns
+    this.isProductDropdownOpen = false;
+    this.showSupplierDropdown = false;
+    this.showVariationTypeTable = false;
+
+    // Clear email template content and update editor DOM + form control
+    this.emailTemplateContent = '';
+    try {
+      const editorElement = document.querySelector('.editor-content') as HTMLElement | null;
+      if (editorElement) {
+        editorElement.innerHTML = '';
+      }
+    } catch (e) {
+      console.warn('Failed to clear editor DOM', e);
+    }
+    this.suppliesForm.patchValue({ emailTemplate: '' });
+  }
+
+  onCancel() {
+    // Use the full reset routine to clear editor DOM and related state
+    this.resetForm();
   }
 
   addAnotherSupplies() {
     this.showSuccess = false;
-    this.suppliesForm.reset();
+    this.resetForm();
   }
 
   // Variation table methods
@@ -307,18 +591,150 @@ export class SuppliesComponent {
     
     // Filter variations based on selected products
     this.filterVariationsBySelectedProducts();
+    
+    // Optionally load specific variations for selected products
+    if (this.selectedProductsList.length > 0) {
+      this.loadVariationsForSelectedProducts();
+    }
   }
 
   filterVariationsBySelectedProducts() {
     if (this.selectedProductsList.length === 0) {
       // If no products selected, show all variations
       this.productVariations = [...this.allProductVariations];
+      // restore full variation type table
+      this.productVariationTypeData = [...this.allProductVariationTypeData];
     } else {
       // Filter variations to only show those for selected products
       this.productVariations = this.allProductVariations.filter(variation => 
-        this.selectedProductsList.includes(variation.productId)
+        this.selectedProductsList.includes(variation.productId.toString())
       );
+      // Also filter the variation type table to only selected products
+      this.productVariationTypeData = this.allProductVariationTypeData.filter(pt => 
+        this.selectedProductsList.includes(pt.productId.toString())
+      ).map(d => ({ productId: d.productId, productName: d.productName, variations: d.variations.map(v => ({ ...v })) }));
     }
+  }
+
+  loadVariationsForSelectedProducts() {
+    // Load variations specifically for selected products
+    if (this.selectedProductsList.length === 0) return;
+    
+    this.loadingVariations = true;
+    
+    // Create an array of observables for each selected product
+    const variationRequests = this.selectedProductsList.map(productId => 
+      this.productService.getProductVariations(parseInt(productId))
+    );
+    
+    // Execute all requests simultaneously
+    // Note: You might want to use forkJoin from rxjs for this
+    // For now, we'll just filter the existing data
+    this.filterVariationsBySelectedProducts();
+    this.loadingVariations = false;
+  }
+
+  // Product-Variation Type table methods
+  toggleVariationTypeTable() {
+    this.showVariationTypeTable = !this.showVariationTypeTable;
+  }
+
+  getUniqueVariationTypes(): string[] {
+    const variationTypes = new Set<string>();
+    this.productVariationTypeData.forEach(product => {
+      product.variations.forEach(variation => {
+        variationTypes.add(variation.variationType);
+      });
+    });
+    return Array.from(variationTypes).sort();
+  }
+
+  getVariationValuesByType(product: ProductVariationTypeData, variationType: string): string {
+    const variations = product.variations.filter(v => v.variationType === variationType);
+    return variations.map(v => v.variationValue).join(', ');
+  }
+
+  getVariationCountByType(product: ProductVariationTypeData, variationType: string): number {
+    return product.variations.filter(v => v.variationType === variationType).length;
+  }
+
+  getTotalVariationCount(): number {
+    return this.productVariationTypeData.reduce((total, product) => total + product.variations.length, 0);
+  }
+
+  getTotalRequestedItems(): number {
+    return this.productVariationTypeData.reduce((total, product) => {
+      return total + product.variations.reduce((productTotal, variation) => {
+        return productTotal + (variation.quantity || 0);
+      }, 0);
+    }, 0);
+  }
+
+  // New methods for the updated table structure
+  getUniqueProducts(): string[] {
+    const products = this.productVariationTypeData.map(product => product.productName);
+    return [...new Set(products)];
+  }
+
+  updateVariationQuantity(productId: number, variationId: number, quantity: number) {
+    const productData = this.productVariationTypeData.find(p => p.productId === productId);
+    if (productData) {
+      const variation = productData.variations.find(v => v.id === variationId);
+      if (variation) {
+        variation.quantity = quantity;
+      }
+    }
+  }
+
+  addVariationToSelected(productId: number, variation: any) {
+    if (variation.quantity > 0) {
+      // Find the product
+      const product = this.apiProducts.find(p => p.id === productId);
+      if (product) {
+        // Check if this variation is already in selected products
+        const existingIndex = this.selectedProducts.findIndex(sp => 
+          sp.productId === productId && sp.variationId === variation.id);
+        
+        if (existingIndex > -1) {
+          // Update existing selected product quantity
+          this.selectedProducts[existingIndex].quantity += variation.quantity;
+        } else {
+          // Add new selected product
+          this.selectedProducts.push({
+            id: Date.now(), // Generate unique ID for the selected item
+            productId: productId,
+            variationId: variation.id,
+            productName: product.name,
+            variationType: variation.variationType,
+            variationValue: variation.variationValue,
+            quantity: variation.quantity,
+            status: 'pending' // Default status
+          });
+        }
+        
+        // Reset the quantity in the variation table
+        variation.quantity = 0;
+        
+        console.log('Added variation to selected products:', this.selectedProducts);
+      }
+    }
+  }
+
+  exportVariationTypeData() {
+    // Method to export the variation type data (could be CSV, JSON, etc.)
+    const data = {
+      products: this.productVariationTypeData,
+      statistics: {
+        totalProducts: this.productVariationTypeData.length,
+        totalVariationTypes: this.getUniqueVariationTypes().length,
+        totalVariations: this.getTotalVariationCount(),
+        variationTypes: this.getUniqueVariationTypes()
+      }
+    };
+    
+    console.log('Product-Variation Type Data:', data);
+    // Here you could implement actual export functionality
+    return data;
   }
 
   isProductSelected(productId: string): boolean {
