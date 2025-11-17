@@ -22,7 +22,7 @@
                                 <div class="product-multiselect-options" *ngIf="isProductDropdownOpen">
                                     <div class="search-wrapper">
                                         <mat-icon class="search-icon">search</mat-icon>
-                                        <input 
+                                        <input formControlName="suppliesProduct"
                                             type="text" 
                                             class="search-input" 
                                             placeholder="Search products..."
@@ -264,7 +264,8 @@
                                 </div>
                                 
                                 <!-- Editor Content -->
-                                <div 
+                                <div
+                                    formControlName="emailTemplate"
                                     class="editor-content"
                                     contenteditable="true"
                                     (input)="onEditorInput($event)"

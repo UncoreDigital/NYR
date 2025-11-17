@@ -370,17 +370,10 @@ export class SuppliesComponent implements OnInit {
       this.saveError = '';
       
       // Collect all requested product variations from the variation type table
-      const requestedProducts = this.productVariationTypeData.flatMap(productData => 
-        productData.variations
-          .filter(variation => variation.quantity > 0)
-          .map(variation => ({
-            productId: productData.productId,
-            productName: productData.productName,
-            variationType: variation.variationType,
-            variationValue: variation.variationValue,
-            quantity: variation.quantity
-          }))
-      );
+      const requestedProducts = this.selectedProducts?.length > 0 ? this.selectedProducts.map(variation => ({
+        variationId: variation.variationId,
+        quantity: variation.quantity,
+      })) : [];
 
       // Check if there are any items to save
       if (this.selectedProducts.length === 0) {
@@ -391,11 +384,12 @@ export class SuppliesComponent implements OnInit {
 
       // Prepare the supplies request payload
       const suppliesRequest: SuppliesRequest = {
-        email: this.suppliesForm.value.email || '',
+        emailAddress: this.suppliesForm.value.email || '',
         emailTemplate: this.suppliesForm.value.emailTemplate || '',
+        productId: Number(this.suppliesForm.value.suppliesProduct[0]),
         supplierId: parseInt(this.selectedSupplier.value),
-        supplierName: this.selectedSupplier.name,
-        requestedProducts: this.selectedProducts.length > 0 ? this.selectedProducts : [] 
+        // supplierName: this.selectedSupplier.name,
+        items: requestedProducts
       };
 
       console.log('Submitting Supplies Request:', suppliesRequest);
@@ -434,6 +428,7 @@ export class SuppliesComponent implements OnInit {
     this.supplierSearchTerm = '';
     
     // Clear product selections
+    this.selectedProducts = [];
     this.selectedProductsList = [];
     this.productSearchTerm = '';
     
@@ -449,15 +444,27 @@ export class SuppliesComponent implements OnInit {
     
     // Clear error states
     this.saveError = '';
-    
     // Reset dropdowns
     this.isProductDropdownOpen = false;
     this.showSupplierDropdown = false;
     this.showVariationTypeTable = false;
+
+    // Clear email template content and update editor DOM + form control
+    this.emailTemplateContent = '';
+    try {
+      const editorElement = document.querySelector('.editor-content') as HTMLElement | null;
+      if (editorElement) {
+        editorElement.innerHTML = '';
+      }
+    } catch (e) {
+      console.warn('Failed to clear editor DOM', e);
+    }
+    this.suppliesForm.patchValue({ emailTemplate: '' });
   }
 
   onCancel() {
-    this.suppliesForm.reset();
+    // Use the full reset routine to clear editor DOM and related state
+    this.resetForm();
   }
 
   addAnotherSupplies() {

@@ -5,19 +5,20 @@ import { environment } from 'environment';
 
 // Interface for supplies request data
 export interface SuppliesRequest {
-  email: string;
+  emailAddress: string;
   emailTemplate: string;
   supplierId: number;
-  supplierName: string;
-  requestedProducts: RequestedProductVariation[];
+  supplierName?: string;
+  productId: number;
+  items: RequestedProductVariation[];
 }
 
 export interface RequestedProductVariation {
-  productId: number;
-  productName: string;
-  variationType: string;
-  variationValue: string;
-  quantity: number;
+  productId?: number;
+  productName?: string;
+  variationType?: string;
+  variationValue?: string;
+  quantity?: number;
 }
 
 export interface SuppliesResponse {
