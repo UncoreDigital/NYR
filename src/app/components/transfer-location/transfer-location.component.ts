@@ -1,6 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { CustomerService } from '../../services/customer.service';
+import { LocationService } from '../../services/location.service';
+import { ProductService } from '../../services/product.service';
+import { TransferInventoryService } from '../../services/transfer-inventory.service';
+import { ToastService } from '../../services/toast.service';
+import { WarehouseService } from '../../services/warehouse.service';
+import { WarehouseInventoryService } from '../../services/warehouse-inventory.service';
 
 @Component({
   selector: 'app-transfer-location',
@@ -13,7 +20,7 @@ export class TransferLocationComponent implements OnInit {
   endTime: string = '';
   selectedTransferOption: string = 'scan';
   showScanPopup: boolean = false;
-  scannedItems: Array<{ index: number; productName: string; sku: string } > = [];
+  scannedItems: Array<{ index: number; productName: string; sku: string; productId?: number; variationId?: number } > = [];
   manualAdjustmentCount: number = 1;
   scanReason: string = '';
 
@@ -36,44 +43,54 @@ export class TransferLocationComponent implements OnInit {
   selectedProduct: any = null;
 
   // Data arrays for dropdowns
-  customers = [
-    { value: 'customer1', name: 'Customer 1' },
-    { value: 'customer2', name: 'Customer 2' },
-    { value: 'customer3', name: 'Customer 3' },
-    { value: 'customer4', name: 'Customer 4' },
-    { value: 'customer5', name: 'Customer 5' }
-  ];
+  customers: any[] = [];
+  locations: any[] = [];
+  products: any[] = [];
+  warehouses: any[] = [];
+  warehouseInventory: any[] = [];
+  productVariations: any[] = [];
+  allVariations: any[] = [];
+  filteredVariations: any[] = [];
+  transferCart: any[] = [];
   
-  locations = [
-    { value: 'location1', name: 'Location 1' },
-    { value: 'location2', name: 'Location 2' },
-    { value: 'location3', name: 'Location 3' },
-    { value: 'location4', name: 'Location 4' },
-    { value: 'location5', name: 'Location 5' }
-  ];
+  // Loading states
+  isLoading = false;
+  isSaving = false;
+  isLoadingCustomers = false;
+  isLoadingLocations = false;
+  isLoadingProducts = false;
+  isLoadingWarehouses = false;
+  isLoadingInventory = false;
   
-  products = [
-    { value: 'product1', name: 'Product 1' },
-    { value: 'product2', name: 'Product 2' },
-    { value: 'product3', name: 'Product 3' },
-    { value: 'product4', name: 'Product 4' },
-    { value: 'product5', name: 'Product 5' }
-  ];
+  // Selected warehouse
+  selectedWarehouse: any = null;
+  warehouseSearchTerm: string = '';
+  showWarehouseDropdown: boolean = false;
+  variationSearchTerm: string = '';
 
-  constructor(private fb: FormBuilder, private router: Router, private route: ActivatedRoute) {
-    this.selectedTransferOption = 'scan';
+  constructor(
+    private fb: FormBuilder, 
+    private router: Router, 
+    private route: ActivatedRoute,
+    private customerService: CustomerService,
+    private locationService: LocationService,
+    private productService: ProductService,
+    private transferInventoryService: TransferInventoryService,
+    private toastService: ToastService,
+    private warehouseService: WarehouseService,
+    private warehouseInventoryService: WarehouseInventoryService
+  ) {
+    this.selectedTransferOption = 'manual';
     this.vanForm = this.fb.group({
       customer: ['', Validators.required],
-      location: [''],
+      location: ['', Validators.required],
+      warehouse: ['', Validators.required],
       product: [''],
+      quantity: [1, [Validators.required, Validators.min(1)]]
     });
 
     // Seed example scanned items; replace with real scan results later
-    this.scannedItems = [
-      { index: 1, productName: 'Cervical Collar', sku: 'MD-001' },
-      { index: 2, productName: 'Cervical Collar', sku: 'MD-001' },
-      { index: 3, productName: 'Cervical Collar', sku: 'MD-001' }
-    ];
+    this.scannedItems = [];
   }
 
   ngOnInit() {
@@ -83,16 +100,219 @@ export class TransferLocationComponent implements OnInit {
         this.isFromTransfers = true;
       }
     });
+    
+    this.loadCustomers();
+    this.loadWarehouses();
+  }
+  
+  loadWarehouses(): void {
+    this.isLoadingWarehouses = true;
+    this.warehouseService.getWarehouses().subscribe({
+      next: (warehouses) => {
+        this.warehouses = warehouses.map(w => ({
+          value: w.id,
+          name: w.name,
+          id: w.id
+        }));
+        this.isLoadingWarehouses = false;
+      },
+      error: (error) => {
+        console.error('Error loading warehouses:', error);
+        this.toastService.error('Error', 'Failed to load warehouses');
+        this.isLoadingWarehouses = false;
+      }
+    });
+  }
+  
+  loadCustomers(): void {
+    this.isLoadingCustomers = true;
+    this.customerService.getCustomers().subscribe({
+      next: (customers) => {
+        this.customers = customers.map(c => ({
+          value: c.id,
+          name: c.companyName,
+          id: c.id
+        }));
+        this.isLoadingCustomers = false;
+      },
+      error: (error) => {
+        console.error('Error loading customers:', error);
+        this.toastService.error('Error', 'Failed to load customers');
+        this.isLoadingCustomers = false;
+      }
+    });
+  }
+  
+  loadLocationsByCustomer(customerId: number): void {
+    this.isLoadingLocations = true;
+    this.locationService.getLocations().subscribe({
+      next: (allLocations) => {
+        this.locations = allLocations
+          .filter(l => l.customerId === customerId)
+          .map(l => ({
+            value: l.id,
+            name: l.locationName,
+            id: l.id
+          }));
+        this.isLoadingLocations = false;
+      },
+      error: (error) => {
+        console.error('Error loading locations:', error);
+        this.toastService.error('Error', 'Failed to load locations');
+        this.isLoadingLocations = false;
+      }
+    });
+  }
+  
+  loadWarehouseInventory(warehouseId: number): void {
+    this.isLoadingInventory = true;
+    this.warehouseInventoryService.getInventoryByWarehouse(warehouseId).subscribe({
+      next: (inventory) => {
+        this.warehouseInventory = inventory;
+        
+        // Get unique products from inventory
+        const uniqueProductIds = [...new Set(inventory.map(item => item.productId))];
+        
+        // Load products that exist in this warehouse
+        this.products = [];
+        uniqueProductIds.forEach(productId => {
+          const inventoryItem = inventory.find(item => item.productId === productId);
+          if (inventoryItem) {
+            this.products.push({
+              value: productId,
+              name: inventoryItem.productName,
+              id: productId,
+              sku: inventoryItem.productSKU || ''
+            });
+          }
+        });
+        
+        this.isLoadingInventory = false;
+      },
+      error: (error) => {
+        console.error('Error loading warehouse inventory:', error);
+        this.toastService.error('Error', 'Failed to load warehouse inventory');
+        this.isLoadingInventory = false;
+      }
+    });
+  }
+  
+  loadProductVariations(productId: number): void {
+    // Get all inventory items for this product from the selected warehouse
+    const productInventory = this.warehouseInventory.filter(item => item.productId === productId);
+    
+    // Map to variations with available quantity
+    this.allVariations = productInventory.map(item => ({
+      id: item.productVariationId,
+      variationId: item.productVariationId,
+      variationType: item.variationType || 'N/A',
+      variationValue: item.variationValue || 'N/A',
+      availableQuantity: item.quantity,
+      transferQuantity: 0,
+      inventoryId: item.id
+    }));
+    
+    this.filteredVariations = [...this.allVariations];
+  }
+  
+  applyVariationFilter(event: any): void {
+    const filterValue = event.target.value.toLowerCase();
+    this.filteredVariations = this.allVariations.filter(variation =>
+      variation.variationType.toLowerCase().includes(filterValue) ||
+      variation.variationValue.toLowerCase().includes(filterValue)
+    );
+  }
+  
+  addVariationToCart(variation: any): void {
+    if (variation.transferQuantity && variation.transferQuantity > 0 && variation.transferQuantity <= variation.availableQuantity) {
+      const existingIndex = this.transferCart.findIndex(item => item.variationId === variation.variationId);
+      
+      if (existingIndex >= 0) {
+        // Update existing cart item
+        this.transferCart[existingIndex].quantity = variation.transferQuantity;
+      } else {
+        // Add new cart item
+        this.transferCart.push({
+          productId: this.selectedProduct.id,
+          productName: this.selectedProduct.name,
+          variationId: variation.variationId,
+          variationType: variation.variationType,
+          variationValue: variation.variationValue,
+          quantity: variation.transferQuantity,
+          availableQuantity: variation.availableQuantity
+        });
+      }
+      
+      // Reset transfer quantity
+      variation.transferQuantity = 0;
+      this.toastService.success('Added', 'Item added to transfer cart');
+    } else if (variation.transferQuantity > variation.availableQuantity) {
+      this.toastService.error('Error', `Quantity cannot exceed available quantity (${variation.availableQuantity})`);
+    }
+  }
+  
+  removeFromTransferCart(index: number): void {
+    this.transferCart.splice(index, 1);
+    this.toastService.info('Removed', 'Item removed from cart');
+  }
+  
+  updateCartItemQuantity(index: number, quantity: number): void {
+    const item = this.transferCart[index];
+    if (quantity > 0 && quantity <= item.availableQuantity) {
+      item.quantity = quantity;
+    } else if (quantity > item.availableQuantity) {
+      this.toastService.error('Error', `Quantity cannot exceed available quantity (${item.availableQuantity})`);
+      item.quantity = item.availableQuantity;
+    }
+  }
+  
+  isVariationInCart(variation: any): boolean {
+    return this.transferCart.some(item => item.variationId === variation.variationId);
   }
 
   onSubmit() {
-    this.router.navigate(['/inlocation']);
-    if (this.vanForm.valid) {
-      // Handle form submission (e.g., send to API)
-      console.log('Customer Data:', this.vanForm.value);
-    } else {
+    if (!this.vanForm.valid) {
       this.vanForm.markAllAsTouched();
+      this.toastService.error('Validation Error', 'Please fill in all required fields');
+      return;
     }
+    
+    if (!this.selectedCustomer || !this.selectedLocation || !this.selectedWarehouse) {
+      this.toastService.error('Validation Error', 'Please select customer, location, and warehouse');
+      return;
+    }
+    
+    if (this.transferCart.length === 0) {
+      this.toastService.error('Validation Error', 'Please add items to transfer cart');
+      return;
+    }
+    
+    // Prepare items from transfer cart
+    const items = this.transferCart.map(item => ({
+      productId: item.productId,
+      productVariationId: item.variationId,
+      quantity: item.quantity
+    }));
+    
+    const transferData = {
+      customerId: this.selectedCustomer.id,
+      locationId: this.selectedLocation.id,
+      items: items
+    };
+    
+    this.isSaving = true;
+    this.transferInventoryService.createTransfer(transferData).subscribe({
+      next: (response) => {
+        this.toastService.success('Success', 'Transfer inventory created successfully');
+        this.isSaving = false;
+        this.router.navigate(['/inlocation']);
+      },
+      error: (error) => {
+        console.error('Error creating transfer:', error);
+        this.toastService.error('Error', error.error?.message || 'Failed to create transfer inventory');
+        this.isSaving = false;
+      }
+    });
   }
 
   onCancel() {
@@ -154,6 +374,36 @@ export class TransferLocationComponent implements OnInit {
     );
   }
   
+  getFilteredWarehouses() {
+    if (!this.warehouseSearchTerm) {
+      return this.warehouses;
+    }
+    return this.warehouses.filter(warehouse => 
+      warehouse.name.toLowerCase().includes(this.warehouseSearchTerm.toLowerCase())
+    );
+  }
+  
+  filterWarehouses() {
+    // Trigger filtering when user types
+  }
+  
+  hideWarehouseDropdown() {
+    setTimeout(() => {
+      this.showWarehouseDropdown = false;
+    }, 200);
+  }
+  
+  clearWarehouse() {
+    this.selectedWarehouse = null;
+    this.warehouseSearchTerm = '';
+    this.vanForm.patchValue({ warehouse: '' });
+    this.showWarehouseDropdown = false;
+    this.products = [];
+    this.allVariations = [];
+    this.filteredVariations = [];
+    this.transferCart = [];
+  }
+  
   filterCustomers() {
     // Trigger filtering when user types
   }
@@ -171,6 +421,30 @@ export class TransferLocationComponent implements OnInit {
     this.customerSearchTerm = customer.name;
     this.vanForm.patchValue({ customer: customer.value });
     this.showCustomerDropdown = false;
+    
+    // Load locations for selected customer
+    this.selectedLocation = null;
+    this.locationSearchTerm = '';
+    this.locations = [];
+    this.loadLocationsByCustomer(customer.id);
+  }
+  
+  selectWarehouse(warehouse: any) {
+    this.selectedWarehouse = warehouse;
+    this.warehouseSearchTerm = warehouse.name;
+    this.vanForm.patchValue({ warehouse: warehouse.value });
+    this.showWarehouseDropdown = false;
+    
+    // Clear product selection and load warehouse inventory
+    this.selectedProduct = null;
+    this.productSearchTerm = '';
+    this.products = [];
+    this.allVariations = [];
+    this.filteredVariations = [];
+    this.transferCart = [];
+    
+    // Load inventory for selected warehouse
+    this.loadWarehouseInventory(warehouse.id);
   }
   
   selectLocation(location: any) {
@@ -185,6 +459,9 @@ export class TransferLocationComponent implements OnInit {
     this.productSearchTerm = product.name;
     this.vanForm.patchValue({ product: product.value });
     this.showProductDropdown = false;
+    
+    // Load variations from warehouse inventory
+    this.loadProductVariations(product.id);
   }
   
   hideCustomerDropdown() {

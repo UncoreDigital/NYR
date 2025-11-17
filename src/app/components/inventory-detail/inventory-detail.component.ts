@@ -5,6 +5,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WarehouseInventoryService } from '../../services/warehouse-inventory.service';
 import { WarehouseInventoryDetailResponse } from '../../models/warehouse-inventory.model';
+import { TransferInventoryService } from '../../services/transfer-inventory.service';
 
 export interface inventoryLocation {
   productName: string,
@@ -36,11 +37,13 @@ export class InventoryDetailComponent implements OnInit {
   sourceTitle: string = '';
   breadcrumbItems: any[] = [];
   warehouseId: number | null = null;
+  locationId: number | null = null;
 
   constructor(
     private router: Router, 
     private route: ActivatedRoute,
-    private warehouseInventoryService: WarehouseInventoryService
+    private warehouseInventoryService: WarehouseInventoryService,
+    private transferInventoryService: TransferInventoryService
   ) { }
 
   ngOnInit(): void {
@@ -54,7 +57,13 @@ export class InventoryDetailComponent implements OnInit {
       if (Object.keys(params).length > 0) {
         this.sourceContext = params['context'] || 'warehouse';
         this.sourceTitle = params['title'] || 'Inventory Details';
-        this.warehouseId = params['id'] ? parseInt(params['id']) : null;
+        
+        if (this.sourceContext === 'location') {
+          this.locationId = params['id'] ? parseInt(params['id']) : null;
+        } else {
+          this.warehouseId = params['id'] ? parseInt(params['id']) : null;
+        }
+        
         this.setupBreadcrumb();
         this.loadInventoryData();
       }
@@ -93,7 +102,28 @@ export class InventoryDetailComponent implements OnInit {
   }
 
   loadInventoryData(): void {
-    if (this.warehouseId) {
+    if (this.sourceContext === 'location' && this.locationId) {
+      // Load transfer inventory items for location
+      this.loading = true;
+      this.transferInventoryService.getTransferItemsByLocationId(this.locationId).subscribe({
+        next: (items) => {
+          this.inventoryLocation = items.map(item => ({
+            productName: item.productName,
+            skucode: item.skuCode || '',
+            variationType: item.variationType || 'N/A',
+            variationValue: item.variationValue || 'N/A',
+            quantity: item.quantity
+          }));
+          this.dataSource.data = this.inventoryLocation;
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading location inventory:', error);
+          this.loading = false;
+        }
+      });
+    } else if (this.sourceContext === 'warehouse' && this.warehouseId) {
+      // Load warehouse inventory details
       this.loading = true;
       this.warehouseInventoryService.getWarehouseInventoryDetails(this.warehouseId).subscribe({
         next: (inventoryDetails: WarehouseInventoryDetailResponse[]) => {
@@ -108,7 +138,7 @@ export class InventoryDetailComponent implements OnInit {
           this.loading = false;
         },
         error: (error) => {
-          console.error('Error loading inventory details:', error);
+          console.error('Error loading warehouse inventory details:', error);
           this.loading = false;
         }
       });

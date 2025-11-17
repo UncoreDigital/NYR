@@ -40,22 +40,22 @@
                 <form [formGroup]="vanForm" class="user-form" (ngSubmit)="onSubmit()">
                     <div class="form-row">
                         <div class="radio-group" style="margin-bottom: 20px;">
-                        
                             <label class="radio-option mr-15">
-                                <input type="radio" name="transferType" value="scan"
-                                    [(ngModel)]="selectedTransferOption" [ngModelOptions]="{standalone: true}" (change)="onTransferChange($event)"
-                                    class="radio-input mr-2">
-                                <span class="radio-label">Scan</span>
-                            </label>
-
-                             <label class="radio-option mr-15">
                                 <input type="radio" name="transferType" value="manual"
-                                    (change)="onTransferChange($event)" [(ngModel)]="selectedTransferOption" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="selectedTransferOption" [ngModelOptions]="{standalone: true}"
                                     class="radio-input mr-2">
                                 <span class="radio-label">Manual</span>
                             </label>
+                            
+                            <label class="radio-option mr-15">
+                                <input type="radio" name="transferType" value="scan"
+                                    [(ngModel)]="selectedTransferOption" [ngModelOptions]="{standalone: true}"
+                                    class="radio-input mr-2">
+                                <span class="radio-label">Scan</span>
+                            </label>
                         </div>
                     </div>
+ 
                    <div class="form-row">
                         <div class="form-group">
                             <label>Select Customer</label>
@@ -78,7 +78,10 @@
                                         <mat-icon>close</mat-icon>
                                     </button>
                                 </div>
-                                <div class="dropdown-list" *ngIf="showCustomerDropdown && getFilteredCustomers().length > 0">
+                                <div class="dropdown-list" *ngIf="showCustomerDropdown && isLoadingCustomers">
+                                    <div class="dropdown-item no-results">Loading customers...</div>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showCustomerDropdown && !isLoadingCustomers && getFilteredCustomers().length > 0">
                                     <div class="dropdown-item" 
                                          *ngFor="let customer of getFilteredCustomers()"
                                          (mousedown)="selectCustomer(customer)"
@@ -86,7 +89,7 @@
                                         {{customer.name}}
                                     </div>
                                 </div>
-                                <div class="dropdown-list" *ngIf="showCustomerDropdown && getFilteredCustomers().length === 0">
+                                <div class="dropdown-list" *ngIf="showCustomerDropdown && !isLoadingCustomers && getFilteredCustomers().length === 0">
                                     <div class="dropdown-item no-results">No customers found</div>
                                 </div>
                             </div>
@@ -113,7 +116,10 @@
                                         <mat-icon>close</mat-icon>
                                     </button>
                                 </div>
-                                <div class="dropdown-list" *ngIf="showLocationDropdown && getFilteredLocations().length > 0">
+                                <div class="dropdown-list" *ngIf="showLocationDropdown && isLoadingLocations">
+                                    <div class="dropdown-item no-results">Loading locations...</div>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showLocationDropdown && !isLoadingLocations && getFilteredLocations().length > 0">
                                     <div class="dropdown-item" 
                                          *ngFor="let location of getFilteredLocations()"
                                          (mousedown)="selectLocation(location)"
@@ -121,15 +127,54 @@
                                         {{location.name}}
                                     </div>
                                 </div>
-                                <div class="dropdown-list" *ngIf="showLocationDropdown && getFilteredLocations().length === 0">
+                                <div class="dropdown-list" *ngIf="showLocationDropdown && !isLoadingLocations && getFilteredLocations().length === 0">
                                     <div class="dropdown-item no-results">No locations found</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Select Warehouse</label>
+                            <div class="custom-select-container">
+                                <div class="search-wrapper">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input type="text" 
+                                           class="search-input" 
+                                           [(ngModel)]="warehouseSearchTerm" 
+                                           [ngModelOptions]="{standalone: true}"
+                                           placeholder="Search and select warehouse..."
+                                           (focus)="showWarehouseDropdown = true"
+                                           (blur)="hideWarehouseDropdown()"
+                                           (input)="filterWarehouses()"
+                                           [disabled]="isLoadingWarehouses">
+                                    <button type="button" 
+                                            class="clear-button" 
+                                            *ngIf="selectedWarehouse"
+                                            (click)="clearWarehouse()"
+                                            title="Clear selection">
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showWarehouseDropdown && isLoadingWarehouses">
+                                    <div class="dropdown-item no-results">Loading warehouses...</div>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showWarehouseDropdown && !isLoadingWarehouses && getFilteredWarehouses().length > 0">
+                                    <div class="dropdown-item" 
+                                         *ngFor="let warehouse of getFilteredWarehouses()"
+                                         (mousedown)="selectWarehouse(warehouse)"
+                                         [class.selected]="selectedWarehouse?.value === warehouse.value">
+                                        {{warehouse.name}}
+                                    </div>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showWarehouseDropdown && !isLoadingWarehouses && getFilteredWarehouses().length === 0">
+                                    <div class="dropdown-item no-results">No warehouses found</div>
                                 </div>
                             </div>
                         </div>
 
                     </div>
                     <div class="form-row">
-                        <div class="form-group" *ngIf="selectedTransferOption == 'manual'">
+                        <div class="form-group">
                             <label>Select Product</label>
                             <div class="custom-select-container">
                                 <div class="search-wrapper">
@@ -141,7 +186,8 @@
                                            placeholder="Search and select product..."
                                            (focus)="showProductDropdown = true"
                                            (blur)="hideProductDropdown()"
-                                           (input)="filterProducts()">
+                                           (input)="filterProducts()"
+                                           [disabled]="isLoadingInventory || !selectedWarehouse">
                                     <button type="button" 
                                             class="clear-button" 
                                             *ngIf="selectedProduct"
@@ -150,7 +196,10 @@
                                         <mat-icon>close</mat-icon>
                                     </button>
                                 </div>
-                                <div class="dropdown-list" *ngIf="showProductDropdown && getFilteredProducts().length > 0">
+                                <div class="dropdown-list" *ngIf="showProductDropdown && isLoadingInventory">
+                                    <div class="dropdown-item no-results">Loading products...</div>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showProductDropdown && !isLoadingInventory && getFilteredProducts().length > 0">
                                     <div class="dropdown-item" 
                                          *ngFor="let product of getFilteredProducts()"
                                          (mousedown)="selectProduct(product)"
@@ -158,76 +207,139 @@
                                         {{product.name}}
                                     </div>
                                 </div>
-                                <div class="dropdown-list" *ngIf="showProductDropdown && getFilteredProducts().length === 0">
-                                    <div class="dropdown-item no-results">No products found</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group" *ngIf="selectedTransferOption == 'scan'">
-                            <div style="flex:1;">
-                                <label>Start Scanning Products</label>
-                                <div
-                                    style="border:1.5px dashed #d1d5db; border-radius:12px; min-height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-top:8px;">
-                                    <button type="button" (click)="openScanPopup()"
-                                        style="background:none; border:none; display:flex; flex-direction:column; align-items:center; color:#02C3B4; cursor:pointer;">
-                                        <mat-icon
-                                            style="font-size:36px; width: auto; height: auto;">cloud_upload</mat-icon>
-                                        <span>Browse</span>
-                                    </button>
+                                <div class="dropdown-list" *ngIf="showProductDropdown && !isLoadingInventory && getFilteredProducts().length === 0">
+                                    <div class="dropdown-item no-results">
+                                        {{selectedWarehouse ? 'No products found in this warehouse' : 'Please select a warehouse first'}}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Scan Mode Section -->
+                    <div class="scan-section" *ngIf="selectedTransferOption === 'scan'">
+                        <div class="no-product-message">
+                            <mat-icon>qr_code_scanner</mat-icon>
+                            <p>Scan functionality will be implemented here.</p>
+                            <p style="font-size: 14px; color: #999; margin-top: 8px;">Please use Manual mode for now.</p>
+                        </div>
+                    </div>
+
+                    <!-- Product Variations Section (Manual Mode) -->
+                    <div class="variation-section" *ngIf="selectedTransferOption === 'manual' && selectedProduct && allVariations.length > 0">
+                        <h3>Product Variations - Available in Warehouse</h3>
+                        
+                        <!-- Search Bar -->
+                        <div class="search-container">
+                            <mat-icon class="search-icon">search</mat-icon>
+                            <input type="text" placeholder="Search variations..." class="search-input" 
+                                   [(ngModel)]="variationSearchTerm" [ngModelOptions]="{standalone: true}" 
+                                   (keyup)="applyVariationFilter($event)">
+                        </div>
+
+                        <!-- Variation Table -->
+                        <div class="variation-table-container">
+                            <table class="variation-table">
+                                <thead>
+                                    <tr>
+                                        <th>VARIATION TYPE</th>
+                                        <th>VARIATION VALUE</th>
+                                        <th>AVAILABLE QTY</th>
+                                        <th>TRANSFER QTY</th>
+                                        <th>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let variation of filteredVariations">
+                                        <td>{{variation.variationType}}</td>
+                                        <td>{{variation.variationValue}}</td>
+                                        <td><span class="available-quantity">{{variation.availableQuantity}}</span></td>
+                                        <td>
+                                            <input type="number" 
+                                                   class="variation-value-input" 
+                                                   [(ngModel)]="variation.transferQuantity" 
+                                                   [ngModelOptions]="{standalone: true}"
+                                                   placeholder="0"
+                                                   min="0"
+                                                   [max]="variation.availableQuantity">
+                                        </td>
+                                        <td>
+                                            <button type="button" 
+                                                    class="btn-add-variation" 
+                                                    [class.btn-added]="isVariationInCart(variation)"
+                                                    [disabled]="!variation.transferQuantity || variation.transferQuantity <= 0 || variation.transferQuantity > variation.availableQuantity"
+                                                    (click)="addVariationToCart(variation)">
+                                                {{isVariationInCart(variation) ? 'Added' : 'Add'}}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr *ngIf="filteredVariations.length === 0" class="empty-row">
+                                        <td colspan="5">
+                                            <mat-icon>search_off</mat-icon>
+                                            <div>No variations found</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- No Variations Message (Manual Mode) -->
+                    <div class="no-product-message" *ngIf="selectedTransferOption === 'manual' && selectedProduct && allVariations.length === 0">
+                        <mat-icon>info</mat-icon>
+                        <p>No inventory available for this product in the selected warehouse.</p>
+                    </div>
+
+                    <!-- Transfer Cart -->
+                    <div class="inventory-cart-section" *ngIf="transferCart.length > 0">
+                        <h4>Transfer Cart</h4>
+                        <div class="cart-table-container">
+                            <table class="cart-table">
+                                <thead>
+                                    <tr>
+                                        <th>PRODUCT</th>
+                                        <th>VARIATION</th>
+                                        <th>AVAILABLE</th>
+                                        <th>QUANTITY</th>
+                                        <th>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let item of transferCart; let i = index">
+                                        <td>{{item.productName}}</td>
+                                        <td>{{item.variationType}} - {{item.variationValue}}</td>
+                                        <td><span class="available-quantity">{{item.availableQuantity}}</span></td>
+                                        <td>
+                                            <input type="number" 
+                                                   class="cart-quantity-input" 
+                                                   [(ngModel)]="item.quantity" 
+                                                   [ngModelOptions]="{standalone: true}"
+                                                   min="1"
+                                                   [max]="item.availableQuantity"
+                                                   (input)="updateCartItemQuantity(i, item.quantity)">
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn-remove" (click)="removeFromTransferCart(i)">
+                                                <mat-icon>delete</mat-icon>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <div class="form-actions" style="justify-content: flex-end;">
-                        <button type="reset" class="btn btn-outline">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="reset" class="btn btn-outline" [disabled]="isSaving" (click)="onCancel()">Cancel</button>
+                        <button type="submit" class="btn btn-primary" 
+                                [disabled]="isSaving || transferCart.length === 0 || selectedTransferOption === 'scan'">
+                            <mat-spinner *ngIf="isSaving" diameter="16" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+                            {{ isSaving ? 'Saving...' : 'Save Transfer' }}
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
-<div class="modal-backdrop" *ngIf="showScanPopup">
-    <div class="modal-success" style="max-width:900px; width:90%;">
-        <div style="overflow:auto;">
-            <table style="width:100%; border-collapse:collapse;">
-                <thead>
-                    <tr style="background:#f3f4f6; text-align:left;">
-                        <th style="padding:12px; width:60px;">#</th>
-                        <th style="padding:12px;">Product Name</th>
-                        <th style="padding:12px;">SKU/CODE</th>
-                        <th style="padding:12px; width:80px; text-align:center;">ACTION</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let item of scannedItems; let i = index" style="border-top:1px solid #e5e7eb; text-align: left;">
-                        <td style="padding:16px;">{{ (i + 1) < 10 ? '0' + (i + 1) : (i + 1) }}</td>
-                        <td style="padding:16px;">{{ item.productName }}</td>
-                        <td style="padding:16px;">{{ item.sku }}</td>
-                        <td style="padding:16px; text-align:center;">
-                            <button type="button" (click)="removeScannedItem(i)" class="btn" style="padding:6px 10px;">
-                                <mat-icon style="color:#ef4444;">delete</mat-icon>
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div style="display:flex; align-items:center; gap:16px; padding:16px 0; border-top:1px solid #e5e7eb; text-align: left;">
-            <label>Manual adjustment</label>
-            <div style="display:flex; align-items:center; gap:12px;">
-                <button type="button" class="btn btn-outline adjustmentBtn" (click)="decrementAdjustment()">-</button>
-                <span>{{ manualAdjustmentCount }}</span>
-                <button type="button" class="btn btn-outline adjustmentPlusBtn" (click)="incrementAdjustment()">+</button>
-            </div>
-        </div>
-        <div style="padding-bottom:16px; text-align: left;" class="form-group">
-            <label style="display:block; margin-bottom:8px;">Reason</label>
-            <input type="text" class="form-control" placeholder="Write Reason" [(ngModel)]="scanReason" [ngModelOptions]="{standalone: true}" />
-        </div>
-        <div class="form-actions" style="justify-content:flex-end;">
-            <button type="button" class="btn btn-primary" (click)="closeScanPopup()">Done Scanning</button>
-        </div>
-    </div>
-</div>
+<!-- Removed scan popup section as we're focusing on manual transfer -->
