@@ -50,6 +50,8 @@ export class SuppliesComponent implements OnInit {
 
   // Product-Variation Type table data
   productVariationTypeData: ProductVariationTypeData[] = [];
+  // Backup of full variation type data to allow resetting/filtered views
+  allProductVariationTypeData: ProductVariationTypeData[] = [];
   showVariationTypeTable = false;
   
   // Multiselect dropdown properties
@@ -293,6 +295,12 @@ export class SuppliesComponent implements OnInit {
     console.log('Extracted variations from products:', extractedVariations);
     // Update both variation arrays
     this.productVariationTypeData = variationTypeData;
+    // keep a full backup to restore later when no filters applied
+    this.allProductVariationTypeData = variationTypeData.map(d => ({
+      productId: d.productId,
+      productName: d.productName,
+      variations: d.variations.map(v => ({ ...v }))
+    }));
     
     if (extractedVariations.length > 0) {
       this.allProductVariations = extractedVariations;
@@ -594,11 +602,17 @@ export class SuppliesComponent implements OnInit {
     if (this.selectedProductsList.length === 0) {
       // If no products selected, show all variations
       this.productVariations = [...this.allProductVariations];
+      // restore full variation type table
+      this.productVariationTypeData = [...this.allProductVariationTypeData];
     } else {
       // Filter variations to only show those for selected products
       this.productVariations = this.allProductVariations.filter(variation => 
         this.selectedProductsList.includes(variation.productId.toString())
       );
+      // Also filter the variation type table to only selected products
+      this.productVariationTypeData = this.allProductVariationTypeData.filter(pt => 
+        this.selectedProductsList.includes(pt.productId.toString())
+      ).map(d => ({ productId: d.productId, productName: d.productName, variations: d.variations.map(v => ({ ...v })) }));
     }
   }
 
