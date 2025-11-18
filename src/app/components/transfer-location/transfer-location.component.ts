@@ -249,7 +249,7 @@ export class TransferLocationComponent implements OnInit {
     } else if (variation.transferQuantity > variation.availableQuantity) {
       this.toastService.error('Error', `Quantity cannot exceed available quantity (${variation.availableQuantity})`);
     }
-  }
+  }  
   
   removeFromTransferCart(index: number): void {
     this.transferCart.splice(index, 1);
@@ -287,11 +287,12 @@ export class TransferLocationComponent implements OnInit {
       return;
     }
     
-    // Prepare items from transfer cart
+    // Prepare items from transfer cart with warehouse ID
     const items = this.transferCart.map(item => ({
       productId: item.productId,
       productVariationId: item.variationId,
-      quantity: item.quantity
+      quantity: item.quantity,
+      warehouseId: this.selectedWarehouse.id
     }));
     
     const transferData = {
@@ -303,13 +304,14 @@ export class TransferLocationComponent implements OnInit {
     this.isSaving = true;
     this.transferInventoryService.createTransfer(transferData).subscribe({
       next: (response) => {
-        this.toastService.success('Success', 'Transfer inventory created successfully');
+        this.toastService.success('Success', `Transfer inventory created successfully. ${this.transferCart.length} item(s) transferred.`);
         this.isSaving = false;
         this.router.navigate(['/inlocation']);
       },
       error: (error) => {
         console.error('Error creating transfer:', error);
-        this.toastService.error('Error', error.error?.message || 'Failed to create transfer inventory');
+        const errorMessage = error.error?.message || error.error || 'Failed to create transfer inventory';
+        this.toastService.error('Error', errorMessage);
         this.isSaving = false;
       }
     });
@@ -501,5 +503,7 @@ export class TransferLocationComponent implements OnInit {
     this.productSearchTerm = '';
     this.vanForm.patchValue({ product: '' });
     this.showProductDropdown = false;
+    this.allVariations = [];
+    this.filteredVariations = [];
   }
 }
