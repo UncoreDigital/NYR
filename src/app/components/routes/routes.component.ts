@@ -3,6 +3,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
+import { computePageSizeOptions } from '../../utils/paginator-utils';
 
 export interface Routes {
   driverName: string;
@@ -112,7 +113,7 @@ export class RoutesComponent implements OnInit {
     this.dataSource.data = this.filteredRoutes;
 
     // Update paginator options based on filtered data length
-    this.pageSizeOptions = this.computePageSizeOptions(this.filteredRoutes.length);
+    this.pageSizeOptions = computePageSizeOptions(this.filteredRoutes.length);
   }
 
   /**
@@ -120,17 +121,7 @@ export class RoutesComponent implements OnInit {
    * It returns [25,50,75,...] up to the nearest multiple that covers the total
    * and at least up to 100 for a reasonable default.
    */
-  private computePageSizeOptions(total: number): number[] {
-    const totalData = this.dataSource?.data?.length || 0;       // IMPORTANT: total must come from aa
-    const step = 25;
-    // compute nearest multiple of step
-    const maxNeeded = Math.ceil(totalData / step) * step;
-    const options: number[] = [];
-    for (let v = step; v <= maxNeeded; v += step) {
-      options.push(v);
-    }
-    return options;
-  }
+  // paginator options are provided by the shared utility in src/app/utils/paginator-utils.ts
 
   onDriverFilterChange() {
     this.applyFilters();
