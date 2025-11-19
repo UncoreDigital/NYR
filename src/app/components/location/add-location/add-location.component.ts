@@ -8,13 +8,15 @@ import { HeaderComponent } from '../../header/header.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { LocationService } from '../../../services/location.service';
 import { CustomerService, CustomerApiModel } from '../../../services/customer.service';
+import { UserService } from '../../../services/user.service';
 import { ToastService } from '../../../services/toast.service';
 import { CreateLocationRequest, LocationResponse } from '../../../models/location.model';
+import { UserResponse } from '../../../models/user.model';
 
 @Component({
   selector: 'app-add-location',
   templateUrl: './add-location.component.html',
-  styleUrl: './add-location.component.css'
+  styleUrls: ['./add-location.component.css']
 })
 export class AddLocationComponent implements OnInit {
   locationForm: FormGroup;
@@ -32,15 +34,23 @@ export class AddLocationComponent implements OnInit {
   showCustomerDropdown: boolean = false;
   selectedCustomer: CustomerApiModel | any = null;
 
+  // Driver dropdown properties
+  driverSearchTerm: string = '';
+  showDriverDropdown: boolean = false;
+  selectedDriver: UserResponse | any = null;
+  drivers: UserResponse[] = [];
+
   constructor(
     private fb: FormBuilder, 
     private router: Router,
     private route: ActivatedRoute,
     private locationService: LocationService,
     private customerService: CustomerService,
+    private userService: UserService,
     private toastService: ToastService
   ) {
     this.locationForm = this.fb.group({
+      userId: [''],
       customerId: ['', Validators.required],
       locationName: [''],
       contactPerson: [''],
@@ -60,6 +70,7 @@ export class AddLocationComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCustomers();
+    this.loadDrivers();
     
     // Check if we're in edit mode
     this.route.params.subscribe(params => {
@@ -125,7 +136,8 @@ export class AddLocationComponent implements OnInit {
       mobilePhone: location.mobilePhone,
       faxNumber: location.faxNumber,
       email: location.email,
-      comments: location.comments
+      comments: location.comments,
+      userId: location.userId || ''
     });
     
     // Set selected customer for dropdown
@@ -156,7 +168,8 @@ export class AddLocationComponent implements OnInit {
         mobilePhone: formValue.mobilePhone,
         faxNumber: formValue.faxNumber,
         email: formValue.email,
-        comments: formValue.comments
+        comments: formValue.comments,
+        userId: formValue.userId
       };
 
       if (this.isEditMode && this.locationId) {
@@ -206,11 +219,17 @@ export class AddLocationComponent implements OnInit {
     this.locationForm.reset();
     this.selectedCustomer = null;
     this.customerSearchTerm = '';
+    this.selectedDriver = null;
+    this.driverSearchTerm = '';
   }
 
   addAnotherLocation() {
     this.showSuccess = false;
     this.locationForm.reset();
+    this.selectedCustomer = null;
+    this.customerSearchTerm = '';
+    this.selectedDriver = null;
+    this.driverSearchTerm = '';
   }
 
   goToLocationsList() {
@@ -257,5 +276,58 @@ export class AddLocationComponent implements OnInit {
   onSearchInput(event: Event) {
     const target = event.target as HTMLInputElement;
     this.customerSearchTerm = target.value;
+  }
+
+  // Driver dropdown methods
+  loadDrivers(): void {
+    this.userService.getDrivers().subscribe({
+      next: (drivers) => {
+        this.drivers = drivers;
+      },
+      error: (error) => {
+        console.error('Error loading drivers:', error);
+        this.toastService.error('Error', 'Failed to load drivers');
+      }
+    });
+  }
+
+  getFilteredDrivers(): UserResponse[] {
+    if (!this.driverSearchTerm.trim()) {
+      return this.drivers;
+    }
+    return this.drivers.filter(driver => 
+      driver.name.toLowerCase().includes(this.driverSearchTerm.toLowerCase())
+    );
+  }
+
+  filterDrivers() {
+    if (!this.showDriverDropdown) {
+      this.showDriverDropdown = true;
+    }
+  }
+
+  selectDriver(driver: UserResponse) {
+    this.selectedDriver = driver;
+    this.driverSearchTerm = driver.name;
+    this.locationForm.patchValue({ userId: driver.id });
+    this.showDriverDropdown = false;
+  }
+
+  hideDriverDropdown() {
+    setTimeout(() => {
+      this.showDriverDropdown = false;
+    }, 150);
+  }
+
+  clearDriver() {
+    this.selectedDriver = null;
+    this.driverSearchTerm = '';
+    this.showDriverDropdown = false;
+    this.locationForm.patchValue({ userId: '' });
+  }
+
+  onDriverSearchInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.driverSearchTerm = target.value;
   }
 }

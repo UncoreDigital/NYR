@@ -17,6 +17,7 @@ export interface LocationResponse {
   comments: string;
   createdAt: string;
   isActive: boolean;
+  userId?: number;
 }
 
 export interface CreateLocationRequest {
@@ -34,4 +35,5 @@ export interface CreateLocationRequest {
   faxNumber: string;
   email: string;
   comments: string;
+  userId?: number;
 }

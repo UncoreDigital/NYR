@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { UserResponse, User, CreateUserRequest, UpdateUserRequest } from '../models/user.model';
 import { DriverAvailability, DriverAvailabilityBulkRequest } from '../models/driver-availability.model';
 import { environment } from 'environment';
@@ -15,6 +16,16 @@ export class UserService {
 
   getUsers(): Observable<UserResponse[]> {
     return this.http.get<UserResponse[]>(`${this.API_URL}/Users`);
+  }
+
+  /**
+   * Returns users that appear to be drivers (filters by roleName === 'Driver' case-insensitive).
+   * This is a client-side helper in case the API doesn't provide a dedicated drivers endpoint.
+   */
+  getDrivers(): Observable<UserResponse[]> {
+    return this.getUsers().pipe(
+      map(users => users.filter(u => (u.roleName || '').toLowerCase() === 'driver'))
+    );
   }
 
   getUserById(id: number): Observable<UserResponse> {
@@ -35,6 +46,15 @@ export class UserService {
 
   getDriverAvailability(userId: number): Observable<DriverAvailability[]> {
     return this.http.get<DriverAvailability[]>(`${this.API_URL}/Users/${userId}/driver-availability`);
+  }
+
+  /**
+   * Retrieve all available roles from the API.
+   * Endpoint may vary; backend is expected to expose role list at /Roles or /Roles/GetAllRoles.
+   */
+  getAllRoles(): Observable<Array<{ id: number; name: string }>> {
+    // Try the conventional route first
+    return this.http.get<Array<{ id: number; name: string }>>(`${this.API_URL}/Roles`);
   }
 
   saveDriverAvailability(userId: number, availabilityData: DriverAvailabilityBulkRequest): Observable<any> {
