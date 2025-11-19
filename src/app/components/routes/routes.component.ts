@@ -36,12 +36,32 @@ export class RoutesComponent implements OnInit {
     { driverName: 'Laura Martin', totalStops: '6', shippingDate: '2023-10-10', status: 'In Progress' },
     { driverName: 'James Clark', totalStops: '2', shippingDate: '2023-10-11', status: 'Completed' },
     { driverName: 'Olivia Lewis', totalStops: '5', shippingDate: '2023-10-12', status: 'Not Started' },
+    { driverName: 'Ethan Walker', totalStops: '4', shippingDate: '2023-10-13', status: 'Draft' },
+    { driverName: 'Sophia Hall', totalStops: '3', shippingDate: '2023-10-14', status: 'In Progress' },
+    { driverName: 'Liam Allen', totalStops: '7', shippingDate: '2023-10-15', status: 'Completed' },
+    { driverName: 'Noah Young', totalStops: '2', shippingDate: '2023-10-16', status: 'Draft'},
+    { driverName: 'Ava King', totalStops: '4', shippingDate: '2023-10-17', status: 'In Progress' },
+    { driverName: 'William Scott', totalStops: '5', shippingDate: '2023-10-18', status: 'Completed' },
+    { driverName: 'Mia Green', totalStops: '3', shippingDate: '2023-10-19', status: 'Not Started' },
+    { driverName: 'James Baker', totalStops: '6', shippingDate: '2023-10-20', status: 'Draft' },
+    { driverName: 'Ella Turner', totalStops: '4', shippingDate: '2023-10-21', status: 'In Progress' },
+    { driverName: 'Ethan Walker', totalStops: '4', shippingDate: '2023-10-13', status: 'Draft' },
+    { driverName: 'Sophia Hall', totalStops: '3', shippingDate: '2023-10-14', status: 'In Progress' },
+    { driverName: 'Liam Allen', totalStops: '7', shippingDate: '2023-10-15', status: 'Completed' },
+    { driverName: 'Noah Young', totalStops: '2', shippingDate: '2023-10-16', status: 'Draft'},
+    { driverName: 'Ava King', totalStops: '4', shippingDate: '2023-10-17', status: 'In Progress' },
+    { driverName: 'William Scott', totalStops: '5', shippingDate: '2023-10-18', status: 'Completed' },
+    { driverName: 'Mia Green', totalStops: '3', shippingDate: '2023-10-19', status: 'Not Started' },
+    { driverName: 'James Baker', totalStops: '6', shippingDate: '2023-10-20', status: 'Draft' },
+    { driverName: 'Ella Turner', totalStops: '4', shippingDate: '2023-10-21', status: 'In Progress' },
   ];
 
   filteredRoutes: Routes[] = [];
   selectedDriver = '';
   selectedDate = '';
   searchTerm = '';
+  // Paginator page size options (computed based on data length)
+  pageSizeOptions: number[] = [25, 50, 75, 100];
 
   constructor(private router: Router) { }
 
@@ -90,6 +110,26 @@ export class RoutesComponent implements OnInit {
 
     this.filteredRoutes = filtered;
     this.dataSource.data = this.filteredRoutes;
+
+    // Update paginator options based on filtered data length
+    this.pageSizeOptions = this.computePageSizeOptions(this.filteredRoutes.length);
+  }
+
+  /**
+   * Compute paginator pageSizeOptions as multiples of 25.
+   * It returns [25,50,75,...] up to the nearest multiple that covers the total
+   * and at least up to 100 for a reasonable default.
+   */
+  private computePageSizeOptions(total: number): number[] {
+    const totalData = this.dataSource?.data?.length || 0;       // IMPORTANT: total must come from aa
+    const step = 25;
+    // compute nearest multiple of step
+    const maxNeeded = Math.ceil(totalData / step) * step;
+    const options: number[] = [];
+    for (let v = step; v <= maxNeeded; v += step) {
+      options.push(v);
+    }
+    return options;
   }
 
   onDriverFilterChange() {
