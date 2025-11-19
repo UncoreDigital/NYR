@@ -21,8 +21,22 @@ export class RoutesComponent implements OnInit {
   displayedColumns: string[] = ['driverName', 'totalStops', 'shippingDate', 'status', 'details'];
   dataSource = new MatTableDataSource<Routes>();
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+ private _paginator!: MatPaginator;
+  private _sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this._paginator = paginator;
+      this.dataSource.paginator = this._paginator;
+    }
+  }
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) {
+      this._sort = sort;
+      this.dataSource.sort = this._sort;
+    }
+  }
 
   routes: Routes[] = [
     { driverName: 'John Doe', totalStops: '5', shippingDate: '2023-10-01', status: 'In Progress' },
@@ -71,11 +85,6 @@ export class RoutesComponent implements OnInit {
     this.applyFilters();
   }
 
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
-
   applyFilter(event: Event) {
     this.searchTerm = (event.target as HTMLInputElement).value;
     this.applyFilters();
@@ -113,7 +122,8 @@ export class RoutesComponent implements OnInit {
     this.dataSource.data = this.filteredRoutes;
 
     // Update paginator options based on filtered data length
-    this.pageSizeOptions = computePageSizeOptions(this.filteredRoutes.length);
+    const computedOptions = computePageSizeOptions(this.dataSource.data.length);
+    this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
   }
 
   /**
