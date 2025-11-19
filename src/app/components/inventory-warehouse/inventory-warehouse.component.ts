@@ -5,6 +5,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { WarehouseInventoryService } from '../../services/warehouse-inventory.service';
 import { WarehouseListResponse } from '../../models/warehouse-inventory.model';
+import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface inventoryWarehouse {
   warehouseName: string;
@@ -25,8 +26,23 @@ export class InventoryWarehouseComponent implements OnInit {
   displayedColumns: string[] = ['warehouseName', 'warehouseAddress', 'city', 'state', 'zipCode', 'actions'];
   dataSource = new MatTableDataSource<inventoryWarehouse>();
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  private _paginator!: MatPaginator;
+  private _sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this._paginator = paginator;
+      this.dataSource.paginator = this._paginator;
+    }
+  }
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) {
+      this._sort = sort;
+      this.dataSource.sort = this._sort;
+    }
+  }
+  pageSizeOptions: number[] = [25, 50, 75, 100];
 
   filteredWarehouses: inventoryWarehouse[] = [];
   selectedWarehouseName = '';
@@ -59,6 +75,7 @@ export class InventoryWarehouseComponent implements OnInit {
         }));
         this.filteredWarehouses = [...this.inventoryWarehouse];
         this.dataSource.data = this.filteredWarehouses;
+        this.updatePagination();
         this.loading = false;
       },
       error: (error) => {
@@ -66,11 +83,6 @@ export class InventoryWarehouseComponent implements OnInit {
         this.loading = false;
       }
     });
-  }
-
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
   }
 
   applyFilter(event: Event) {
@@ -102,6 +114,7 @@ export class InventoryWarehouseComponent implements OnInit {
 
     this.filteredWarehouses = filtered;
     this.dataSource.data = this.filteredWarehouses;
+    this.updatePagination();
   }
 
   onWarehouseNameFilterChange() {
@@ -137,6 +150,11 @@ export class InventoryWarehouseComponent implements OnInit {
   editInventoryWarehouse(inventoryWarehouse: inventoryWarehouse) {
     console.log('Edit Warehouse:', inventoryWarehouse);
     this.router.navigate(['/inwarehouse/edit', inventoryWarehouse.id]);
+  }
+
+  updatePagination() {
+    const computedOptions = computePageSizeOptions(this.dataSource.data.length);
+    this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
   }
 }
 

@@ -8,6 +8,7 @@ import { UserService } from '../../services/user.service';
 import { UserResponse } from '../../models/user.model';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { ToastService } from '../../services/toast.service';
+import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface User {
   id: number;
@@ -33,8 +34,23 @@ export class UserComponent implements OnInit {
   selectedRole = '';
   searchTerm = '';
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  private _paginator!: MatPaginator;
+  private _sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this._paginator = paginator;
+      this.dataSource.paginator = this._paginator;
+    }
+  }
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) {
+      this._sort = sort;
+      this.dataSource.sort = this._sort;
+    }
+  }
+  pageSizeOptions: number[] = [25, 50, 75, 100];
 
   constructor(
     private router: Router,
@@ -109,6 +125,8 @@ export class UserComponent implements OnInit {
 
     this.filteredUsers = filtered;
     this.dataSource.data = this.filteredUsers;
+    const computedOptions = computePageSizeOptions(this.dataSource.data.length);
+    this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
   }
 
   onRoleFilterChange() {

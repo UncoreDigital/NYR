@@ -4,6 +4,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { computePageSizeOptions } from '../../utils/paginator-utils';
 import { LocationService } from '../../services/location.service';
 import { LocationResponse } from '../../models/location.model';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
@@ -30,8 +31,23 @@ export class LocationComponent implements OnInit {
   errorMessage = '';
   locations: Location[] = [];
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  private _paginator!: MatPaginator;
+  private _sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this._paginator = paginator;
+      this.dataSource.paginator = this._paginator;
+    }
+  }
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) {
+      this._sort = sort;
+      this.dataSource.sort = this._sort;
+    }
+  }
+  pageSizeOptions: number[] = [25, 50, 75, 100];
 
   constructor(
     private router: Router,
@@ -51,6 +67,8 @@ export class LocationComponent implements OnInit {
       next: (apiLocations: LocationResponse[]) => {
         this.locations = this.mapApiResponseToLocation(apiLocations);
         this.dataSource.data = this.locations;
+        const computedOptions = computePageSizeOptions(this.dataSource.data.length);
+        this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
         this.isLoading = false;
       },
       error: (error: any) => {

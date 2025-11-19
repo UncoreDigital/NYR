@@ -3,6 +3,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
+import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface Transfers {
   locationName: string;
@@ -21,8 +22,23 @@ export class TransfersComponent implements OnInit {
   displayedColumns: string[] = ['locationName', 'customerName', 'deliveryDate', 'driver', 'status'];
   dataSource = new MatTableDataSource<Transfers>();
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  private _paginator!: MatPaginator;
+  private _sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this._paginator = paginator;
+      this.dataSource.paginator = this._paginator;
+    }
+  }
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) {
+      this._sort = sort;
+      this.dataSource.sort = this._sort;
+    }
+  }
+  pageSizeOptions: number[] = [25, 50, 75, 100];
 
   transfers: Transfers[] = [
     { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '17 Jun 2025', driver: 'Nick Danil', status: 'delivered' },
@@ -106,6 +122,8 @@ export class TransfersComponent implements OnInit {
 
     this.filteredTransfers = filtered;
     this.dataSource.data = this.filteredTransfers;
+    const computedOptions = computePageSizeOptions(this.dataSource.data.length);
+    this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
   }
 
   onWarehouseNameFilterChange() {

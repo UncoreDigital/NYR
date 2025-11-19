@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { TransferInventoryService } from '../../services/transfer-inventory.service';
 import { TransferInventoryLocationResponse } from '../../models/transfer-inventory.model';
 import { ToastService } from '../../services/toast.service';
+import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface inventoryLocation {
   locationId: number;
@@ -24,8 +25,23 @@ export class InventoryLocationComponent implements OnInit {
   displayedColumns: string[] = ['location', 'customer', 'contactPerson', 'locationNumber', 'actions'];
   dataSource = new MatTableDataSource<inventoryLocation>();
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  private _paginator!: MatPaginator;
+  private _sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this._paginator = paginator;
+      this.dataSource.paginator = this._paginator;
+    }
+  }
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) {
+      this._sort = sort;
+      this.dataSource.sort = this._sort;
+    }
+  }
+  pageSizeOptions: number[] = [25, 50, 75, 100];
 
   inventoryLocation: inventoryLocation[] = [];
   filteredLocations: inventoryLocation[] = [];
@@ -58,6 +74,7 @@ export class InventoryLocationComponent implements OnInit {
         }));
         this.filteredLocations = [...this.inventoryLocation];
         this.dataSource.data = this.filteredLocations;
+        this.updatePagination();
         this.isLoading = false;
       },
       error: (error) => {
@@ -108,6 +125,7 @@ export class InventoryLocationComponent implements OnInit {
 
     this.filteredLocations = filtered;
     this.dataSource.data = this.filteredLocations;
+    this.updatePagination();
   }
 
   onCustomerNameFilterChange() {
@@ -146,6 +164,11 @@ export class InventoryLocationComponent implements OnInit {
         id: location.locationId
       }
     });
+  }
+
+  updatePagination() {
+    const computedOptions = computePageSizeOptions(this.dataSource.data.length);
+    this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
   }
 }
 

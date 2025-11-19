@@ -8,6 +8,7 @@ import { SupplierService } from '../../services/supplier.service';
 import { SupplierApiModel } from '../../models/supplier.model';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface Supplier {
   id: number;
@@ -26,8 +27,23 @@ export class SupplierComponent implements OnInit {
   displayedColumns: string[] = ['supplierName', 'phoneNumber', 'email', 'status', 'actions'];
   dataSource = new MatTableDataSource<Supplier>();
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  private _paginator!: MatPaginator;
+  private _sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this._paginator = paginator;
+      this.dataSource.paginator = this._paginator;
+    }
+  }
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) {
+      this._sort = sort;
+      this.dataSource.sort = this._sort;
+    }
+  }
+  pageSizeOptions: number[] = [25, 50, 75, 100];
 
   isLoading = false;
   suppliers: Supplier[] = [];
@@ -111,6 +127,8 @@ export class SupplierComponent implements OnInit {
 
     this.filteredSuppliers = filtered;
     this.dataSource.data = this.filteredSuppliers;
+    const computedOptions = computePageSizeOptions(this.dataSource.data.length);
+    this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
   }
 
   onSupplierNameFilterChange() {

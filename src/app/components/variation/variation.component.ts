@@ -8,6 +8,7 @@ import { ToastService } from 'src/app/services/toast.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { VariationService } from '../../services/variation.service';
 import { Variation as VariationApiModel } from '../../models/variation.model';
+import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface Variation {
   id: number;
@@ -30,8 +31,23 @@ export class VariationComponent implements OnInit {
   variations: Variation[] = [];
   deletingVariationId: number | null = null;
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  private _paginator!: MatPaginator;
+  private _sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this._paginator = paginator;
+      this.dataSource.paginator = this._paginator;
+    }
+  }
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) {
+      this._sort = sort;
+      this.dataSource.sort = this._sort;
+    }
+  }
+  pageSizeOptions: number[] = [25, 50, 75, 100];
   
   constructor(
     private router: Router,
@@ -57,6 +73,8 @@ export class VariationComponent implements OnInit {
         }));
         this.variations = mapped;
         this.dataSource.data = this.variations;
+        const computedOptions = computePageSizeOptions(this.dataSource.data.length);
+        this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
         this.isLoading = false;
       },
       error: (error) => {

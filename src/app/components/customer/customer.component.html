@@ -92,7 +92,8 @@
 
           <!-- Paginator -->
           <mat-paginator 
-            [pageSizeOptions]="[5, 10, 20]" 
+            [pageSizeOptions]="pageSizeOptions" 
+            [length]="dataSource.filteredData?.length || 0"
             showFirstLastButtons
             class="table-paginator">
           </mat-paginator>

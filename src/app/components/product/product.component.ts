@@ -9,6 +9,7 @@ import { ProductApiModel } from '../../models/product.model';
 import { ToastService } from '../../services/toast.service';
 import { Product } from '../../models/product.model';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface ProductDisplay {
   id: number;
@@ -27,12 +28,27 @@ export class ProductComponent implements OnInit {
   displayedColumns: string[] = ['category', 'productName', 'description', 'lastUpdated', 'actions'];
   dataSource = new MatTableDataSource<ProductDisplay>();
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  private _paginator!: MatPaginator;
+  private _sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this._paginator = paginator;
+      this.dataSource.paginator = this._paginator;
+    }
+  }
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) {
+      this._sort = sort;
+      this.dataSource.sort = this._sort;
+    }
+  }
 
   isLoading = false;
   isDeleting = false;
   deletingProductId: number | null = null;
+  pageSizeOptions: number[] = [25, 50, 75, 100];
 
   constructor(
     private router: Router,
@@ -49,7 +65,6 @@ export class ProductComponent implements OnInit {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
   }
-
   fetchProducts(): void {
     this.isLoading = true;
     this.productService.getProducts().subscribe({
@@ -62,6 +77,8 @@ export class ProductComponent implements OnInit {
           lastUpdated: this.formatDate(p.createdAt)
         }));
         this.dataSource.data = mapped;
+        const computedOptions = computePageSizeOptions(this.dataSource.data.length);
+        this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
         this.isLoading = false;
       },
       error: (error) => {

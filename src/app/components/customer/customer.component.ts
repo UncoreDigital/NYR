@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { CustomerService, CustomerApiModel } from '../../services/customer.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface Customer {
   id: number;
@@ -25,8 +26,22 @@ export class CustomerComponent implements OnInit {
   displayedColumns: string[] = ['companyName', 'contactName', 'address', 'phoneNumber', 'actions'];
   dataSource = new MatTableDataSource<Customer>();
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  private _paginator!: MatPaginator;
+  private _sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this._paginator = paginator;
+      this.dataSource.paginator = this._paginator;
+    }
+  }
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) {
+      this._sort = sort;
+      this.dataSource.sort = this._sort;
+    }
+  }
 
   isLoading = false;
   showCreditCardModal = false;
@@ -52,6 +67,7 @@ export class CustomerComponent implements OnInit {
     balance: '',
     creditLimit: ''
   };
+  pageSizeOptions: number[] = [25, 50, 75, 100];
 
   constructor(
     private router: Router,
@@ -81,6 +97,8 @@ export class CustomerComponent implements OnInit {
           phoneNumber: this.composePhone(c)
         }));
         this.dataSource.data = mapped;
+        const computedOptions = computePageSizeOptions(this.dataSource.data.length);
+        this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
         this.isLoading = false;
       },
       error: (error) => {

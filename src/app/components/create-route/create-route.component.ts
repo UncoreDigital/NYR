@@ -3,6 +3,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Routes, Router } from '@angular/router';
+import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface CreateRoutes {
   id: number;
@@ -24,8 +25,23 @@ export class CreateRouteComponent implements OnInit {
   displayedColumns: string[] = ['locationName', 'locationAddress', 'status'];
   dataSource = new MatTableDataSource<CreateRoutes>();
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  private _paginator!: MatPaginator;
+  private _sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this._paginator = paginator;
+      this.dataSource.paginator = this._paginator;
+    }
+  }
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) {
+      this._sort = sort;
+      this.dataSource.sort = this._sort;
+    }
+  }
+  pageSizeOptions: number[] = [25, 50, 75, 100];
 
   createRoutes: CreateRoutes[] = [
     { id: 1, shippingDate: '2023-10-01', locationName: 'Location A', locationAddress: '123 Main St, Cityville', driverName: 'John Doe', status: 'Low Inventory' },
@@ -72,13 +88,9 @@ export class CreateRouteComponent implements OnInit {
   ngOnInit(): void {
     // Initialize single table with all data
     this.dataSource.data = [...this.createRoutes];
+    this.updatePagination();
     this.selectedDriverName = this.driverOptions?.[0].value;
     this.applyFilter();
-  }
-
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
   }
 
   applyFilter(event?: Event) {
@@ -119,6 +131,7 @@ export class CreateRouteComponent implements OnInit {
     }
 
     this.dataSource.data = filteredData;
+    this.updatePagination();
   }
 
   createRoute() {
@@ -233,6 +246,7 @@ export class CreateRouteComponent implements OnInit {
     this.selectedDate = '';
     // Reset data to original state
     this.dataSource.data = [...this.createRoutes];
+    this.updatePagination();
     this.dataSource.filter = '';
   }
 
@@ -251,4 +265,8 @@ export class CreateRouteComponent implements OnInit {
     this.applyFilter();
   }
 
+  updatePagination() {
+    const computedOptions = computePageSizeOptions(this.dataSource.data.length);
+    this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
+  }
 }

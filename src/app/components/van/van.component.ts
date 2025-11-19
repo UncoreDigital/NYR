@@ -8,6 +8,7 @@ import { VanService } from '../../services/van.service';
 import { VanResponse } from '../../models/van.model';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface Van {
   id: number;
@@ -30,8 +31,23 @@ export class VanComponent implements OnInit {
   errorMessage = '';
   vans: Van[] = [];
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  private _paginator!: MatPaginator;
+  private _sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this._paginator = paginator;
+      this.dataSource.paginator = this._paginator;
+    }
+  }
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) {
+      this._sort = sort;
+      this.dataSource.sort = this._sort;
+    }
+  }
+  pageSizeOptions: number[] = [25, 50, 75, 100];
 
   constructor(
     private router: Router,
@@ -52,6 +68,8 @@ export class VanComponent implements OnInit {
       next: (apiVans: VanResponse[]) => {
         this.vans = this.mapApiResponseToVan(apiVans);
         this.dataSource.data = this.vans;
+        const computedOptions = computePageSizeOptions(this.dataSource.data.length);
+        this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
         this.isLoading = false;
       },
       error: (error: any) => {

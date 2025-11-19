@@ -8,6 +8,7 @@ import { ToastService } from 'src/app/services/toast.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { ScannerService } from '../../services/scanner.service';
 import { ScannerResponse } from '../../models/scanner.model';
+import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface Scanner {
   id: number;
@@ -33,8 +34,23 @@ export class ScannerComponent implements OnInit {
   scanners: Scanner[] = [];
   deletingScannerId: number | null = null;
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  private _paginator!: MatPaginator;
+  private _sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this._paginator = paginator;
+      this.dataSource.paginator = this._paginator;
+    }
+  }
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) {
+      this._sort = sort;
+      this.dataSource.sort = this._sort;
+    }
+  }
+  pageSizeOptions: number[] = [25, 50, 75, 100];
   
   constructor(
     private router: Router,
@@ -55,6 +71,8 @@ export class ScannerComponent implements OnInit {
       next: (apiScanners: ScannerResponse[]) => {
         this.scanners = this.mapApiResponseToScanner(apiScanners);
         this.dataSource.data = this.scanners;
+        const computedOptions = computePageSizeOptions(this.dataSource.data.length);
+        this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
         this.isLoading = false;
       },
       error: (error: any) => {

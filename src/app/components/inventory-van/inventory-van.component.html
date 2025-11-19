@@ -81,7 +81,11 @@
                 </table>
 
                 <!-- Paginator -->
-                <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons class="table-paginator">
+                <mat-paginator 
+                  [pageSizeOptions]="pageSizeOptions" 
+                  [length]="dataSource.filteredData?.length || 0"
+                  showFirstLastButtons 
+                  class="table-paginator">
                 </mat-paginator>
             </div>
         </div>

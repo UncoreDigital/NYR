@@ -11,6 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { RouteMapComponent } from '../route-map/route-map.component';
+import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface routeDetail {
   stop: string;
@@ -89,8 +90,23 @@ export class RouteDetailComponent implements OnInit {
   // Approval Modal properties
   showApprovalModal = false;
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  private _paginator!: MatPaginator;
+  private _sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this._paginator = paginator;
+      this.dataSource.paginator = this._paginator;
+    }
+  }
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) {
+      this._sort = sort;
+      this.dataSource.sort = this._sort;
+    }
+  }
+  pageSizeOptions: number[] = [25, 50, 75, 100];
   @ViewChild(RouteMapComponent) routeMapComponent!: RouteMapComponent;
 
   routeDetail: routeDetail[] = [
@@ -162,11 +178,13 @@ export class RouteDetailComponent implements OnInit {
       
       // Use default data but update with received route info
       this.dataSource.data = this.routeDetail;
+      this.updatePagination();
     } 
     else {
       // Fallback to default data if no navigation state
       console.log('No navigation state found, using default data');
       this.dataSource.data = this.routeDetail;
+      this.updatePagination();
     }
     
     // Initialize button states
@@ -197,6 +215,7 @@ export class RouteDetailComponent implements OnInit {
       }));
       
       this.dataSource.data = convertedData;
+      this.updatePagination();
       
       // Update route summary based on selected locations
       this.totalStops = this.selectedLocations.length;
@@ -204,6 +223,7 @@ export class RouteDetailComponent implements OnInit {
       this.totalTime = `${this.selectedLocations.length * 0.5} Hrs`;     // Estimated
     } else {
       this.dataSource.data = this.routeDetail;
+      this.updatePagination();
     }
   }
 
@@ -370,7 +390,7 @@ export class RouteDetailComponent implements OnInit {
       
       // Update data source with new routes
       this.dataSource.data = [...currentData, ...newRoutes];
-      
+      this.updatePagination();
       // Mark that route has changes and update button states
       this.hasRouteChanges = true;
       this.updateButtonStates();
@@ -601,7 +621,7 @@ export class RouteDetailComponent implements OnInit {
     const currentData = this.dataSource.data;
     const updatedData = currentData.filter(r => r.stop !== route.stop);
     this.dataSource.data = updatedData;
-    
+    this.updatePagination();
     // Update button states
     this.hasRouteChanges = true;
     this.updateButtonStates();
@@ -669,7 +689,7 @@ export class RouteDetailComponent implements OnInit {
       
       // Update the data source for the table
       this.dataSource.data = this.routeDetail;
-      console.log('Synced route data from map to table:', this.routeDetail);
+      this.updatePagination();
     }
   }
 
@@ -702,6 +722,11 @@ export class RouteDetailComponent implements OnInit {
       'draft': 'Not Started'
     };
     return statusMapping[mapStatus] || 'Not Started';
+  }
+
+  updatePagination() {
+    const computedOptions = computePageSizeOptions(this.dataSource.data.length);
+    this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
   }
 }
 
