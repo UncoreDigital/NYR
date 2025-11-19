@@ -71,7 +71,7 @@
                                     <div 
                                         class="dropdown-item" 
                                         *ngFor="let customer of getFilteredCustomers()"
-                                        (click)="selectCustomer(customer)"
+                                        (mousedown)="selectCustomer(customer)"
                                         [class.selected]="selectedCustomer?.id === customer.id"
                                     >
                                         {{ customer.companyName }}
@@ -145,6 +145,45 @@
                         <div class="form-group">
                             <label>Email</label>
                             <input formControlName="email" type="text" placeholder="Enter Email" />
+                        </div>
+                        <div class="form-group">
+                            <label>Driver</label>
+                            <div class="custom-select-container">
+                                <div class="search-wrapper" (click)="showDriverDropdown = true">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        placeholder="Select Driver"
+                                        [value]="driverSearchTerm"
+                                        (input)="onDriverSearchInput($event); filterDrivers()"
+                                        (focus)="showDriverDropdown = true"
+                                        (blur)="hideDriverDropdown()"
+                                        [readonly]="selectedDriver ? true : false"
+                                    >
+                                    <button 
+                                        *ngIf="selectedDriver" 
+                                        type="button" 
+                                        class="clear-button"
+                                        (click)="clearDriver(); $event.stopPropagation()"
+                                    >
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showDriverDropdown && !selectedDriver">
+                                    <div 
+                                        class="dropdown-item" 
+                                        *ngFor="let driver of getFilteredDrivers()"
+                                        (mousedown)="selectDriver(driver)"
+                                        [class.selected]="selectedDriver?.id === driver.id"
+                                    >
+                                        {{ driver.name }}
+                                    </div>
+                                    <div *ngIf="getFilteredDrivers().length === 0" class="no-results">
+                                        No drivers found
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="form-row">
