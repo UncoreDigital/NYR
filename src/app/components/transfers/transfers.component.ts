@@ -81,11 +81,6 @@ export class TransfersComponent implements OnInit {
     this.applyFilters();
   }
 
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
-
   applyFilter(event: Event) {
     this.searchTerm = (event.target as HTMLInputElement).value;
     this.applyFilters();
