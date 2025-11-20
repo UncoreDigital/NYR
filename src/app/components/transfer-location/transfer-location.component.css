@@ -22,6 +22,7 @@
 .custom-select-container {
   position: relative;
   width: 100%;
+  z-index: 1;
 }
 
 .search-wrapper {
@@ -96,7 +97,7 @@
   border-radius: 0 0 6px 6px;
   max-height: 200px;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 9999;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 

@@ -47,13 +47,6 @@ export class InventoryVanComponent implements OnInit {
   selectedVanName = '';
   searchTerm = '';
   isLoading = false;
-  
-  // Product variations and transfer cart
-  selectedProduct: any = null;
-  allVariations: any[] = [];
-  filteredVariations: any[] = [];
-  transferCart: any[] = [];
-  variationSearchTerm: string = '';
 
   constructor(
     private router: Router,
@@ -152,57 +145,5 @@ export class InventoryVanComponent implements OnInit {
         id: van.id
       }
     });
-  }
-
-  applyVariationFilter(event: any): void {
-    const filterValue = event.target.value.toLowerCase();
-    this.filteredVariations = this.allVariations.filter(variation =>
-      variation.variationType.toLowerCase().includes(filterValue) ||
-      variation.variationValue.toLowerCase().includes(filterValue)
-    );
-  }
-
-  addVariationToCart(variation: any): void {
-    if (variation.transferQuantity && variation.transferQuantity > 0 && variation.transferQuantity <= variation.availableQuantity) {
-      const existingIndex = this.transferCart.findIndex(item => item.variationId === variation.variationId);
-      
-      if (existingIndex >= 0) {
-        this.transferCart[existingIndex].quantity = variation.transferQuantity;
-      } else {
-        this.transferCart.push({
-          productId: this.selectedProduct.id,
-          productName: this.selectedProduct.name,
-          variationId: variation.variationId,
-          variationType: variation.variationType,
-          variationValue: variation.variationValue,
-          quantity: variation.transferQuantity,
-          availableQuantity: variation.availableQuantity
-        });
-      }
-      
-      variation.transferQuantity = 0;
-      this.toastService.success('Added', 'Item added to transfer cart');
-    } else if (variation.transferQuantity > variation.availableQuantity) {
-      this.toastService.error('Error', `Quantity cannot exceed available quantity (${variation.availableQuantity})`);
-    }
-  }
-
-  removeFromTransferCart(index: number): void {
-    this.transferCart.splice(index, 1);
-    this.toastService.info('Removed', 'Item removed from cart');
-  }
-
-  updateCartItemQuantity(index: number, quantity: number): void {
-    const item = this.transferCart[index];
-    if (quantity > 0 && quantity <= item.availableQuantity) {
-      item.quantity = quantity;
-    } else if (quantity > item.availableQuantity) {
-      this.toastService.error('Error', `Quantity cannot exceed available quantity (${item.availableQuantity})`);
-      item.quantity = item.availableQuantity;
-    }
-  }
-
-  isVariationInCart(variation: any): boolean {
-    return this.transferCart.some(item => item.variationId === variation.variationId);
   }
 }
