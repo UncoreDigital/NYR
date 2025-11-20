@@ -18,11 +18,20 @@
     background: #ffffff
 }
 
+/* Form Group Positioning */
+.form-group {
+  position: relative;
+}
+
 /* Custom Searchable Dropdown Styling */
 .custom-select-container {
   position: relative;
   width: 100%;
-  z-index: 1;
+}
+
+/* Increase z-index when dropdown is open */
+.form-group:focus-within {
+  z-index: 100;
 }
 
 .search-wrapper {
