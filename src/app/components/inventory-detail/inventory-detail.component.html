@@ -42,7 +42,13 @@
                 </button>
             </div>
 
-            <div class="table-container">
+            <!-- Loading Spinner -->
+            <div *ngIf="loading" class="loading-container">
+                <mat-spinner diameter="50"></mat-spinner>
+                <p>Loading inventory...</p>
+            </div>
+
+            <div class="table-container" *ngIf="!loading">
                 <table mat-table [dataSource]="dataSource" matSort class="customer-table">
                     <ng-container matColumnDef="productName">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header>PRODUCT NAME</th>

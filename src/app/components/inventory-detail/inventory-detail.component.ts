@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { WarehouseInventoryService } from '../../services/warehouse-inventory.service';
 import { WarehouseInventoryDetailResponse } from '../../models/warehouse-inventory.model';
 import { TransferInventoryService } from '../../services/transfer-inventory.service';
+import { VanInventoryService } from '../../services/van-inventory.service';
 
 export interface inventoryLocation {
   productName: string,
@@ -43,7 +44,8 @@ export class InventoryDetailComponent implements OnInit {
     private router: Router, 
     private route: ActivatedRoute,
     private warehouseInventoryService: WarehouseInventoryService,
-    private transferInventoryService: TransferInventoryService
+    private transferInventoryService: TransferInventoryService,
+    private vanInventoryService: VanInventoryService
   ) { }
 
   ngOnInit(): void {
@@ -101,8 +103,31 @@ export class InventoryDetailComponent implements OnInit {
     }
   }
 
+  vanId: number | null = null;
+
   loadInventoryData(): void {
-    if (this.sourceContext === 'location' && this.locationId) {
+    if (this.sourceContext === 'van' && this.route.snapshot.queryParams['id']) {
+      // Load van inventory items
+      this.vanId = parseInt(this.route.snapshot.queryParams['id']);
+      this.loading = true;
+      this.vanInventoryService.getTransferItemsByVanId(this.vanId).subscribe({
+        next: (items) => {
+          this.inventoryLocation = items.map(item => ({
+            productName: item.productName,
+            skucode: item.skuCode || '',
+            variationType: item.variationType || 'N/A',
+            variationValue: item.variationValue || 'N/A',
+            quantity: item.quantity
+          }));
+          this.dataSource.data = this.inventoryLocation;
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading van inventory:', error);
+          this.loading = false;
+        }
+      });
+    } else if (this.sourceContext === 'location' && this.locationId) {
       // Load transfer inventory items for location
       this.loading = true;
       this.transferInventoryService.getTransferItemsByLocationId(this.locationId).subscribe({
