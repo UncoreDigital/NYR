@@ -19,7 +19,7 @@ import { ToastService } from '../../../services/toast.service';
 @Component({
   selector: 'app-add-user',
   templateUrl: './add-user.component.html',
-  styleUrl: './add-user.component.css'
+  styleUrls: ['./add-user.component.css']
 })
 export class AddUserComponent implements OnInit {
   userForm!: FormGroup;
@@ -92,6 +92,13 @@ export class AddUserComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', Validators.required],
       password: ['', Validators.required], // Will be updated based on mode
+      address1: [''],
+      address2: [''],
+      city: [''],
+      state: [''],
+      zip: [''],
+      contactName: [''],
+      contactLastName: [''],
       homeAddress: [''],
       startingPoint: ['']
     });

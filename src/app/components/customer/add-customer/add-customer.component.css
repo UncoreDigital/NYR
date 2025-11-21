@@ -1,0 +1,4 @@
+/* component-specific overrides (most form styles are in shared 'common-ue.css') */
+.user-form .form-group { margin-bottom: 12px; }
+.user-form .form-actions { margin-top: 16px; }
+

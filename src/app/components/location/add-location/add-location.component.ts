@@ -39,6 +39,7 @@ export class AddLocationComponent implements OnInit {
   showDriverDropdown: boolean = false;
   selectedDriver: UserResponse | any = null;
   drivers: UserResponse[] = [];
+  showValidation = false;
 
   constructor(
     private fb: FormBuilder, 
@@ -52,7 +53,7 @@ export class AddLocationComponent implements OnInit {
     this.locationForm = this.fb.group({
       userId: [''],
       customerId: ['', Validators.required],
-      locationName: [''],
+      locationName: ['', Validators.required],
       contactPerson: [''],
       address1: [''],
       address2: [''],
@@ -149,6 +150,12 @@ export class AddLocationComponent implements OnInit {
   }
 
   onSubmit() {
+    if (this.locationForm.invalid || this.isSaving) {
+      this.showValidation = true;
+      this.locationForm.markAllAsTouched();
+      return;
+    }
+
     if (this.locationForm.valid) {
       this.isSaving = true;
       this.errorMessage = '';
@@ -178,9 +185,10 @@ export class AddLocationComponent implements OnInit {
         this.locationService.updateLocation(this.locationId, updateData).subscribe({
           next: (response) => {
             console.log('Location updated successfully:', response);
-            this.isSaving = false;
-            this.showSuccess = true;
-            this.toastService.success('Success', 'Location updated successfully');
+              this.isSaving = false;
+              this.showSuccess = true;
+              this.showValidation = false;
+              this.toastService.success('Success', 'Location updated successfully');
           },
           error: (error) => {
             console.error('Error updating location:', error);
@@ -196,6 +204,7 @@ export class AddLocationComponent implements OnInit {
             console.log('Location created successfully:', response);
             this.isSaving = false;
             this.showSuccess = true;
+            this.showValidation = false;
             this.toastService.success('Success', 'Location created successfully');
           },
           error: (error) => {
@@ -217,6 +226,7 @@ export class AddLocationComponent implements OnInit {
       return;
     }
     this.locationForm.reset();
+    this.showValidation = false;
     this.selectedCustomer = null;
     this.customerSearchTerm = '';
     this.selectedDriver = null;
@@ -226,6 +236,7 @@ export class AddLocationComponent implements OnInit {
   addAnotherLocation() {
     this.showSuccess = false;
     this.locationForm.reset();
+    this.showValidation = false;
     this.selectedCustomer = null;
     this.customerSearchTerm = '';
     this.selectedDriver = null;

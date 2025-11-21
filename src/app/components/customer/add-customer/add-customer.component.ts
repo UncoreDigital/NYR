@@ -14,7 +14,7 @@ import { ToastService } from '../../../services/toast.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MatIconModule, SidebarComponent, HeaderComponent, RouterModule],
   templateUrl: './add-customer.component.html',
-  styleUrl: './add-customer.component.css'
+  styleUrls: ['./add-customer.component.css']
 })
 export class AddCustomerComponent {
   customerForm: FormGroup;
@@ -22,6 +22,7 @@ export class AddCustomerComponent {
   isSaving = false;
   isEditMode = false;
   customerId: number | null = null;
+  showValidation = false;
 
   constructor(
     private fb: FormBuilder,
@@ -94,6 +95,7 @@ export class AddCustomerComponent {
 
   onSubmit() {
     if (this.customerForm.invalid || this.isSaving) {
+      this.showValidation = true;
       this.customerForm.markAllAsTouched();
       return;
     }
@@ -131,6 +133,7 @@ export class AddCustomerComponent {
       this.customerService.updateCustomer(this.customerId, updatePayload).subscribe({
         next: () => {
           this.isSaving = false;
+          this.showValidation = false;
           this.toastService.success('Success', 'Customer has been updated');
           this.router.navigate(['/customer']);
         },
@@ -146,6 +149,7 @@ export class AddCustomerComponent {
         next: () => {
           this.isSaving = false;
           this.showSuccess = true;
+          this.showValidation = false;
           this.toastService.success('Success', 'Customer has been created');
         },
         error: (error) => {
@@ -163,11 +167,13 @@ export class AddCustomerComponent {
       return;
     }
     this.customerForm.reset();
+    this.showValidation = false;
   }
 
   addAnotherCustomer() {
     this.showSuccess = false;
     this.customerForm.reset();
+    this.showValidation = false;
   }
 
   goToCustomersList() {

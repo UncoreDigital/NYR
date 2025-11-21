@@ -29,7 +29,7 @@
             </div>
 
             <div class="table-container">
-                <form [formGroup]="customerForm" class="user-form" (ngSubmit)="onSubmit()">
+                <form [formGroup]="customerForm" class="user-form" [class.show-validation]="showValidation" (ngSubmit)="onSubmit()">
                     <div class="form-row">
                         <div class="form-group">
                             <label>Company Name*</label>

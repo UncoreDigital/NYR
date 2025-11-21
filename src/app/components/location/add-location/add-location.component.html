@@ -41,10 +41,10 @@
             </div>
 
             <div class="table-container" *ngIf="!isLoading">
-                <form [formGroup]="locationForm" class="user-form" (ngSubmit)="onSubmit()">
+                <form [formGroup]="locationForm" class="user-form" [class.show-validation]="showValidation" (ngSubmit)="onSubmit()">
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Customer Name</label>
+                            <label>Customer Name*</label>
                             <div class="custom-select-container">
                                 <div class="search-wrapper" (click)="showCustomerDropdown = true">
                                     <mat-icon class="search-icon">search</mat-icon>
@@ -57,6 +57,8 @@
                                         (focus)="showCustomerDropdown = true"
                                         (blur)="hideCustomerDropdown()"
                                         [readonly]="selectedCustomer ? true : false"
+                                        [class.invalid]="locationForm.get('customerId')?.invalid && showValidation"
+                                        aria-required="true"
                                     >
                                     <button 
                                         *ngIf="selectedCustomer" 
@@ -83,8 +85,8 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Location Name</label>
-                            <input formControlName="locationName" type="text" placeholder="Enter Location Name" />
+                            <label>Location Name*</label>
+                            <input formControlName="locationName" type="text" placeholder="Enter Location Name" required />
                         </div>
                     </div>
 
@@ -102,15 +104,15 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>City</label>
+                            <label>City*</label>
                             <input formControlName="city" type="text" placeholder="Enter City" />
                         </div>
                         <div class="form-group">
-                            <label>State</label>
+                            <label>State*</label>
                             <input formControlName="state" type="text" placeholder="Enter State" />
                         </div>
                         <div class="form-group">
-                            <label>Zip Code</label>
+                            <label>Zip Code*</label>
                             <input formControlName="zip" type="text" placeholder="Enter Zip" />
                         </div>
                     </div>
@@ -123,7 +125,7 @@
                             <input formControlName="contactPerson" type="text" placeholder="Enter Contact Person" />
                         </div>
                         <div class="form-group">
-                            <label>Title</label>
+                            <label>Title*</label>
                             <input formControlName="title" type="text" placeholder="Enter Title" />
                         </div>
                     </div>

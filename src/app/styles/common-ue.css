@@ -1,0 +1,146 @@
+/* Common UI/UX form and dropdown styles (shared across components) */
+
+/* Form container */
+.user-form {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  max-width: 100%;
+  overflow: visible;
+}
+
+.form-row {
+  display: flex;
+  gap: 18px;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full-width {
+  flex: 2;
+}
+
+.form-group label,
+.user-form label {
+  font-size: 14px;
+  color: #000000;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.form-group input, .user-form input, textarea, select {
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 15px;
+  background: white;
+}
+
+.form-actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 12px;
+}
+
+/* Validation highlighting (supports touch & submit-driven flows) */
+.user-form input.ng-invalid.ng-touched,
+.user-form textarea.ng-invalid.ng-touched,
+.user-form select.ng-invalid.ng-touched,
+/* Also show validation when form was submitted */
+.user-form.show-validation input.ng-invalid,
+.user-form.show-validation textarea.ng-invalid,
+.user-form.show-validation select.ng-invalid {
+  border: 1px solid #e53935;
+  box-shadow: 0 0 0 3px rgba(229,57,53,0.08);
+}
+
+/* Custom select / searchable dropdown (shared) */
+.custom-select-container {
+  position: relative;
+  width: 100%;
+  z-index: 1;
+}
+
+.search-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-wrapper .search-input {
+  width: 100%;
+  padding: 10px 16px 10px 45px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.clear-button {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 9999;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover { background-color: #f5f5f5; }
+.dropdown-item.selected { background-color: #e3f2fd; color: #1976d2; font-weight: 500; }
+
+/* small utility spacing */
+.mr-15 { margin-right: 15px; }
+.mr-8 { margin-right: 8px; }
+.mr-2 { margin-right: 2px; }
+
+/* accessibility: focus outline for keyboard users */
+.user-form input:focus, .user-form textarea:focus, .user-form select:focus, .search-wrapper .search-input:focus {
+  outline: none;
+  border-color: #02C3B4;
+  box-shadow: 0 0 0 3px rgba(32, 212, 170, 0.08);
+}
+
+/* Show invalid style for custom searchable inputs (e.g. customer/driver selects) */
+.user-form .search-input.invalid,
+.user-form.show-validation .search-input.invalid {
+  border: 1px solid #e53935;
+  box-shadow: 0 0 0 3px rgba(229,57,53,0.08);
+}
