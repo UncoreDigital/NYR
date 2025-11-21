@@ -7,26 +7,43 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
+import { TransferInventoryService } from 'src/app/services/transfer-inventory.service';
+import { LocationService } from 'src/app/services/location.service';
+import { LocationResponse } from 'src/app/models/location.model';
 
 export interface RouteStop {
-  location: string;
+  locationName: string;
   eta: string;
   items?: number;
   status: 'delivered' | 'in-progress' | 'not-delivered' | 'pending';
   distance?: string;
   locationInventory?: string;
+  locationInventoryData?: any[];
   shippingInventory?: string;
+  shippingInventoryData?: any[];
+  id?: number;
 }
 
 export interface Customer {
-  id: number;
+  // id: number;
+  // locationName: string;
+  locationAddress?: string;
+  driverName?: string;
+  // locationInventory: string;
+  // shippingInventory: string;
+  // status: string;
   locationName: string;
-  locationAddress: string;
-  driverName: string;
-  locationInventory: string;
-  shippingInventory: string;
-  status: string;
-  selected: boolean;
+  eta: string;
+  items?: number;
+  // status: 'delivered' | 'in-progress' | 'not-delivered' | 'pending';
+  distance?: string;
+  locationInventory?: string;
+  locationInventoryData?: any[];
+  shippingInventory?: string;
+  shippingInventoryData?: any[];
+  id?: number;
+  selected?: boolean;
+  status?: string;
 }
 
 export interface ProductDetail {
@@ -68,6 +85,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
   locationViewType: 'assigned' | 'all' = 'assigned';
   assignedLocations: Customer[] = [];
   allLocations: Customer[] = [];
+  driverLocations: Customer[] = [];
   
   // Location inventory modal properties
   showLocationInventoryModal = false;
@@ -77,74 +95,58 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
   showShippingInventoryModal = false;
   selectedShippingInventory: ProductDetail[] = [];
   
-  routeStops: RouteStop[] = [
-    {
-      location: 'Howard University',
-      eta: '10:00 AM',
-      items: 4,
-      status: 'delivered',
-      distance: '5.2 Miles',
-      locationInventory: '2 Items',
-      shippingInventory: '2 Items'
-    },
-    {
-      location: 'Bryant Street',
-      eta: '10:30 AM',
-      status: 'in-progress',
-      distance: '12.8 Miles',
-      locationInventory: '3 Items',
-      shippingInventory: '4 Items'
-    },
-    {
-      location: 'District Vet',
-      eta: '11:40 AM',
-      status: 'not-delivered',
-      distance: '8.3 Miles',
-      locationInventory: '4 Items',
-      shippingInventory: '3 Items'
-    }
-  ];
+  routeStops: RouteStop[] = [];
 
-  availableCustomers: Customer[] = [
-    { id: 1, locationName: 'Downtown Medical Center', locationAddress: '123 Main St, New York, NY 10001', driverName: 'John Smith', locationInventory: '5 Items', shippingInventory: '3 Items', status: 'Ready To Ship', selected: false },
-    { id: 2, locationName: 'West Side Clinic', locationAddress: '456 Oak Ave, Los Angeles, CA 90210', driverName: 'Jane Doe', locationInventory: '8 Items', shippingInventory: '6 Items', status: 'Ready To Ship', selected: false },
-    { id: 3, locationName: 'Central Hospital', locationAddress: '789 Pine Rd, Chicago, IL 60601', driverName: 'Mike Johnson', locationInventory: '12 Items', shippingInventory: '9 Items', status: 'Ready To Ship', selected: false },
-    { id: 4, locationName: 'South Medical Plaza', locationAddress: '321 Elm St, Houston, TX 77001', driverName: 'Sarah Wilson', locationInventory: '6 Items', shippingInventory: '4 Items', status: 'Ready To Ship', selected: false },
-    { id: 5, locationName: 'East Valley Clinic', locationAddress: '654 Maple Dr, Phoenix, AZ 85001', driverName: 'David Brown', locationInventory: '9 Items', shippingInventory: '7 Items', status: 'Ready To Ship', selected: false },
-    { id: 6, locationName: 'North Point Medical', locationAddress: '987 Cedar Ln, Philadelphia, PA 19101', driverName: 'Lisa Anderson', locationInventory: '4 Items', shippingInventory: '2 Items', status: 'Ready To Ship', selected: false },
-    { id: 7, locationName: 'Metro Health Center', locationAddress: 'Address Not Available', driverName: 'Not Assigned', locationInventory: '7 Items', shippingInventory: '5 Items', status: 'Follow up', selected: false }
-  ];
+  availableCustomers: Customer[] = [];
+  // [
+  //   { id: 1, locationName: 'Downtown Medical Center', locationAddress: '123 Main St, New York, NY 10001', driverName: 'John Smith', locationInventory: '5 Items', shippingInventory: '3 Items', status: 'Ready To Ship', selected: false },
+  //   { id: 2, locationName: 'West Side Clinic', locationAddress: '456 Oak Ave, Los Angeles, CA 90210', driverName: 'Jane Doe', locationInventory: '8 Items', shippingInventory: '6 Items', status: 'Ready To Ship', selected: false },
+  //   { id: 3, locationName: 'Central Hospital', locationAddress: '789 Pine Rd, Chicago, IL 60601', driverName: 'Mike Johnson', locationInventory: '12 Items', shippingInventory: '9 Items', status: 'Ready To Ship', selected: false },
+  //   { id: 4, locationName: 'South Medical Plaza', locationAddress: '321 Elm St, Houston, TX 77001', driverName: 'Sarah Wilson', locationInventory: '6 Items', shippingInventory: '4 Items', status: 'Ready To Ship', selected: false },
+  //   { id: 5, locationName: 'East Valley Clinic', locationAddress: '654 Maple Dr, Phoenix, AZ 85001', driverName: 'David Brown', locationInventory: '9 Items', shippingInventory: '7 Items', status: 'Ready To Ship', selected: false },
+  //   { id: 6, locationName: 'North Point Medical', locationAddress: '987 Cedar Ln, Philadelphia, PA 19101', driverName: 'Lisa Anderson', locationInventory: '4 Items', shippingInventory: '2 Items', status: 'Ready To Ship', selected: false },
+  //   { id: 7, locationName: 'Metro Health Center', locationAddress: 'Address Not Available', driverName: 'Not Assigned', locationInventory: '7 Items', shippingInventory: '5 Items', status: 'Follow up', selected: false }
+  // ];
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private transferInventoryService: TransferInventoryService,
+    private locationService: LocationService
   ) {}
 
   ngOnInit(): void {
-    // Get route data from navigation state or route params
-    const navigation = this.router.getCurrentNavigation();
-    if (navigation?.extras?.state) {
-      this.routeData = navigation.extras.state['routeData'];
-    }
-    
-    // If no data from navigation, get from route params (for direct URL access)
-    this.route.queryParams.subscribe(params => {
-      if (params['driverName']) {
+    const state = history.state;
+    console.log('Navigation state:', state);
+    this.routeStops = state.selectedLocations;
+    //Temp Solution to get route data from state
+    this.getInventoryobyLocation();
+    this.routeStops.map(stop => stop.locationInventory = "2 Items");
+    this.routeStops.map(stop => stop.shippingInventory = "2 Items");
+
+     if (state.routeData['selectedDriver']) {
         this.routeData = {
-          driverName: params['driverName'],
-          totalStops: params['totalStops'],
-          shippingDate: params['shippingDate'],
-          status: params['status']
+          driverName: state.routeData['selectedDriver'],
+          totalStops: state.routeData['totalLocations'],
+          shippingDate: state.routeData['selectedDate'],
+          // status: params['status']
         };
         // Check if this is a draft route
-        this.isDraftRoute = params['status']?.toLowerCase() === 'draft';
-        this.isCompletedRoute = params['status']?.toLowerCase() === 'completed';
-        this.isNotStartedRoute = params['status']?.toLowerCase() === 'not started';
-        console.log('Route status from params:', params['status']);
+        this.isDraftRoute = state.routeData['status']?.toLowerCase() === 'draft';
+        this.isCompletedRoute = state.routeData['status']?.toLowerCase() === 'completed';
+        this.isNotStartedRoute = state.routeData['status']?.toLowerCase() === 'not started';
+        this.isNotStartedRoute = this.isNotStartedRoute === false && this.isDraftRoute === false && this.isCompletedRoute === false ? true : this.isNotStartedRoute;
+        console.log('Route status from params:', state.routeData['status']);
         console.log('Is draft route:', this.isDraftRoute);
         console.log('Is completed route:', this.isCompletedRoute);
       }
-    });
+    // // Get route data from navigation state or route params
+    // const navigation = this.router.getCurrentNavigation();
+    // if (navigation?.extras?.state) {
+    //   this.routeData = navigation.extras.state['routeData'];
+    // }
+    
+    // If no data from navigation, get from route params (for direct URL access)
 
     // Check route data status if available
     if (this.routeData?.status) {
@@ -176,45 +178,68 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
 
     // Initialize customer data for location modal
     this.initializeCustomers();
+    this.loadLocationsDetails();
+  }
+
+  getInventoryobyLocation(): void {
+    this.routeStops?.forEach((stop, index) => {
+      this.transferInventoryService.getTransferItemsByLocationId(stop.id || 0).subscribe({
+        next: (items) => {
+          console.log('Inventory items for location', stop.locationName, items);
+          const updated = { ...this.routeStops[index], locationInventory: `${items.length} Items`, locationInventoryData: items };
+          this.routeStops = [
+            ...this.routeStops!.slice(0, index),
+            updated,
+            ...this.routeStops!.slice(index + 1)
+          ];
+          console.log(this.routeStops);
+        },
+        error: (error) => {
+          console.error('Error loading location inventory:', error);
+        }
+      });
+    });
   }
 
   initializeCustomers(): void {
-    this.assignedLocations = [
-      {
-        id: 1,
-        locationName: 'Downtown Medical Center',
-        locationAddress: '123 Main St, Downtown',
-        driverName: 'James Miller',
-        status: 'Ready To Ship',
-        selected: false,
-        locationInventory: '2 items',
-        shippingInventory: '2 items'
-      },
-      {
-        id: 2,
-        locationName: 'Southside Clinic',
-        locationAddress: '456 Oak Ave, Southside',
-        driverName: 'James Miller',
-        status: 'Follow up',
-        selected: false,
-        locationInventory: '1 item',
-        shippingInventory: '1 item'
-      }
-    ];
+    this.assignedLocations = [];
+    // [
+    //   {
+    //     id: 1,
+    //     locationName: 'Downtown Medical Center',
+    //     locationAddress: '123 Main St, Downtown',
+    //     driverName: 'James Miller',
+    //     status: 'Ready To Ship',
+    //     selected: false,
+    //     locationInventory: '2 items',
+    //     shippingInventory: '2 items'
+    //   },
+    //   {
+    //     id: 2,
+    //     locationName: 'Southside Clinic',
+    //     locationAddress: '456 Oak Ave, Southside',
+    //     driverName: 'James Miller',
+    //     status: 'Follow up',
+    //     selected: false,
+    //     locationInventory: '1 item',
+    //     shippingInventory: '1 item'
+    //   }
+    // ];
 
-    this.allLocations = [
-      ...this.assignedLocations,
-      {
-        id: 3,
-        locationName: 'Northgate Hospital',
-        locationAddress: '789 Pine St, Northgate',
-        driverName: 'Sarah Johnson',
-        status: 'Ready To Ship',
-        selected: false,
-        locationInventory: '1 item',
-        shippingInventory: '1 item'
-      }
-    ];
+    // this.allLocations = this.assignedLocations,
+    // [
+    //   ...this.assignedLocations,
+    //   {
+    //     id: 3,
+    //     locationName: 'Northgate Hospital',
+    //     locationAddress: '789 Pine St, Northgate',
+    //     driverName: 'Sarah Johnson',
+    //     status: 'Ready To Ship',
+    //     selected: false,
+    //     locationInventory: '1 item',
+    //     shippingInventory: '1 item'
+    //   }
+    // ];
 
     // Set initial customers based on locationViewType
     this.customers = this.locationViewType === 'assigned' ? this.assignedLocations : this.allLocations;
@@ -251,26 +276,28 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
 
   // Product Modal functions for stops
   openStopLocationInventoryModal(stop: RouteStop): void {
-    console.log('Opening location inventory modal for:', stop.location);
-    this.productDetails.data = [
-      { productName: 'Cervical Collar', skuCode: 'CC001', size: 'Medium', side: 'Left', colour: 'Beige', quantity: 2, inStock: 15 },
-      { productName: 'Knee Brace', skuCode: 'KB002', size: 'Large', side: 'Right', colour: 'Black', quantity: 1, inStock: 8 }
-    ];
-    this.modalTitle = `Location Inventory - ${stop.location}`;
+    console.log('Opening location inventory modal for:', stop.locationName);
+    // this.productDetails.data = [
+    //   { productName: 'Cervical Collar', skuCode: 'CC001', size: 'Medium', side: 'Left', colour: 'Beige', quantity: 2, inStock: 15 },
+    //   { productName: 'Knee Brace', skuCode: 'KB002', size: 'Large', side: 'Right', colour: 'Black', quantity: 1, inStock: 8 }
+    // ];
+    this.productDetails.data = stop.locationInventoryData || [];
+    this.modalTitle = `Location Inventory - ${stop.locationName}`;
     this.showModal = true;
-    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'inStock'];
+    this.productDisplayedColumns = ['productName', 'skuCode', 'variationType', 'variationValue', 'quantity'];
     console.log('Modal should be showing:', this.showModal);
   }
 
   openStopShippingInventoryModal(stop: RouteStop): void {
-    console.log('Opening shipping inventory modal for:', stop.location);
-    this.productDetails.data = [
-      { productName: 'Ankle Support', skuCode: 'AS003', size: 'Small', side: 'Left', colour: 'Grey', quantity: 3, inStock: 12 },
-      { productName: 'Wrist Splint', skuCode: 'WS004', size: 'Medium', side: 'Right', colour: 'Blue', quantity: 2, inStock: 6 }
-    ];
-    this.modalTitle = `Shipping Inventory - ${stop.location}`;
+    console.log('Opening shipping inventory modal for:', stop.locationName);
+    // this.productDetails.data = [
+    //   { productName: 'Ankle Support', skuCode: 'AS003', size: 'Small', side: 'Left', colour: 'Grey', quantity: 3, inStock: 12 },
+    //   { productName: 'Wrist Splint', skuCode: 'WS004', size: 'Medium', side: 'Right', colour: 'Blue', quantity: 2, inStock: 6 }
+    // ];
+    this.productDetails.data = stop.locationInventoryData || [];
+    this.modalTitle = `Shipping Inventory - ${stop.locationName}`;
     this.showModal = true;
-    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'inStock'];
+    this.productDisplayedColumns = ['productName', 'skuCode', 'variationType', 'variationValue', 'quantity'];
     console.log('Modal should be showing:', this.showModal);
   }
 
@@ -284,12 +311,15 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
   // Modal functions
   openAddStopModal(): void {
     // Initialize location data similar to route-detail component
-    this.assignedLocations = this.availableCustomers.filter(customer => customer.driverName !== 'Not Assigned');
-    this.allLocations = this.availableCustomers;
+    // this.driverLocations = this.routeStops;
+    this.availableCustomers = this.routeStops;
+    this.assignedLocations = this.routeStops;
+    // this.assignedLocations = this.availableCustomers.filter(customer => customer.driverName !== 'Not Assigned');
+    // this.allLocations = this.availableCustomers;
     
     // Initialize with assigned locations by default
     this.locationViewType = 'assigned';
-    this.customers = this.assignedLocations;
+    this.customers = this.driverLocations;
     this.selectedCustomers = [];
     this.showAddStopModal = true;
   }
@@ -352,7 +382,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
     this.locationViewType = viewType;
     // Update customers list based on view type
     if (viewType === 'assigned') {
-      this.customers = this.assignedLocations;
+      this.customers = this.driverLocations;
     } else {
       this.customers = this.allLocations;
     }
@@ -382,7 +412,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
     
     selectedCustomers.forEach((customer, index) => {
       const newStop: RouteStop = {
-        location: customer.locationName,
+        locationName: customer.locationName,
         eta: this.generateNextETA(),
         items: Math.floor(Math.random() * 5) + 1, // Random number of items between 1-5
         status: 'pending',
@@ -416,11 +446,13 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
   // Delete stop functionality for draft routes
   deleteStop(index: number): void {
     if ((this.isDraftRoute || this.isNotStartedRoute) && this.routeStops.length > index) {
-      const stopLocation = this.routeStops[index].location;
+      const stopLocation = this.routeStops[index].locationName;
       const confirmed = confirm(`Are you sure you want to delete "${stopLocation}" from this route?`);
       
       if (confirmed) {
         this.routeStops.splice(index, 1);
+        this.driverLocations.map(loc => loc.selected = this.routeStops.find(stop => stop.id === loc.id) ? true : false);
+        this.allLocations.map(loc => loc.selected = this.routeStops.find(stop => stop.id === loc.id) ? true : false);
         console.log('Stop deleted, remaining stops:', this.routeStops.length);
         
         // Emit the updated route data
@@ -452,5 +484,29 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
       }));
       console.log('Updated all route stops to pending status');
     }
+  }
+
+  loadLocationsDetails(): void {
+    this.locationService.getLocationsDetails().subscribe({
+      next: (apiLocations: any[]) => {
+        apiLocations.map(loc => loc.locationAddress = loc.addressLine1);
+        apiLocations.map(loc => loc.driverName = loc.userName);
+        apiLocations.map(x => x.shippingInventoryData = x.transferItems);
+        apiLocations.map(x => x.shippingInventory = `${x.transferItems.length} Items`);
+        this.driverLocations = apiLocations.filter(x => x.userName == this.routeData.driverName);
+        this.allLocations = apiLocations;
+        this.driverLocations.map(loc => loc.selected = this.routeStops.find(stop => stop.id === loc.id) ? true : false);
+        this.allLocations.map(loc => loc.selected = this.routeStops.find(stop => stop.id === loc.id) ? true : false);
+        // this.dataSource.data = this.locations;
+        // const computedOptions = computePageSizeOptions(this.dataSource.data.length);
+        // this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
+        // this.isLoading = false;
+      },
+      error: (error: any) => {
+        console.error('Error loading locations:', error);
+        // this.errorMessage = 'Failed to load locations. Please try again.';
+        // this.isLoading = false;
+      }
+    });
   }
 }

@@ -38,11 +38,11 @@
                         matTooltip="Table View" matTooltipPosition="below" style="display: inline; margin-right: 10px;">
                         <mat-icon>table_view</mat-icon>
                     </button>
-                    <button *ngIf="routeStatus.toLowerCase() == 'draft' || routeStatus.toLowerCase() == 'not started'"
+                    <button *ngIf="routeStatus.toLowerCase() == 'draft' || routeStatus.toLowerCase() == '' || routeStatus.toLowerCase() == 'not started'"
                         class="btn btn-primary mr-15"
                         [disabled]="!(shouldShowActionButtons() && !showRecalculateButton)"
                         (click)="openApprovalModal()">Approve Route</button>
-                    <button *ngIf="routeStatus.toLowerCase() == 'draft' || routeStatus.toLowerCase() == 'not started'"
+                    <button *ngIf="routeStatus.toLowerCase() == 'draft' || routeStatus.toLowerCase() == '' || routeStatus.toLowerCase() == 'not started'"
                         class="btn btn-secondary mr-15"
                         [disabled]="!(shouldShowActionButtons() && showRecalculateButton)"
                         (click)="recalculateRoute()">Recalculate Route</button>
@@ -146,7 +146,7 @@
 
                     <ng-container matColumnDef="location">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header>LOCATION</th>
-                        <td mat-cell *matCellDef="let route">{{route.location}}</td>
+                        <td mat-cell *matCellDef="let route">{{route.locationName}}</td>
                     </ng-container>
 
                     <ng-container matColumnDef="inventoryItem">

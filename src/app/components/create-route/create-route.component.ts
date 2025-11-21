@@ -3,7 +3,11 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Routes, Router } from '@angular/router';
+import { UserService } from 'src/app/services/user.service';
+import { UserResponse } from 'src/app/models/user.model';
 import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
+import { LocationService } from 'src/app/services/location.service';
+import { LocationResponse } from 'src/app/models/location.model';
 
 export interface CreateRoutes {
   id: number;
@@ -14,12 +18,14 @@ export interface CreateRoutes {
   selected?: boolean;
   shippingDate: string;
   totalStops?: number;
+  userId?: number;
+  userName?: string;
 }
 
 @Component({
   selector: 'app-create-route',
   templateUrl: './create-route.component.html',
-  styleUrl: './create-route.component.css'
+  styleUrls: ['./create-route.component.css']
 })
 export class CreateRouteComponent implements OnInit {
   displayedColumns: string[] = ['locationName', 'locationAddress', 'status'];
@@ -43,20 +49,7 @@ export class CreateRouteComponent implements OnInit {
   }
   pageSizeOptions: number[] = [25, 50, 75, 100];
 
-  createRoutes: CreateRoutes[] = [
-    { id: 1, shippingDate: '2023-10-01', locationName: 'Location A', locationAddress: '123 Main St, Cityville', driverName: 'John Doe', status: 'Low Inventory' },
-    { id: 2, shippingDate: '2023-10-02', locationName: 'Location B', locationAddress: '456 Oak St, Townsville', driverName: 'Jane Smith', status: 'Restock Requested' },
-    { id: 3, shippingDate: '2023-10-03', locationName: 'Location C', locationAddress: '789 Pine St, Villageville', driverName: 'Mike Johnson', status: 'Follow Up' },
-    { id: 4, shippingDate: '2023-10-04', locationName: 'Location D', locationAddress: '101 Maple St, Hamletville', driverName: 'Emily Davis', status: 'Low Inventory' },
-    { id: 5, shippingDate: '2023-10-05', locationName: 'Location E', locationAddress: '202 Birch St, Boroughville', driverName: 'David Wilson', status: 'Restock Requested' },
-    { id: 6, shippingDate: '2023-10-06', locationName: 'Location F', locationAddress: '303 Cedar St, Metropolis', driverName: 'Sarah Brown', status: 'Restock Requested' },
-    { id: 7, shippingDate: '2023-10-07', locationName: 'Location G', locationAddress: '404 Spruce St, Capital City', driverName: 'Chris Lee', status: 'Low Inventory' },
-    { id: 8, shippingDate: '2023-10-08', locationName: 'Location H', locationAddress: '505 Elm St, Smalltown', driverName: 'Anna White', status: 'Low Inventory' },
-    { id: 9, shippingDate: '2023-10-09', locationName: 'Location I', locationAddress: '606 Willow St, Bigcity', driverName: 'Tom Harris', status: 'Restock  Requested' },
-    { id: 10, shippingDate: '2023-10-10', locationName: 'Location J', locationAddress: '707 Ash St, Uptown', driverName: 'Laura Martin', status: 'Low Inventory' },
-    { id: 11, shippingDate: '2023-10-11', locationName: 'Location K', locationAddress: '808 Chestnut St, Downtown', driverName: 'James Clark', status: 'Follow Up' },
-    { id: 12, shippingDate: '2023-10-12', locationName: 'Location L', locationAddress: '909 Walnut St, Riverside', driverName: 'Olivia Lewis', status: 'Follow Up' },
-  ];
+  createRoutes: CreateRoutes[] = [];
   selectedDate: string = new Date().toISOString().split('T')[0];
   selectedDriver: string = '';
   // drivers: string[] = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Emily Davis', 'David Wilson'];
@@ -71,26 +64,60 @@ export class CreateRouteComponent implements OnInit {
   selectedWarehouseName: string = '';
   searchTerm: string = '';
 
-  // Driver data array
-  driverOptions = [
-    { value: 'John Doe', name: 'John Doe' },
-    { value: 'Jane Smith', name: 'Jane Smith' },
-    { value: 'Mike Johnson', name: 'Mike Johnson' },
-    { value: 'Emily Davis', name: 'Emily Davis' },
-    { value: 'David Wilson', name: 'David Wilson' }
-  ];
+  // Driver data array (populated from API)
+  driverOptions: Array<{ id?: number; value: string; name: string }> = [];
 
   // Unique warehouse names for filter
   warehouseNames: string[] = ['Warehouse A', 'Warehouse B', 'Warehouse C', 'Warehouse D'];
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private userService: UserService, private locationService: LocationService) { }
 
   ngOnInit(): void {
     // Initialize single table with all data
-    this.dataSource.data = [...this.createRoutes];
-    this.updatePagination();
-    this.selectedDriverName = this.driverOptions?.[0].value;
-    this.applyFilter();
+    // Load locations and drivers from API
+    this.loadDrivers();
+    this.loadLocations();
+  }
+
+  loadLocations(): void {
+    this.locationService.getLocations().subscribe({
+      next: (locations: LocationResponse[]) => {
+        // Map LocationResponse to CreateRoutes model
+        this.createRoutes = locations.map(loc => ({
+          id: loc.id,
+          shippingDate: this.selectedDate || '',
+          locationName: loc.locationName,
+          locationAddress: `${loc.addressLine1}${loc.city ? ', ' + loc.city : ''}`,
+          driverName: loc.userName ?? '',
+          status: 'Pending',
+          totalStops: 1,
+          userId: loc.userId,
+          userName: loc.userName ?? ''
+        }));
+        this.dataSource.data = [...this.createRoutes];
+        this.updatePagination();
+        this.applyFilter();
+      },
+      error: (err) => {
+        console.error('Error loading locations:', err);
+        // keep existing data (empty) and pagination
+        this.updatePagination();
+      }
+    });
+  }
+
+  loadDrivers(): void {
+    this.userService.getDrivers().subscribe({
+      next: (users: UserResponse[]) => {
+        this.driverOptions = users.map(u => ({ id: u.id, value: u.name, name: u.name }));
+        // auto-select first driver
+        this.selectedDriverName = this.driverOptions?.[0].value;
+        this.applyFilter();
+      },
+      error: (err) => {
+        console.error('Error loading drivers:', err);
+      }
+    });
   }
 
   applyFilter(event?: Event) {

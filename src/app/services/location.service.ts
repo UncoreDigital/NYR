@@ -16,6 +16,10 @@ export class LocationService {
     return this.http.get<LocationResponse[]>(`${this.API_URL}/Locations`);
   }
 
+  getLocationsDetails(): Observable<LocationResponse[]> {
+    return this.http.get<LocationResponse[]>(`${this.API_URL}/Locations/locationDetails`);
+  }
+
   getLocationById(id: number): Observable<LocationResponse> {
     return this.http.get<LocationResponse>(`${this.API_URL}/Locations/${id}`);
   }

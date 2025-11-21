@@ -18,6 +18,7 @@ export interface LocationResponse {
   createdAt: string;
   isActive: boolean;
   userId?: number;
+  userName?: string;
 }
 
 export interface CreateLocationRequest {

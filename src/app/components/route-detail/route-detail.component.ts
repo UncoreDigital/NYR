@@ -12,17 +12,19 @@ import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { RouteMapComponent } from '../route-map/route-map.component';
 import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
+import { LocationService } from 'src/app/services/location.service';
 
 export interface routeDetail {
   stop: string;
   deliveryDate: string;
-  location: string;
+  locationName: string;
   inventoryItem: string;
   shippingItem: string;
   travelTime?: string;
   deliveryTime?: string;
   distance?: string;
   status?: string;
+  id?: number;
 }
 
 export interface ProductDetail {
@@ -86,6 +88,7 @@ export class RouteDetailComponent implements OnInit {
   locationViewType: 'assigned' | 'all' = 'assigned';
   assignedLocations: Customer[] = [];
   allLocations: Customer[] = [];
+  driverLocations: Customer[] = [];
 
   // Approval Modal properties
   showApprovalModal = false;
@@ -109,12 +112,13 @@ export class RouteDetailComponent implements OnInit {
   pageSizeOptions: number[] = [25, 50, 75, 100];
   @ViewChild(RouteMapComponent) routeMapComponent!: RouteMapComponent;
 
-  routeDetail: routeDetail[] = [
-    { stop: 'Stop 1', deliveryDate: '2023-10-01', location: 'Howard University', inventoryItem: '2 Items', shippingItem: '2 Items', distance: '5.2 Miles', travelTime: '1 hr', deliveryTime: '10:00 AM', status: 'Pending' },
-    { stop: 'Stop 2', deliveryDate: '2023-10-02', location: 'Bryant Street', inventoryItem: '3 Items', shippingItem: '4 Items', distance: '12.8 Miles', travelTime: '2 hr', deliveryTime: '10:30 AM', status: 'In Progress' },
-    { stop: 'Stop 3', deliveryDate: '2023-10-03', location: 'District Vet', inventoryItem: '4 Items', shippingItem: '3 Items', distance: '8.3 Miles', travelTime: '0.5 hr', deliveryTime: '11:40 AM', status: 'Completed' },
-    { stop: 'Stop 4', deliveryDate: '2023-10-04', location: 'Medical Center', inventoryItem: '5 Items', shippingItem: '2 Items', distance: '15.7 Miles', travelTime: '3 hr', deliveryTime: '1:00 PM', status: 'Not Started' },
-  ];
+  routeDetail: routeDetail[] = [];
+  // [
+  //   { stop: 'Stop 1', deliveryDate: '2023-10-01', location: 'Howard University', inventoryItem: '2 Items', shippingItem: '2 Items', distance: '5.2 Miles', travelTime: '1 hr', deliveryTime: '10:00 AM', status: 'Pending' },
+  //   { stop: 'Stop 2', deliveryDate: '2023-10-02', location: 'Bryant Street', inventoryItem: '3 Items', shippingItem: '4 Items', distance: '12.8 Miles', travelTime: '2 hr', deliveryTime: '10:30 AM', status: 'In Progress' },
+  //   { stop: 'Stop 3', deliveryDate: '2023-10-03', location: 'District Vet', inventoryItem: '4 Items', shippingItem: '3 Items', distance: '8.3 Miles', travelTime: '0.5 hr', deliveryTime: '11:40 AM', status: 'Completed' },
+  //   { stop: 'Stop 4', deliveryDate: '2023-10-04', location: 'Medical Center', inventoryItem: '5 Items', shippingItem: '2 Items', distance: '15.7 Miles', travelTime: '3 hr', deliveryTime: '1:00 PM', status: 'Not Started' },
+  // ];
   showRouteDetail = false;
 
   // Route summary properties
@@ -142,7 +146,7 @@ export class RouteDetailComponent implements OnInit {
   approveRouteDisabled: boolean = false;
   recalculateRouteDisabled: boolean = false;
   
-  constructor(private router: Router, private location: Location) { }
+  constructor(private router: Router, private location: Location, private locationService: LocationService) { }
 
   ngOnInit(): void {
     // Check if data was passed from navigation using history.state
@@ -150,7 +154,7 @@ export class RouteDetailComponent implements OnInit {
     console.log('Navigation state:', state);
     
     // Check if data comes from create-route (selectedLocations)
-    if (state && state.selectedLocations) {
+    if (state.routeData['selectedDriver']) {
       this.selectedLocations = state.selectedLocations || [];
       this.routeCreationData = state.routeData || {};
       this.selectedLocations.map(location => location.travelTime = '1 hr');
@@ -159,9 +163,9 @@ export class RouteDetailComponent implements OnInit {
       
       // Convert selected locations to route detail format
       this.convertSelectedLocationsToRouteDetail();
-    } 
-    // Check if data comes from routes table (routeData)
-    else if (state && state.routeData) {
+    // } 
+    // // Check if data comes from routes table (routeData)
+    // else if (state && state.routeData) {
       const routeData = state.routeData;
       this.routeStatus = routeData.status || '';
       
@@ -189,6 +193,7 @@ export class RouteDetailComponent implements OnInit {
     
     // Initialize button states
     this.initializeButtonStates();
+    this.loadLocationsDetails();
   }
 
   private initializeButtonStates() {
@@ -205,7 +210,7 @@ export class RouteDetailComponent implements OnInit {
       const convertedData = this.selectedLocations.map((location, index) => ({
         stop: `Stop ${index + 1}`,
         deliveryDate: location.shippingDate || this.routeCreationData.selectedDate || '2023-10-01',
-        location: location.locationAddress || location.locationName,
+        locationName: location.locationName,
         inventoryItem: '2 Items', // Default value - could be calculated based on location data
         shippingItem: '2 Items',   // Default value - could be calculated based on location data
         travelTime: location.travelTime || '1 hr',
@@ -310,30 +315,32 @@ export class RouteDetailComponent implements OnInit {
     }
 
     // Sample assigned locations data - locations with assigned drivers
-    this.assignedLocations = [
-      { id: 1, locationName: 'Downtown Medical Center', locationAddress: '123 Main St, New York, NY 10001', driverName: 'John Smith', locationInventory: '5 Items', shippingInventory: '3 Items', status: 'Ready To Ship', selected: false },
-      { id: 2, locationName: 'West Side Clinic', locationAddress: '456 Oak Ave, Los Angeles, CA 90210', driverName: 'Jane Doe', locationInventory: '8 Items', shippingInventory: '6 Items', status: 'Ready To Ship', selected: false },
-      { id: 3, locationName: 'Central Hospital', locationAddress: '789 Pine Rd, Chicago, IL 60601', driverName: 'Mike Johnson', locationInventory: '12 Items', shippingInventory: '9 Items', status: 'Ready To Ship', selected: false },
-      { id: 4, locationName: 'South Medical Plaza', locationAddress: '321 Elm St, Houston, TX 77001', driverName: 'Sarah Wilson', locationInventory: '6 Items', shippingInventory: '4 Items', status: 'Ready To Ship', selected: false }
-    ];
+    this.assignedLocations = this.selectedLocations;
+    // [
+    //   { id: 1, locationName: 'Downtown Medical Center', locationAddress: '123 Main St, New York, NY 10001', driverName: 'John Smith', locationInventory: '5 Items', shippingInventory: '3 Items', status: 'Ready To Ship', selected: false },
+    //   { id: 2, locationName: 'West Side Clinic', locationAddress: '456 Oak Ave, Los Angeles, CA 90210', driverName: 'Jane Doe', locationInventory: '8 Items', shippingInventory: '6 Items', status: 'Ready To Ship', selected: false },
+    //   { id: 3, locationName: 'Central Hospital', locationAddress: '789 Pine Rd, Chicago, IL 60601', driverName: 'Mike Johnson', locationInventory: '12 Items', shippingInventory: '9 Items', status: 'Ready To Ship', selected: false },
+    //   { id: 4, locationName: 'South Medical Plaza', locationAddress: '321 Elm St, Houston, TX 77001', driverName: 'Sarah Wilson', locationInventory: '6 Items', shippingInventory: '4 Items', status: 'Ready To Ship', selected: false }
+    // ];
 
     // Sample all locations data - includes both assigned and unassigned locations
-    this.allLocations = [
-      { id: 1, locationName: 'Downtown Medical Center', locationAddress: '123 Main St, New York, NY 10001', driverName: 'John Smith', locationInventory: '5 Items', shippingInventory: '3 Items', status: 'Ready To Ship', selected: false },
-      { id: 2, locationName: 'West Side Clinic', locationAddress: '456 Oak Ave, Los Angeles, CA 90210', driverName: 'Jane Doe', locationInventory: '8 Items', shippingInventory: '6 Items', status: 'Ready To Ship', selected: false },
-      { id: 3, locationName: 'Central Hospital', locationAddress: '789 Pine Rd, Chicago, IL 60601', driverName: 'Mike Johnson', locationInventory: '12 Items', shippingInventory: '9 Items', status: 'Ready To Ship', selected: false },
-      { id: 4, locationName: 'South Medical Plaza', locationAddress: '321 Elm St, Houston, TX 77001', driverName: 'Sarah Wilson', locationInventory: '6 Items', shippingInventory: '4 Items', status: 'Ready To Ship', selected: false },
-      { id: 5, locationName: 'East Valley Clinic', locationAddress: '654 Maple Dr, Phoenix, AZ 85001', driverName: 'David Brown', locationInventory: '9 Items', shippingInventory: '7 Items', status: 'Ready To Ship', selected: false },
-      { id: 6, locationName: 'North Point Medical', locationAddress: '987 Cedar Ln, Philadelphia, PA 19101', driverName: 'Lisa Anderson', locationInventory: '4 Items', shippingInventory: '2 Items', status: 'Ready To Ship', selected: false },
-      { id: 7, locationName: 'Riverside Hospital', locationAddress: '147 Birch Way, San Antonio, TX 78201', driverName: 'Tom Garcia', locationInventory: '11 Items', shippingInventory: '8 Items', status: 'Ready To Ship', selected: false },
-      { id: 8, locationName: 'Metro Health Center', locationAddress: 'Address Not Available', driverName: 'Not Assigned', locationInventory: '7 Items', shippingInventory: '5 Items', status: 'Follow up', selected: false },
-      { id: 9, locationName: 'Community Clinic', locationAddress: '555 Willow St, Dallas, TX 75201', driverName: 'Not Assigned', locationInventory: '3 Items', shippingInventory: '1 Item', status: 'Follow up', selected: false },
-      { id: 10, locationName: 'Bay Area Medical', locationAddress: '777 Poplar Ave, Miami, FL 33101', driverName: 'Not Assigned', locationInventory: '6 Items', shippingInventory: '4 Items', status: 'Pending', selected: false }
-    ];
+    // this.allLocations = [];
+    // [
+    //   { id: 1, locationName: 'Downtown Medical Center', locationAddress: '123 Main St, New York, NY 10001', driverName: 'John Smith', locationInventory: '5 Items', shippingInventory: '3 Items', status: 'Ready To Ship', selected: false },
+    //   { id: 2, locationName: 'West Side Clinic', locationAddress: '456 Oak Ave, Los Angeles, CA 90210', driverName: 'Jane Doe', locationInventory: '8 Items', shippingInventory: '6 Items', status: 'Ready To Ship', selected: false },
+    //   { id: 3, locationName: 'Central Hospital', locationAddress: '789 Pine Rd, Chicago, IL 60601', driverName: 'Mike Johnson', locationInventory: '12 Items', shippingInventory: '9 Items', status: 'Ready To Ship', selected: false },
+    //   { id: 4, locationName: 'South Medical Plaza', locationAddress: '321 Elm St, Houston, TX 77001', driverName: 'Sarah Wilson', locationInventory: '6 Items', shippingInventory: '4 Items', status: 'Ready To Ship', selected: false },
+    //   { id: 5, locationName: 'East Valley Clinic', locationAddress: '654 Maple Dr, Phoenix, AZ 85001', driverName: 'David Brown', locationInventory: '9 Items', shippingInventory: '7 Items', status: 'Ready To Ship', selected: false },
+    //   { id: 6, locationName: 'North Point Medical', locationAddress: '987 Cedar Ln, Philadelphia, PA 19101', driverName: 'Lisa Anderson', locationInventory: '4 Items', shippingInventory: '2 Items', status: 'Ready To Ship', selected: false },
+    //   { id: 7, locationName: 'Riverside Hospital', locationAddress: '147 Birch Way, San Antonio, TX 78201', driverName: 'Tom Garcia', locationInventory: '11 Items', shippingInventory: '8 Items', status: 'Ready To Ship', selected: false },
+    //   { id: 8, locationName: 'Metro Health Center', locationAddress: 'Address Not Available', driverName: 'Not Assigned', locationInventory: '7 Items', shippingInventory: '5 Items', status: 'Follow up', selected: false },
+    //   { id: 9, locationName: 'Community Clinic', locationAddress: '555 Willow St, Dallas, TX 75201', driverName: 'Not Assigned', locationInventory: '3 Items', shippingInventory: '1 Item', status: 'Follow up', selected: false },
+    //   { id: 10, locationName: 'Bay Area Medical', locationAddress: '777 Poplar Ave, Miami, FL 33101', driverName: 'Not Assigned', locationInventory: '6 Items', shippingInventory: '4 Items', status: 'Pending', selected: false }
+    // ];
 
     // Initialize with assigned locations by default
     this.locationViewType = 'assigned';
-    this.customers = this.assignedLocations;
+    this.customers = this.driverLocations;
     this.updateAllSelectedState();
     this.showLocationModal = true;
   }
@@ -372,31 +379,23 @@ export class RouteDetailComponent implements OnInit {
   createLocation() {
     // Handle create location logic here
     console.log('Selected customers:', this.selectedCustomers);
-    
-    // Add selected customers as new routes to the main table
-    if (this.selectedCustomers.length > 0) {
-      const currentData = this.dataSource.data;
-      const newRoutes: routeDetail[] = this.selectedCustomers.map((customer, index) => ({
-        stop: `Stop ${currentData.length + index + 1}`,
+    const selectedCustomers = this.selectedCustomers;
+    this.dataSource.data = []; // Ensure data source is updated
+    this.allLocations.filter(x => x.selected).forEach((customer, index) => {
+      const newStop: routeDetail = {
+        stop: `Stop ${this.dataSource.data.length + index + 1}`,
         deliveryDate: new Date().toISOString().split('T')[0],
-        location: customer.locationAddress,
+        locationName: customer.locationName,
         inventoryItem: customer.locationInventory,
         shippingItem: customer.shippingInventory,
         distance: '0 Miles', // Will be calculated
         travelTime: '0 hr', // Will be calculated
         deliveryTime: 'TBD',
-        status: customer.status
-      }));
-      
-      // Update data source with new routes
-      this.dataSource.data = [...currentData, ...newRoutes];
-      this.updatePagination();
-      // Mark that route has changes and update button states
-      this.hasRouteChanges = true;
-      this.updateButtonStates();
-      
-      console.log('Added new routes:', newRoutes);
-    }
+      };
+          
+      this.dataSource.data.push(newStop);
+    });
+    this.selectedCustomers = [];
     
     this.closeLocationModal();
   }
@@ -540,14 +539,14 @@ export class RouteDetailComponent implements OnInit {
     // For the first row (index 0), show distance from starting point to Stop 1
     if (currentIndex === 0) {
       const distance = currentRoute.distance || 'N/A';
-      return `Distance from ${this.startPoint} to ${this.truncateLocation(currentRoute.location)}: ${distance}`;
+      return `Distance from ${this.startPoint} to ${this.truncateLocation(currentRoute.locationName)}: ${distance}`;
     }
     // For middle rows, show distance from current stop to next stop
     else if (currentIndex > 0) {
       const fromRoute = currentData[currentIndex - 1]
       const nextRoute = currentData[currentIndex];
       const distance = currentRoute.distance || 'N/A';
-      return `Distance from ${this.truncateLocation(fromRoute.location)} to ${this.truncateLocation(nextRoute.location)}: ${distance}`;
+      return `Distance from ${this.truncateLocation(fromRoute.locationName)} to ${this.truncateLocation(nextRoute.locationName)}: ${distance}`;
     } 
     // // For the last row, show it's the final destination
     // else if (currentIndex === currentData.length - 1) {
@@ -555,7 +554,7 @@ export class RouteDetailComponent implements OnInit {
     // }
     
     const distance = currentRoute.distance || 'Unknown distance';
-    return `Current location: ${this.truncateLocation(currentRoute.location)} - Distance: ${distance}`;
+    return `Current location: ${this.truncateLocation(currentRoute.locationName)} - Distance: ${distance}`;
   }
 
   private truncateLocation(location: string): string {
@@ -621,6 +620,8 @@ export class RouteDetailComponent implements OnInit {
     const currentData = this.dataSource.data;
     const updatedData = currentData.filter(r => r.stop !== route.stop);
     this.dataSource.data = updatedData;
+    this.driverLocations.map(loc => loc.selected = this.dataSource.data.find(stop => stop.id === loc.id) ? true : false);
+    this.allLocations.map(loc => loc.selected = this.dataSource.data.find(stop => stop.id === loc.id) ? true : false);
     this.updatePagination();
     // Update button states
     this.hasRouteChanges = true;
@@ -678,7 +679,7 @@ export class RouteDetailComponent implements OnInit {
       this.routeDetail = routeStops.map((stop, index) => ({
         stop: `Stop ${index + 1}`,
         deliveryDate: new Date().toISOString().split('T')[0], // Current date
-        location: stop.location,
+        locationName: stop.locationName,
         inventoryItem: stop.locationInventory || '0 Items',
         shippingItem: stop.shippingInventory || '0 Items',
         distance: stop.distance || '0 Miles',
@@ -727,6 +728,30 @@ export class RouteDetailComponent implements OnInit {
   updatePagination() {
     const computedOptions = computePageSizeOptions(this.dataSource.data.length);
     this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
+  }
+
+  loadLocationsDetails(): void {
+    this.locationService.getLocationsDetails().subscribe({
+      next: (apiLocations: any[]) => {
+        apiLocations.map(loc => loc.locationAddress = loc.addressLine1);
+        apiLocations.map(loc => loc.driverName = loc.userName);
+        apiLocations.map(x => x.shippingInventoryData = x.transferItems);
+        apiLocations.map(x => x.shippingInventory = `${x.transferItems.length} Items`);
+        this.driverLocations = apiLocations.filter(x => x.userName == this.routeCreationData.selectedDriver);
+        this.allLocations = apiLocations;
+        this.driverLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.id === loc.id) ? true : false);
+        this.allLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.id === loc.id) ? true : false);
+        // this.dataSource.data = this.locations;
+        // const computedOptions = computePageSizeOptions(this.dataSource.data.length);
+        // this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
+        // this.isLoading = false;
+      },
+      error: (error: any) => {
+        console.error('Error loading locations:', error);
+        // this.errorMessage = 'Failed to load locations. Please try again.';
+        // this.isLoading = false;
+      }
+    });
   }
 }
 
