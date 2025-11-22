@@ -160,11 +160,10 @@ export class RouteDetailComponent implements OnInit {
     // Check if data was passed from navigation using history.state
     const state = history.state;
     console.log('Navigation state:', state);
-    
+    this.routeCreationData = state.routeData || {};
     // Check if data comes from create-route (selectedLocations)
     if (state.routeData['selectedDriver']) {
       this.selectedLocations = state.selectedLocations || [];
-      this.routeCreationData = state.routeData || {};
       this.selectedLocations.map(location => location.travelTime = '1 hr');
       console.log('Received selected locations:', this.selectedLocations);
       console.log('Received route data:', this.routeCreationData);
@@ -198,7 +197,8 @@ export class RouteDetailComponent implements OnInit {
       // this.dataSource.data = this.routeDetail;
       this.updatePagination();
     }
-    
+    this.driverName = this.routeCreationData.selectedDriver || this.routeCreationData.driverName || '';
+    this.deliveryDate = this.routeCreationData.selectedDate || this.routeCreationData.shippingDate || new Date().toISOString().slice(0, 10).split('-').reverse().join('-');
     // Initialize button states
     this.initializeButtonStates();
     this.loadLocationsDetails();
