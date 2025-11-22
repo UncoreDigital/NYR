@@ -121,8 +121,8 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
     this.routeStops = state.selectedLocations;
     //Temp Solution to get route data from state
     this.getInventoryobyLocation();
-    this.routeStops.map(stop => stop.locationInventory = "2 Items");
-    this.routeStops.map(stop => stop.shippingInventory = "2 Items");
+    // this.routeStops.map(stop => stop.locationInventory = "2 Items");
+    // this.routeStops.map(stop => stop.shippingInventory = "2 Items");
 
      if (state.routeData['selectedDriver']) {
         this.routeData = {
@@ -186,7 +186,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
       this.transferInventoryService.getTransferItemsByLocationId(stop.id || 0).subscribe({
         next: (items) => {
           console.log('Inventory items for location', stop.locationName, items);
-          const updated = { ...this.routeStops[index], locationInventory: `${items.length} Items`, locationInventoryData: items };
+          const updated = { ...this.routeStops[index], locationInventory: `0 Items`, locationInventoryData: items, shippingInventory: `${items.length} Items` };
           this.routeStops = [
             ...this.routeStops!.slice(0, index),
             updated,

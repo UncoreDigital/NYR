@@ -18,8 +18,12 @@ export interface routeDetail {
   stop: string;
   deliveryDate: string;
   locationName: string;
-  inventoryItem: string;
-  shippingItem: string;
+  // inventoryItem: string;
+  // shippingItem: string;
+  locationInventory?: string;
+  locationInventoryData?: any[];
+  shippingInventory?: string;
+  shippingInventoryData?: any[];
   travelTime?: string;
   deliveryTime?: string;
   distance?: string;
@@ -43,7 +47,9 @@ export interface Customer {
   locationAddress: string;
   driverName: string;
   locationInventory: string;
+  locationInventoryData?: any[];
   shippingInventory: string;
+  shippingInventoryData?: any[];
   status: string;
   selected: boolean;
 }
@@ -54,7 +60,7 @@ export interface Customer {
   styleUrl: './route-detail.component.css'
 })
 export class RouteDetailComponent implements OnInit {
-  baseColumns: string[] = ['stop', 'location', 'inventoryItem', 'shippingItem', 'distance', 'travelTime', 'deliveryTime'];
+  baseColumns: string[] = ['stop', 'location', 'locationInventory', 'shippingInventory', 'distance', 'travelTime', 'deliveryTime'];
   dataSource = new MatTableDataSource<routeDetail>();
 
   // Dynamic displayedColumns getter
@@ -181,13 +187,13 @@ export class RouteDetailComponent implements OnInit {
       console.log('Is from not started route:', this.isFromNotStartedRoute);
       
       // Use default data but update with received route info
-      this.dataSource.data = this.routeDetail;
+      // this.dataSource.data = this.routeDetail;
       this.updatePagination();
     } 
     else {
       // Fallback to default data if no navigation state
       console.log('No navigation state found, using default data');
-      this.dataSource.data = this.routeDetail;
+      // this.dataSource.data = this.routeDetail;
       this.updatePagination();
     }
     
@@ -211,15 +217,15 @@ export class RouteDetailComponent implements OnInit {
         stop: `Stop ${index + 1}`,
         deliveryDate: location.shippingDate || this.routeCreationData.selectedDate || '2023-10-01',
         locationName: location.locationName,
-        inventoryItem: '2 Items', // Default value - could be calculated based on location data
-        shippingItem: '2 Items',   // Default value - could be calculated based on location data
+        locationInventory: '0 Items', // Default value - could be calculated based on location data
+        shippingInventory: '0 Items',   // Default value - could be calculated based on location data
         travelTime: location.travelTime || '1 hr',
         deliveryTime: '12 PM',     // Default value - could be calculated based on location data
         distance: location.distance || `${(index + 1) * 3 + Math.floor(Math.random() * 5)} Miles`, // Generate realistic distances
         status: location.status || 'Not Started' // Default status for new routes
       }));
       
-      this.dataSource.data = convertedData;
+      // this.dataSource.data = convertedData;
       this.updatePagination();
       
       // Update route summary based on selected locations
@@ -227,7 +233,7 @@ export class RouteDetailComponent implements OnInit {
       this.totalDistance = `${this.selectedLocations.length * 5} Miles`; // Estimated
       this.totalTime = `${this.selectedLocations.length * 0.5} Hrs`;     // Estimated
     } else {
-      this.dataSource.data = this.routeDetail;
+      // this.dataSource.data = this.routeDetail;
       this.updatePagination();
     }
   }
@@ -244,26 +250,7 @@ export class RouteDetailComponent implements OnInit {
 
   openInventoryModal(route: routeDetail) {
     // Sample product data - in real app, this would come from API
-    this.productDetails = [
-      {
-        productName: 'Pneumatic Walking Boot',
-        skuCode: 'MD-001',
-        size: 'L',
-        side: 'Universal',
-        colour: 'Black',
-        quantity: 10,
-        inStock: 25
-      },
-      {
-        productName: 'Pneumatic Walking Boot',
-        skuCode: 'MD-001',
-        size: 'L',
-        side: 'Universal',
-        colour: 'Black',
-        quantity: 10,
-        inStock: 25
-      }
-    ];
+    this.productDetails = [];
     this.modalTitle = 'Inventory Items';
     this.isModalFromLocationPopup = false; // Ensure flag is false for regular modals
     this.showModal = true;
@@ -272,30 +259,11 @@ export class RouteDetailComponent implements OnInit {
 
   openShippingModal(route: routeDetail) {
     // Sample product data for shipping items - in real app, this would come from API
-    this.productDetails = [
-      {
-        productName: 'Pneumatic Walking Boot',
-        skuCode: 'MD-001',
-        size: 'L',
-        side: 'Universal',
-        colour: 'Black',
-        quantity: 10,
-        inStock: 25
-      },
-      {
-        productName: 'Pneumatic Walking Boot',
-        skuCode: 'MD-001',
-        size: 'L',
-        side: 'Universal',
-        colour: 'Black',
-        quantity: 10,
-        inStock: 25
-      }
-    ];
+    this.productDetails = route.shippingInventoryData || [];
     this.modalTitle = 'Shipping Items';
     this.isModalFromLocationPopup = false; // Ensure flag is false for regular modals
     this.showModal = true;
-    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
+    this.productDisplayedColumns = ['productName', 'skuCode', 'variationType', 'variationValue', 'quantity', 'inStock'];
   }
 
   closeModal() {
@@ -386,8 +354,10 @@ export class RouteDetailComponent implements OnInit {
         stop: `Stop ${this.dataSource.data.length + index + 1}`,
         deliveryDate: new Date().toISOString().split('T')[0],
         locationName: customer.locationName,
-        inventoryItem: customer.locationInventory,
-        shippingItem: customer.shippingInventory,
+        locationInventory: customer.locationInventory || `0 Items`,
+        locationInventoryData: customer.locationInventoryData || [],
+        shippingInventoryData: customer.shippingInventoryData || [],
+        shippingInventory: customer.shippingInventory || `0 Items`,
         distance: '0 Miles', // Will be calculated
         travelTime: '0 hr', // Will be calculated
         deliveryTime: 'TBD',
@@ -417,35 +387,7 @@ export class RouteDetailComponent implements OnInit {
     event.stopPropagation(); // Prevent row selection toggle
     
     // Sample product data for location inventory - in real app, this would come from API based on customer.id
-    this.productDetails = [
-      {
-        productName: 'Pneumatic Walking Boot',
-        skuCode: 'MD-001',
-        size: 'L',
-        side: 'Universal',
-        colour: 'Black',
-        quantity: 8,
-        inStock: 15
-      },
-      {
-        productName: 'Compression Sleeve',
-        skuCode: 'MD-002',
-        size: 'M',
-        side: 'Left',
-        colour: 'Blue',
-        quantity: 12,
-        inStock: 20
-      },
-      {
-        productName: 'Knee Support Brace',
-        skuCode: 'MD-003',
-        size: 'XL',
-        side: 'Right',
-        colour: 'Black',
-        quantity: 6,
-        inStock: 10
-      }
-    ];
+    this.productDetails = [];
     this.modalTitle = `Location Inventory - ${customer.locationName}`;
     this.isModalFromLocationPopup = true; // Set flag for higher z-index
     this.showModal = true;
@@ -680,12 +622,14 @@ export class RouteDetailComponent implements OnInit {
         stop: `Stop ${index + 1}`,
         deliveryDate: new Date().toISOString().split('T')[0], // Current date
         locationName: stop.locationName,
-        inventoryItem: stop.locationInventory || '0 Items',
-        shippingItem: stop.shippingInventory || '0 Items',
+        locationInventory: stop.locationInventory || '0 Items',
+        locationInventoryData: [],
+        shippingInventoryData: stop.locationInventoryData || [],
+        shippingInventory: stop.shippingInventory || '0 Items',
         distance: stop.distance || '0 Miles',
         travelTime: '1 hr', // Default travel time
         deliveryTime: stop.eta || 'N/A',
-        status: this.mapRouteStatusToTableStatus(stop.status)
+        status: this.mapRouteStatusToTableStatus(stop.status),
       }));
       
       // Update the data source for the table
@@ -740,6 +684,8 @@ export class RouteDetailComponent implements OnInit {
         this.driverLocations = apiLocations.filter(x => x.userName == this.routeCreationData.selectedDriver);
         this.allLocations = apiLocations;
         this.driverLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.id === loc.id) ? true : false);
+        this.driverLocations.map(loc => loc.shippingInventoryData = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData : []);
+        this.driverLocations.map(loc => loc.shippingInventory = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData.length + ' Items' : '0 Items');
         this.allLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.id === loc.id) ? true : false);
         // this.dataSource.data = this.locations;
         // const computedOptions = computePageSizeOptions(this.dataSource.data.length);
