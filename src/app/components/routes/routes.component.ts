@@ -3,6 +3,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
+import { RouteService } from 'src/app/services/route.service';
 import { computePageSizeOptions } from '../../utils/paginator-utils';
 
 export interface Routes {
@@ -15,7 +16,7 @@ export interface Routes {
 @Component({
   selector: 'app-routes',
   templateUrl: './routes.component.html',
-  styleUrl: './routes.component.css'
+  styleUrls: ['./routes.component.css']
 })
 export class RoutesComponent implements OnInit {
   displayedColumns: string[] = ['driverName', 'totalStops', 'shippingDate', 'status', 'details'];
@@ -38,38 +39,7 @@ export class RoutesComponent implements OnInit {
     }
   }
 
-  routes: Routes[] = [
-    { driverName: 'John Doe', totalStops: '5', shippingDate: '2023-10-01', status: 'In Progress' },
-    { driverName: 'Jane Smith', totalStops: '3', shippingDate: '2023-10-02', status: 'Completed' },
-    { driverName: 'Mike Johnson', totalStops: '4', shippingDate: '2023-10-03', status: 'Not Started' },
-    { driverName: 'Emily Davis', totalStops: '6', shippingDate: '2023-10-04', status: 'Draft' },
-    { driverName: 'David Wilson', totalStops: '2', shippingDate: '2023-10-05', status: 'Completed' },
-    { driverName: 'Sarah Brown', totalStops: '7', shippingDate: '2023-10-06', status: 'Not Started' },
-    { driverName: 'Chris Lee', totalStops: '5', shippingDate: '2023-10-07', status: 'In Progress' },
-    { driverName: 'Anna White', totalStops: '4', shippingDate: '2023-10-08', status: 'Completed' },
-    { driverName: 'Tom Harris', totalStops: '3', shippingDate: '2023-10-09', status: 'Not Started' },
-    { driverName: 'Laura Martin', totalStops: '6', shippingDate: '2023-10-10', status: 'In Progress' },
-    { driverName: 'James Clark', totalStops: '2', shippingDate: '2023-10-11', status: 'Completed' },
-    { driverName: 'Olivia Lewis', totalStops: '5', shippingDate: '2023-10-12', status: 'Not Started' },
-    { driverName: 'Ethan Walker', totalStops: '4', shippingDate: '2023-10-13', status: 'Draft' },
-    { driverName: 'Sophia Hall', totalStops: '3', shippingDate: '2023-10-14', status: 'In Progress' },
-    { driverName: 'Liam Allen', totalStops: '7', shippingDate: '2023-10-15', status: 'Completed' },
-    { driverName: 'Noah Young', totalStops: '2', shippingDate: '2023-10-16', status: 'Draft'},
-    { driverName: 'Ava King', totalStops: '4', shippingDate: '2023-10-17', status: 'In Progress' },
-    { driverName: 'William Scott', totalStops: '5', shippingDate: '2023-10-18', status: 'Completed' },
-    { driverName: 'Mia Green', totalStops: '3', shippingDate: '2023-10-19', status: 'Not Started' },
-    { driverName: 'James Baker', totalStops: '6', shippingDate: '2023-10-20', status: 'Draft' },
-    { driverName: 'Ella Turner', totalStops: '4', shippingDate: '2023-10-21', status: 'In Progress' },
-    { driverName: 'Ethan Walker', totalStops: '4', shippingDate: '2023-10-13', status: 'Draft' },
-    { driverName: 'Sophia Hall', totalStops: '3', shippingDate: '2023-10-14', status: 'In Progress' },
-    { driverName: 'Liam Allen', totalStops: '7', shippingDate: '2023-10-15', status: 'Completed' },
-    { driverName: 'Noah Young', totalStops: '2', shippingDate: '2023-10-16', status: 'Draft'},
-    { driverName: 'Ava King', totalStops: '4', shippingDate: '2023-10-17', status: 'In Progress' },
-    { driverName: 'William Scott', totalStops: '5', shippingDate: '2023-10-18', status: 'Completed' },
-    { driverName: 'Mia Green', totalStops: '3', shippingDate: '2023-10-19', status: 'Not Started' },
-    { driverName: 'James Baker', totalStops: '6', shippingDate: '2023-10-20', status: 'Draft' },
-    { driverName: 'Ella Turner', totalStops: '4', shippingDate: '2023-10-21', status: 'In Progress' },
-  ];
+  routes: Routes[] = [];
 
   filteredRoutes: Routes[] = [];
   selectedDriver = '';
@@ -78,11 +48,30 @@ export class RoutesComponent implements OnInit {
   // Paginator page size options (computed based on data length)
   pageSizeOptions: number[] = [25, 50, 75, 100];
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private routeService: RouteService) { }
 
   ngOnInit(): void {
-    this.filteredRoutes = [...this.routes];
-    this.applyFilters();
+    // Load routes from API. If API fails, keep an empty list to allow local filters to work.
+    this.routeService.getRoutes().subscribe({
+      next: (res: any[]) => {
+        // Map backend response to the local Routes model if necessary
+        this.routes = res.map(r => ({
+          driverName: r.driverName ?? r.userName ?? r.driver ?? '',
+          totalStops: (r.routeStops?.length || 0).toString(),
+          shippingDate: r.deliveryDate ? new Date(r.deliveryDate).toISOString().slice(0, 10).split('-').reverse().join('-') : '',
+          status: r.status ?? r.routeStatus ?? '',
+          routeStops: r.routeStops || []
+        }));
+        this.filteredRoutes = [...this.routes];
+        this.applyFilters();
+      },
+      error: (err) => {
+        console.error('Failed to load routes from API:', err);
+        // fallback: keep routes empty so UI remains functional
+        this.filteredRoutes = [...this.routes];
+        this.applyFilters();
+      }
+    });
   }
 
   applyFilter(event: Event) {
@@ -164,7 +153,8 @@ export class RoutesComponent implements OnInit {
         driverName: route.driverName,
         totalStops: route.totalStops,
         shippingDate: route.shippingDate,
-        status: route.status
+        status: route.status,
+        routeStops: (route as any).routeStops || []
       }
     });
   }

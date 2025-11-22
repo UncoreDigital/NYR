@@ -214,7 +214,8 @@ export class CreateRouteComponent implements OnInit {
         routeData: {
           selectedDate: this.selectedDate,
           selectedDriver: this.selectedDriverName,
-          totalLocations: this.dataSource.data.length
+          totalLocations: this.dataSource.data.length,
+          selectedDriverId: this.driverOptions.find(d => d.value === this.selectedDriverName)?.id
         }
       }
     });

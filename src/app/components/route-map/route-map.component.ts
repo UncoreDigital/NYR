@@ -118,17 +118,18 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     const state = history.state;
     console.log('Navigation state:', state);
-    this.routeStops = state.selectedLocations;
+    this.routeStops = state.selectedLocations || state.routeData?.routeStops || [];
     //Temp Solution to get route data from state
     this.getInventoryobyLocation();
     // this.routeStops.map(stop => stop.locationInventory = "2 Items");
     // this.routeStops.map(stop => stop.shippingInventory = "2 Items");
 
-     if (state.routeData['selectedDriver']) {
+     if (state.routeData['selectedDriver'] || state.routeData?.routeStops) {
         this.routeData = {
           driverName: state.routeData['selectedDriver'],
           totalStops: state.routeData['totalLocations'],
           shippingDate: state.routeData['selectedDate'],
+          driverid: state.routeData['selectedDriverId'],
           // status: params['status']
         };
         // Check if this is a draft route

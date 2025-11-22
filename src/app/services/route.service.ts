@@ -14,4 +14,8 @@ export class RouteService {
   createRoute(payload: any): Observable<any> {
     return this.http.post<any>(`${this.API_URL}/Routes`, payload);
   }
+  
+  getRoutes(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/Routes`);
+  }
 }

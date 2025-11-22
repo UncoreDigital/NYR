@@ -154,7 +154,7 @@ export class RouteDetailComponent implements OnInit {
   approveRouteDisabled: boolean = false;
   recalculateRouteDisabled: boolean = false;
   
-  constructor(private router: Router, private location: Location, private locationService: LocationService, private authService: AuthService, private routeService: RouteService) { }
+  constructor(private router: Router, private location: Location, private locationService: LocationService, private routeService: RouteService) { }
 
   ngOnInit(): void {
     // Check if data was passed from navigation using history.state
@@ -449,7 +449,6 @@ export class RouteDetailComponent implements OnInit {
     if (this.currentView === 'map' && this.routeMapComponent) {
       this.syncWithRouteMapData(this.routeMapComponent.routeStops);
     }
-    const currentUser = this.authService.getCurrentUser();
     let routes: any[] = [];
     this.dataSource.data.forEach(route => {
       let matchedData: any = this.allLocations.find(loc => route.id == loc.id);
@@ -464,7 +463,7 @@ export class RouteDetailComponent implements OnInit {
       });
     });
     const payload: any = {
-      userId: this.authService.getCurrentUser()?.id,
+      userId: this.routeCreationData.selectedDriverId || 0,
       deliveryDate: new Date(this.deliveryDate).toISOString(),
       routeStops: routes,
     }
