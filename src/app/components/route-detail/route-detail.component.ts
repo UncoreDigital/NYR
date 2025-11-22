@@ -13,6 +13,8 @@ import { Location } from '@angular/common';
 import { RouteMapComponent } from '../route-map/route-map.component';
 import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 import { LocationService } from 'src/app/services/location.service';
+import { AuthService } from 'src/app/services/auth.service';
+import { RouteService } from 'src/app/services/route.service';
 
 export interface routeDetail {
   stop: string;
@@ -152,7 +154,7 @@ export class RouteDetailComponent implements OnInit {
   approveRouteDisabled: boolean = false;
   recalculateRouteDisabled: boolean = false;
   
-  constructor(private router: Router, private location: Location, private locationService: LocationService) { }
+  constructor(private router: Router, private location: Location, private locationService: LocationService, private authService: AuthService, private routeService: RouteService) { }
 
   ngOnInit(): void {
     // Check if data was passed from navigation using history.state
@@ -361,6 +363,7 @@ export class RouteDetailComponent implements OnInit {
         distance: '0 Miles', // Will be calculated
         travelTime: '0 hr', // Will be calculated
         deliveryTime: 'TBD',
+        id: customer.id
       };
           
       this.dataSource.data.push(newStop);
@@ -446,11 +449,51 @@ export class RouteDetailComponent implements OnInit {
     if (this.currentView === 'map' && this.routeMapComponent) {
       this.syncWithRouteMapData(this.routeMapComponent.routeStops);
     }
+    const currentUser = this.authService.getCurrentUser();
+    let routes: any[] = [];
+    this.dataSource.data.forEach(route => {
+      let matchedData: any = this.allLocations.find(loc => route.id == loc.id);
+      let address = matchedData ? matchedData.addressLine1 + ', ' + matchedData.addressLine2 + ', ' + matchedData.state + ' ' + matchedData.zipCode : '';
+      routes.push({
+        locationId: route.id,
+        stopOrder: Number(route.stop.replace('Stop ', '').trim()),
+        address: address,
+        customerId: matchedData ? matchedData.customerId : '',
+        contactPhone: matchedData ? (matchedData?.contactPhone ? matchedData.contactPhone : (matchedData.locationPhone || '')) : '',
+        notes: ''
+      });
+    });
+    const payload: any = {
+      userId: this.authService.getCurrentUser()?.id,
+      deliveryDate: new Date(this.deliveryDate).toISOString(),
+      routeStops: routes,
+    }
 
-    // Handle route approval logic here
-    this.router.navigate(['/routes']);
-    this.closeApprovalModal();
-    // You can add additional logic like showing a success message or updating the route status
+    // Call API to create route
+    this.routeService.createRoute(payload).subscribe({
+      next: (res: any) => {
+        // On success, navigate to route-detail (or routes list) with created info
+        // console.log('Route created successfully', res);
+        // this.router.navigate(['/route-detail'], {
+        //   state: {
+        //     selectedLocations: this.dataSource.data,
+        //     routeData: {
+        //       selectedDate: this.selectedDate,
+        //       selectedDriver: this.selectedDriverName,
+        //       totalLocations: this.dataSource.data.length,
+        //       apiResponse: res
+        //     }
+        //   }
+        // });
+        // Handle route approval logic here
+        this.router.navigate(['/routes']);
+        this.closeApprovalModal();
+      },
+      error: (err: any) => {
+        console.error('Error creating route:', err);
+        alert('Failed to create route. Please try again.');
+      }
+    });
   }
 
   rejectApproval() {
@@ -630,6 +673,7 @@ export class RouteDetailComponent implements OnInit {
         travelTime: '1 hr', // Default travel time
         deliveryTime: stop.eta || 'N/A',
         status: this.mapRouteStatusToTableStatus(stop.status),
+        id: stop.id
       }));
       
       // Update the data source for the table
