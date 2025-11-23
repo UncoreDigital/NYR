@@ -4,8 +4,12 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
+import { VanInventoryService } from 'src/app/services/van-inventory.service';
+import { TransferTrackingResponse } from 'src/app/models/van-inventory.model';
+import { ToastService } from 'src/app/services/toast.service';
 
 export interface Transfers {
+  id: number;
   locationName: string;
   customerName: string;
   deliveryDate: string;
@@ -40,17 +44,7 @@ export class TransfersComponent implements OnInit {
   }
   pageSizeOptions: number[] = [25, 50, 75, 100];
 
-  transfers: Transfers[] = [
-    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '17 Jun 2025', driver: 'Nick Danil', status: 'delivered' },
-    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '17 Jun 2025', driver: 'Nick Danil', status: 'delivered' },
-    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '17 Jun 2025', driver: 'Nick Danil', status: 'in-transit' },
-    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'follow-up-requested' },
-    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'follow-up-completed' },
-    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'follow-up-completed' },
-    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'driver-assigned' },
-    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'delivered' },
-    { locationName: 'Greenway Medical', customerName: 'John deo', deliveryDate: '-', driver: 'Nick Danil', status: 'in-transit' },
-  ];
+  transfers: Transfers[] = [];
   
   // Filter properties
   filteredTransfers: Transfers[] = [];
@@ -59,6 +53,7 @@ export class TransfersComponent implements OnInit {
   searchTerm = '';
   
   showFollowUpModal: boolean = false;
+  isLoading: boolean = false;
 
   // Location dropdown properties
   locationSearchTerm: string = '';
@@ -74,11 +69,56 @@ export class TransfersComponent implements OnInit {
     { value: 'australia-medical', name: 'Australia - Medical Center' }
   ];
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private vanInventoryService: VanInventoryService,
+    private toastService: ToastService
+  ) { }
 
   ngOnInit(): void {
-    this.filteredTransfers = [...this.transfers];
-    this.applyFilters();
+    this.loadTransfers();
+  }
+
+  loadTransfers(): void {
+    this.isLoading = true;
+    this.vanInventoryService.getAllTransfersTracking().subscribe({
+      next: (response: TransferTrackingResponse[]) => {
+        this.transfers = response.map(transfer => ({
+          id: transfer.id,
+          locationName: transfer.locationName,
+          customerName: transfer.customerName,
+          deliveryDate: transfer.deliveryDate ? this.formatDate(transfer.deliveryDate) : '-',
+          driver: transfer.driverName || '-',
+          status: this.mapStatusFromApi(transfer.status)
+        }));
+        this.filteredTransfers = [...this.transfers];
+        this.applyFilters();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading transfers:', error);
+        this.toastService.error('Error', 'Failed to load transfers');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short', year: 'numeric' };
+    return date.toLocaleDateString('en-GB', options);
+  }
+
+  mapStatusFromApi(status: string): string {
+    const statusMap: { [key: string]: string } = {
+      'Pending': 'pending',
+      'Driver Assigned': 'driver-assigned',
+      'In Transit': 'in-transit',
+      'Delivered': 'delivered',
+      'Followup Requested': 'follow-up-requested',
+      'Followup Completed': 'follow-up-completed'
+    };
+    return statusMap[status] || status.toLowerCase().replace(/\s+/g, '-');
   }
 
   applyFilter(event: Event) {
@@ -164,6 +204,7 @@ export class TransfersComponent implements OnInit {
   // Status methods
   getStatusDisplayText(status: string): string {
     const statusMap: { [key: string]: string } = {
+      'pending': 'Pending',
       'delivered': 'Delivered',
       'in-transit': 'In transit',
       'follow-up-requested': 'Follow up requested',
@@ -175,9 +216,11 @@ export class TransfersComponent implements OnInit {
 
   getStatusClass(status: string): string {
     const classMap: { [key: string]: string } = {
+      'pending': 'status-pending',
       'delivered': 'status-delivered',
       'in-transit': 'status-in-transit',
       'follow-up': 'status-follow-up',
+      'follow-up-requested': 'status-follow-up',
       'follow-up-completed': 'status-follow-up-completed',
       'driver-assigned': 'status-driver-assigned'
     };
@@ -186,9 +229,11 @@ export class TransfersComponent implements OnInit {
 
   getStatusIcon(status: string): string {
     const iconMap: { [key: string]: string } = {
+      'pending': '',
       'delivered': 'visibility',
       'in-transit': 'visibility',
       'follow-up': '',
+      'follow-up-requested': '',
       'follow-up-completed': 'chat_bubble',
       'driver-assigned': 'visibility'
     };

@@ -26,8 +26,35 @@ export interface VanInventoryResponse {
   driverName: string;
   locationId: number;
   locationName: string;
+  customerName: string;
   transferDate: string;
+  deliveryDate?: string;
+  status: string;
   items: VanInventoryItemResponse[];
+}
+
+export interface TransferTrackingResponse {
+  id: number;
+  vanId: number;
+  vanName: string;
+  vanNumber: string;
+  locationId: number;
+  locationName: string;
+  customerId: number;
+  customerName: string;
+  transferDate: string;
+  deliveryDate?: string;
+  driverName?: string;
+  status: string;
+  totalItems: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface UpdateTransferStatusRequest {
+  status: string;
+  deliveryDate?: string;
+  driverName?: string;
 }
 
 export interface CreateVanInventoryRequest {
