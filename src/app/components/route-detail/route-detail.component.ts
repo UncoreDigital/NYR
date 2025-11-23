@@ -2,18 +2,14 @@
 // Show Status Column when we click on Map from Route screen (If status is not completed then in all other case show the status in next screen)
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { RouteMapComponent } from '../route-map/route-map.component';
 import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 import { LocationService } from 'src/app/services/location.service';
-import { AuthService } from 'src/app/services/auth.service';
 import { RouteService } from 'src/app/services/route.service';
 
 export interface routeDetail {
@@ -121,12 +117,6 @@ export class RouteDetailComponent implements OnInit {
   @ViewChild(RouteMapComponent) routeMapComponent!: RouteMapComponent;
 
   routeDetail: routeDetail[] = [];
-  // [
-  //   { stop: 'Stop 1', deliveryDate: '2023-10-01', location: 'Howard University', inventoryItem: '2 Items', shippingItem: '2 Items', distance: '5.2 Miles', travelTime: '1 hr', deliveryTime: '10:00 AM', status: 'Pending' },
-  //   { stop: 'Stop 2', deliveryDate: '2023-10-02', location: 'Bryant Street', inventoryItem: '3 Items', shippingItem: '4 Items', distance: '12.8 Miles', travelTime: '2 hr', deliveryTime: '10:30 AM', status: 'In Progress' },
-  //   { stop: 'Stop 3', deliveryDate: '2023-10-03', location: 'District Vet', inventoryItem: '4 Items', shippingItem: '3 Items', distance: '8.3 Miles', travelTime: '0.5 hr', deliveryTime: '11:40 AM', status: 'Completed' },
-  //   { stop: 'Stop 4', deliveryDate: '2023-10-04', location: 'Medical Center', inventoryItem: '5 Items', shippingItem: '2 Items', distance: '15.7 Miles', travelTime: '3 hr', deliveryTime: '1:00 PM', status: 'Not Started' },
-  // ];
   showRouteDetail = false;
 
   // Route summary properties
@@ -286,28 +276,7 @@ export class RouteDetailComponent implements OnInit {
 
     // Sample assigned locations data - locations with assigned drivers
     this.assignedLocations = this.selectedLocations;
-    // [
-    //   { id: 1, locationName: 'Downtown Medical Center', locationAddress: '123 Main St, New York, NY 10001', driverName: 'John Smith', locationInventory: '5 Items', shippingInventory: '3 Items', status: 'Ready To Ship', selected: false },
-    //   { id: 2, locationName: 'West Side Clinic', locationAddress: '456 Oak Ave, Los Angeles, CA 90210', driverName: 'Jane Doe', locationInventory: '8 Items', shippingInventory: '6 Items', status: 'Ready To Ship', selected: false },
-    //   { id: 3, locationName: 'Central Hospital', locationAddress: '789 Pine Rd, Chicago, IL 60601', driverName: 'Mike Johnson', locationInventory: '12 Items', shippingInventory: '9 Items', status: 'Ready To Ship', selected: false },
-    //   { id: 4, locationName: 'South Medical Plaza', locationAddress: '321 Elm St, Houston, TX 77001', driverName: 'Sarah Wilson', locationInventory: '6 Items', shippingInventory: '4 Items', status: 'Ready To Ship', selected: false }
-    // ];
-
-    // Sample all locations data - includes both assigned and unassigned locations
-    // this.allLocations = [];
-    // [
-    //   { id: 1, locationName: 'Downtown Medical Center', locationAddress: '123 Main St, New York, NY 10001', driverName: 'John Smith', locationInventory: '5 Items', shippingInventory: '3 Items', status: 'Ready To Ship', selected: false },
-    //   { id: 2, locationName: 'West Side Clinic', locationAddress: '456 Oak Ave, Los Angeles, CA 90210', driverName: 'Jane Doe', locationInventory: '8 Items', shippingInventory: '6 Items', status: 'Ready To Ship', selected: false },
-    //   { id: 3, locationName: 'Central Hospital', locationAddress: '789 Pine Rd, Chicago, IL 60601', driverName: 'Mike Johnson', locationInventory: '12 Items', shippingInventory: '9 Items', status: 'Ready To Ship', selected: false },
-    //   { id: 4, locationName: 'South Medical Plaza', locationAddress: '321 Elm St, Houston, TX 77001', driverName: 'Sarah Wilson', locationInventory: '6 Items', shippingInventory: '4 Items', status: 'Ready To Ship', selected: false },
-    //   { id: 5, locationName: 'East Valley Clinic', locationAddress: '654 Maple Dr, Phoenix, AZ 85001', driverName: 'David Brown', locationInventory: '9 Items', shippingInventory: '7 Items', status: 'Ready To Ship', selected: false },
-    //   { id: 6, locationName: 'North Point Medical', locationAddress: '987 Cedar Ln, Philadelphia, PA 19101', driverName: 'Lisa Anderson', locationInventory: '4 Items', shippingInventory: '2 Items', status: 'Ready To Ship', selected: false },
-    //   { id: 7, locationName: 'Riverside Hospital', locationAddress: '147 Birch Way, San Antonio, TX 78201', driverName: 'Tom Garcia', locationInventory: '11 Items', shippingInventory: '8 Items', status: 'Ready To Ship', selected: false },
-    //   { id: 8, locationName: 'Metro Health Center', locationAddress: 'Address Not Available', driverName: 'Not Assigned', locationInventory: '7 Items', shippingInventory: '5 Items', status: 'Follow up', selected: false },
-    //   { id: 9, locationName: 'Community Clinic', locationAddress: '555 Willow St, Dallas, TX 75201', driverName: 'Not Assigned', locationInventory: '3 Items', shippingInventory: '1 Item', status: 'Follow up', selected: false },
-    //   { id: 10, locationName: 'Bay Area Medical', locationAddress: '777 Poplar Ave, Miami, FL 33101', driverName: 'Not Assigned', locationInventory: '6 Items', shippingInventory: '4 Items', status: 'Pending', selected: false }
-    // ];
-
+  
     // Initialize with assigned locations by default
     this.locationViewType = 'assigned';
     this.customers = this.driverLocations;
