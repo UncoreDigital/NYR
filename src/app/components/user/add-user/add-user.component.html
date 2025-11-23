@@ -66,7 +66,7 @@
                                     <div 
                                         class="dropdown-item" 
                                         *ngFor="let role of getFilteredRoles()"
-                                        (click)="selectRole(role)"
+                                        (mousedown)="selectRole(role)"
                                         [class.selected]="selectedRole?.id === role.id"
                                     >
                                         {{ role.name }}
@@ -106,7 +106,7 @@
                                     <div 
                                         class="dropdown-item" 
                                         *ngFor="let customer of getFilteredCustomers()"
-                                        (click)="selectCustomer(customer)"
+                                        (mousedown)="selectCustomer(customer)"
                                         [class.selected]="selectedCustomer?.id === customer.id"
                                     >
                                         {{ customer.companyName }}
@@ -150,7 +150,7 @@
                                     <div 
                                         class="dropdown-item" 
                                         *ngFor="let location of getFilteredLocations()"
-                                        (click)="selectLocation(location)"
+                                        (mousedown)="selectLocation(location)"
                                         [class.selected]="selectedLocation?.id === location.id"
                                     >
                                         {{ location.locationName }}
@@ -306,7 +306,7 @@
                                     <div 
                                         class="dropdown-item" 
                                         *ngFor="let option of getFilteredStartingPoints()"
-                                        (click)="selectStartingPoint(option)"
+                                        (mousedown)="selectStartingPoint(option)"
                                         [class.selected]="selectedStartingPoint?.id === option.id"
                                     >
                                         <div class="dropdown-item-content">

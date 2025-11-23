@@ -165,7 +165,7 @@
                                     <div 
                                         class="dropdown-item" 
                                         *ngFor="let category of getFilteredCategories()"
-                                        (click)="selectCategory(category)"
+                                        (mousedown)="selectCategory(category)"
                                         [class.selected]="selectedCategory?.id === category.id"
                                     >
                                         {{ category.name }}
@@ -207,7 +207,7 @@
                                     <div 
                                         class="dropdown-item" 
                                         *ngFor="let brand of getFilteredBrands()"
-                                        (click)="selectBrand(brand)"
+                                        (mousedown)="selectBrand(brand)"
                                         [class.selected]="selectedBrand?.id === brand.id"
                                     >
                                         {{ brand.name }}
@@ -252,7 +252,7 @@
                                     <div 
                                         class="dropdown-item supplier-item" 
                                         *ngFor="let supplier of getFilteredSuppliers()"
-                                        (click)="selectSupplier(supplier)"
+                                        (mousedown)="selectSupplier(supplier)"
                                         [class.selected]="selectedSupplier?.id === supplier.id"
                                     >
                                         <div class="supplier-main-info">
