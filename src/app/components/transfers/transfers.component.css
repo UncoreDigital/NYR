@@ -52,6 +52,12 @@
   border-color: #bdd7fd;
 }
 
+.status-pending {
+  background-color: #FEF3C7;
+  color: #D97706;
+  border-color: #FEF3C7;
+}
+
 .status-default {
   background-color: #E2E8F0;
   color: #4A5568;
@@ -97,4 +103,12 @@
 ::ng-deep .mdc-tooltip__surface-animation {
   background-color: #ecfdf5 !important;
   color: black !important;
+}
+/* L
+oading Spinner */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
 }

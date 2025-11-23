@@ -5,7 +5,9 @@ import {
   VanWithInventorySummaryResponse, 
   VanInventoryResponse, 
   VanInventoryItemResponse,
-  CreateVanInventoryRequest 
+  CreateVanInventoryRequest,
+  TransferTrackingResponse,
+  UpdateTransferStatusRequest
 } from '../models/van-inventory.model';
 import { environment } from 'environment';
 
@@ -39,5 +41,13 @@ export class VanInventoryService {
 
   deleteTransfer(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/VanInventory/${id}`);
+  }
+
+  getAllTransfersTracking(): Observable<TransferTrackingResponse[]> {
+    return this.http.get<TransferTrackingResponse[]>(`${this.API_URL}/VanInventory/tracking`);
+  }
+
+  updateTransferStatus(id: number, payload: UpdateTransferStatusRequest): Observable<TransferTrackingResponse> {
+    return this.http.patch<TransferTrackingResponse>(`${this.API_URL}/VanInventory/${id}/status`, payload);
   }
 }
