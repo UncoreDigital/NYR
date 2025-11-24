@@ -59,7 +59,8 @@ export interface UpdateTransferStatusRequest {
 
 export interface CreateVanInventoryRequest {
   vanId: number;
-  locationId: number;
+  warehouseId: number;
+  locationId?: number; // Optional for future phase
   items: CreateVanInventoryItemRequest[];
 }
 
