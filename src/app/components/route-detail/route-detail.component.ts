@@ -27,6 +27,7 @@ export interface routeDetail {
   distance?: string;
   status?: string;
   id?: number;
+  fullAddress?: string;
 }
 
 export interface ProductDetail {
@@ -50,6 +51,7 @@ export interface Customer {
   shippingInventoryData?: any[];
   status: string;
   selected: boolean;
+  fullAddress?: string;
 }
 
 @Component({
@@ -332,7 +334,8 @@ export class RouteDetailComponent implements OnInit {
         distance: '0 Miles', // Will be calculated
         travelTime: '0 hr', // Will be calculated
         deliveryTime: 'TBD',
-        id: customer.id
+        id: customer.id,
+        fullAddress: customer.fullAddress
       };
           
       this.dataSource.data.push(newStop);
@@ -589,14 +592,160 @@ export class RouteDetailComponent implements OnInit {
       this.syncWithRouteMapData(this.routeMapComponent.routeStops);
     }
 
-    // Disable recalculate button and enable create route
+    // Disable recalculate button while request is in-flight
     this.recalculateRouteDisabled = true;
     this.showRecalculateButton = false;
-    this.showCreateRouteButton = true;
+    this.showCreateRouteButton = false;
 
-    console.log('Route recalculated');
-    // Here you would typically call an API to recalculate the route
-    // For now, we'll just update the UI state
+    // Build payload for circuit computation based on current stops
+    const payload: any = {
+      userId: this.routeCreationData.selectedDriverId || null,
+      deliveryDate: this.deliveryDate ? new Date(this.deliveryDate).toISOString() : null,
+      routeStops: this.dataSource.data.map((stop, idx) => ({
+        locationId: stop.id,
+        stopOrder: idx + 1,
+        locationName: stop.locationName
+      }))
+    };
+
+    // Step 1: create a plan in Spoke
+    // const createPlanPayload = {
+    //   title: `Plan for ${this.driverName || 'driver'}`,
+    //   deliveryDate: payload.deliveryDate,
+    //   driverId: payload.userId,
+    //   stops: payload.routeStops.map((s: any, idx: number) => ({
+    //     locationId: s.locationId,
+    //     sequence: idx + 1,
+    //     address: s.locationName,
+    //     eta: null
+    //   }))
+    // };
+
+    // Step 1: create a plan in Spoke
+    const createPlanPayload = {
+      title: `Plan for ${this.driverName || 'driver'}`,
+      startDate: payload.deliveryDate,
+      month: new Date(payload.deliveryDate).getMonth() + 1,
+      year: new Date(payload.deliveryDate).getFullYear(),
+      driverIds: ["QOHOmwlwieBQMdYLKwmX"]
+    };
+    console.log('Creating plan in Spoke with payload:', createPlanPayload);
+
+    this.routeService.createPlan(createPlanPayload).subscribe({
+      next: (planRes: any) => {
+        console.log('CreatePlan response:', planRes);
+        const routeId = planRes?.routeId || planRes?.planId || planRes?.id || null;
+        if (!routeId) {
+          console.warn('CreatePlan did not return a routeId/planId');
+          alert('CreatePlan failed to return a route identifier. See console for details.');
+          this.recalculateRouteDisabled = false;
+          this.showRecalculateButton = true;
+          return;
+        }
+        
+        const routeStops = this.dataSource.data.map((stop, idx) => ({
+          "address": {
+            addressLineOne : this.allLocations.find(loc => loc.id === stop.id)?.fullAddress || "",
+          }
+        }));
+
+        // Step 2: import stops into the created Spoke route
+        
+        this.routeService.importStopsToRoute(routeId.replace("plans/", "").trim(), routeStops).subscribe({
+          next: (importRes: any) => {
+            console.log('ImportStops response:', importRes);
+
+            // Step 3: optimize the route by id on Spoke
+            console.log(`Optimizing route ${routeId} in Spoke`);
+            this.routeService.optimizeRouteById(routeId.replace("plans/", "").trim(), {}).subscribe({
+              next: (optRes: any) => {
+                console.log('OptimizeRouteById response:', optRes);
+
+                //Step 4: parse optimized stops and update UI
+                this.routeService.getStopDetails(routeId.replace("plans/", "").trim()).subscribe({
+                  next: (stopDetailsRes: any) => {
+                    console.log('StopDetails response:', stopDetailsRes);
+                  }
+                });
+                // Try to find optimized stops in response
+                // const stopsArray = Array.isArray(optRes?.optimizedStops) ? optRes.optimizedStops
+                //   : Array.isArray(optRes?.routeStops) ? optRes.routeStops
+                //   : Array.isArray(optRes?.stops) ? optRes.stops
+                //   : Array.isArray(optRes) ? optRes : null;
+
+                // if (stopsArray && Array.isArray(stopsArray)) {
+                //   const mapped = stopsArray.map((s: any, i: number) => ({
+                //     stop: `Stop ${i + 1}`,
+                //     deliveryDate: s.deliveryDate || this.deliveryDate || new Date().toISOString().split('T')[0],
+                //     locationName: s.locationName || s.address || s.customerName || `Location ${i + 1}`,
+                //     locationInventory: s.locationInventory || '0 Items',
+                //     locationInventoryData: s.locationInventoryData || s.items || [],
+                //     shippingInventoryData: s.shippingInventoryData || s.items || [],
+                //     shippingInventory: s.shippingInventory || (s.items ? `${s.items.length} Items` : '0 Items'),
+                //     distance: s.distance || s.driveDistance || '0 Miles',
+                //     travelTime: s.travelTime || s.driveTime || '0 hr',
+                //     deliveryTime: s.eta || s.deliveryTime || 'TBD',
+                //     status: this.mapRouteStatusToTableStatus(s.status || s.stage || ''),
+                //     id: s.locationId || s.id || null
+                //   }));
+
+                //   // Update table datasource and pagination
+                //   this.dataSource.data = mapped;
+                //   this.updatePagination();
+
+                //   // Update map component if available
+                //   if (this.routeMapComponent) {
+                //     try {
+                //       this.routeMapComponent.routeStops = mapped.map(m => ({
+                //         locationName: m.locationName,
+                //         eta: m.deliveryTime,
+                //         items: (m.locationInventoryData || []).length,
+                //         status: m.status && m.status.toLowerCase().includes('deliv') ? 'delivered' : 'pending',
+                //         distance: m.distance,
+                //         locationInventory: m.locationInventory,
+                //         shippingInventory: m.shippingInventory,
+                //         id: m.id
+                //       }));
+                //       this.routeMapComponent.routeDataChanged.emit(this.routeMapComponent.routeStops);
+                //     } catch (err) {
+                //       console.warn('Failed to update RouteMapComponent with optimized circuit', err);
+                //     }
+                //   }
+
+                //   this.hasRouteChanges = false;
+                //   this.updateButtonStates();
+                //   this.recalculateRouteDisabled = false;
+                //   this.showCreateRouteButton = true;
+                // } else {
+                //   console.warn('Optimize response did not include stops array:', optRes);
+                //   alert('Optimize returned unexpected response. Check console.');
+                //   this.recalculateRouteDisabled = false;
+                //   this.showRecalculateButton = true;
+                // }
+              },
+              error: (optErr: any) => {
+                console.error('Error optimizing route by id:', optErr);
+                alert('Failed to optimize route. See console for details.');
+                this.recalculateRouteDisabled = false;
+                this.showRecalculateButton = true;
+              }
+            });
+          },
+          error: (impErr: any) => {
+            console.error('Error importing stops to Spoke route:', impErr);
+            alert('Failed to import stops into Spoke. See console for details.');
+            this.recalculateRouteDisabled = false;
+            this.showRecalculateButton = true;
+          }
+        });
+      },
+      error: (planErr: any) => {
+        console.error('Failed to create plan in Spoke:', planErr);
+        alert('Failed to create plan in Spoke. See console for details.');
+        this.recalculateRouteDisabled = false;
+        this.showRecalculateButton = true;
+      }
+    });
   }
 
   createRoute() {
@@ -641,7 +790,8 @@ export class RouteDetailComponent implements OnInit {
         travelTime: '1 hr', // Default travel time
         deliveryTime: stop.eta || 'N/A',
         status: this.mapRouteStatusToTableStatus(stop.status),
-        id: stop.id
+        id: stop.id,
+        fullAddress: stop.fullAddress || ''
       }));
       
       // Update the data source for the table
@@ -693,6 +843,8 @@ export class RouteDetailComponent implements OnInit {
         apiLocations.map(loc => loc.driverName = loc.userName);
         apiLocations.map(x => x.shippingInventoryData = x.transferItems);
         apiLocations.map(x => x.shippingInventory = `${x.transferItems.length} Items`);
+        apiLocations.map(x => x.fullAddress = `${x.addressLine1}, ${x.addressLine2}, ${x.state} ${x.zipCode}`);
+
         this.driverLocations = apiLocations.filter(x => x.userName == this.routeCreationData.selectedDriver);
         this.allLocations = apiLocations;
         this.driverLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.id === loc.id) ? true : false);
