@@ -57,7 +57,46 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Select Van</label>
+                            <label>From Warehouse</label>
+                            <div class="custom-select-container">
+                                <div class="search-wrapper">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input type="text" 
+                                           class="search-input" 
+                                           [(ngModel)]="warehouseSearchTerm" 
+                                           [ngModelOptions]="{standalone: true}"
+                                           placeholder="Search and select warehouse..."
+                                           (focus)="showWarehouseDropdown = true"
+                                           (blur)="hideWarehouseDropdown()"
+                                           (input)="filterWarehouses()"
+                                           [disabled]="isLoadingWarehouses">
+                                    <button type="button" 
+                                            class="clear-button" 
+                                            *ngIf="selectedWarehouse"
+                                            (click)="clearWarehouse()"
+                                            title="Clear selection">
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showWarehouseDropdown && isLoadingWarehouses">
+                                    <div class="dropdown-item no-results">Loading warehouses...</div>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showWarehouseDropdown && !isLoadingWarehouses && getFilteredWarehouses().length > 0">
+                                    <div class="dropdown-item" 
+                                         *ngFor="let warehouse of getFilteredWarehouses()"
+                                         (mousedown)="selectWarehouse(warehouse)"
+                                         [class.selected]="selectedWarehouse?.value === warehouse.value">
+                                        {{warehouse.name}}
+                                    </div>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showWarehouseDropdown && !isLoadingWarehouses && getFilteredWarehouses().length === 0">
+                                    <div class="dropdown-item no-results">No warehouses found</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>To Van</label>
                             <div class="custom-select-container">
                                 <div class="search-wrapper">
                                     <mat-icon class="search-icon">search</mat-icon>
@@ -95,8 +134,11 @@
                             </div>
                         </div>
 
+                    </div>
+                    <!-- COMMENTED OUT FOR FUTURE PHASE: Delivery Location -->
+                    <!-- <div class="form-row">
                         <div class="form-group">
-                            <label>Select Location</label>
+                            <label>Delivery Location</label>
                             <div class="custom-select-container">
                                 <div class="search-wrapper">
                                     <mat-icon class="search-icon">search</mat-icon>
@@ -133,8 +175,7 @@
                                 </div>
                             </div>
                         </div>
-
-                    </div>
+                    </div> -->
                     <div class="form-row">
                         <div class="form-group">
                             <label>Select Product</label>
@@ -149,7 +190,7 @@
                                            (focus)="showProductDropdown = true"
                                            (blur)="hideProductDropdown()"
                                            (input)="filterProducts()"
-                                           [disabled]="isLoadingInventory || !selectedLocation">
+                                           [disabled]="isLoadingInventory || !selectedWarehouse">
                                     <button type="button" 
                                             class="clear-button" 
                                             *ngIf="selectedProduct"
@@ -171,7 +212,7 @@
                                 </div>
                                 <div class="dropdown-list" *ngIf="showProductDropdown && !isLoadingInventory && getFilteredProducts().length === 0">
                                     <div class="dropdown-item no-results">
-                                        {{selectedLocation ? 'No products found in this location' : 'Please select a location first'}}
+                                        {{selectedWarehouse ? 'No products found in this warehouse' : 'Please select a warehouse first'}}
                                     </div>
                                 </div>
                             </div>
@@ -189,7 +230,7 @@
 
                     <!-- Product Variations Section (Manual Mode) -->
                     <div class="variation-section" *ngIf="selectedTransferOption === 'manual' && selectedProduct && allVariations.length > 0">
-                        <h3>Product Variations - Available at Location</h3>
+                        <h3>Product Variations - Available at Warehouse</h3>
                         
                         <!-- Search Bar -->
                         <div class="search-container">
@@ -249,7 +290,7 @@
                     <!-- No Variations Message (Manual Mode) -->
                     <div class="no-product-message" *ngIf="selectedTransferOption === 'manual' && selectedProduct && allVariations.length === 0">
                         <mat-icon>info</mat-icon>
-                        <p>No inventory available for this product at the selected location.</p>
+                        <p>No inventory available for this product at the selected warehouse.</p>
                     </div>
 
                     <!-- Transfer Cart -->
@@ -296,7 +337,7 @@
                         <button type="submit" class="btn btn-primary" 
                                 [disabled]="isSaving || transferCart.length === 0 || selectedTransferOption === 'scan'">
                             <mat-spinner *ngIf="isSaving" diameter="16" style="display: inline-block; margin-right: 8px;"></mat-spinner>
-                            {{ isSaving ? 'Saving...' : 'Save Transfer' }}
+                            {{ isSaving ? 'Saving...' : 'Save' }}
                         </button>
                     </div>
                 </form>

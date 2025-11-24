@@ -3,7 +3,8 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { VanService } from '../../services/van.service';
 import { LocationService } from '../../services/location.service';
-import { TransferInventoryService } from '../../services/transfer-inventory.service';
+import { WarehouseService } from '../../services/warehouse.service';
+import { WarehouseInventoryService } from '../../services/warehouse-inventory.service';
 import { VanInventoryService } from '../../services/van-inventory.service';
 import { ToastService } from '../../services/toast.service';
 
@@ -27,24 +28,28 @@ export class TransferVanComponent implements OnInit {
 
   // Search terms for dropdowns
   vanSearchTerm: string = '';
+  warehouseSearchTerm: string = '';
   locationSearchTerm: string = '';
   productSearchTerm: string = '';
   
   // Dropdown visibility states
   showVanDropdown: boolean = false;
+  showWarehouseDropdown: boolean = false;
   showLocationDropdown: boolean = false;
   showProductDropdown: boolean = false;
   
   // Selected items
   selectedVan: any = null;
+  selectedWarehouse: any = null;
   selectedLocation: any = null;
   selectedProduct: any = null;
 
   // Data arrays for dropdowns
   vans: any[] = [];
+  warehouses: any[] = [];
   locations: any[] = [];
   products: any[] = [];
-  transferInventoryItems: any[] = [];
+  warehouseInventoryItems: any[] = [];
   allVariations: any[] = [];
   filteredVariations: any[] = [];
   transferCart: any[] = [];
@@ -53,6 +58,7 @@ export class TransferVanComponent implements OnInit {
   isLoading = false;
   isSaving = false;
   isLoadingVans = false;
+  isLoadingWarehouses = false;
   isLoadingLocations = false;
   isLoadingProducts = false;
   isLoadingInventory = false;
@@ -64,15 +70,17 @@ export class TransferVanComponent implements OnInit {
     private router: Router, 
     private route: ActivatedRoute,
     private vanService: VanService,
+    private warehouseService: WarehouseService,
+    private warehouseInventoryService: WarehouseInventoryService,
     private locationService: LocationService,
-    private transferInventoryService: TransferInventoryService,
     private vanInventoryService: VanInventoryService,
     private toastService: ToastService
   ) {
     this.selectedTransferOption = 'manual';
     this.vanForm = this.fb.group({
       van: ['', Validators.required],
-      location: ['', Validators.required],
+      warehouse: ['', Validators.required],
+      // location: ['', Validators.required], // COMMENTED OUT FOR FUTURE PHASE
       product: [''],
       quantity: [1, [Validators.required, Validators.min(1)]]
     });
@@ -88,8 +96,9 @@ export class TransferVanComponent implements OnInit {
       }
     });
     
+    this.loadWarehouses();
     this.loadVans();
-    this.loadLocations();
+    // this.loadLocations(); // COMMENTED OUT FOR FUTURE PHASE
   }
   
   loadVans(): void {
@@ -107,6 +116,25 @@ export class TransferVanComponent implements OnInit {
         console.error('Error loading vans:', error);
         this.toastService.error('Error', 'Failed to load vans');
         this.isLoadingVans = false;
+      }
+    });
+  }
+  
+  loadWarehouses(): void {
+    this.isLoadingWarehouses = true;
+    this.warehouseService.getWarehouses().subscribe({
+      next: (warehouses) => {
+        this.warehouses = warehouses.map(w => ({
+          value: w.id,
+          name: w.name,
+          id: w.id
+        }));
+        this.isLoadingWarehouses = false;
+      },
+      error: (error) => {
+        console.error('Error loading warehouses:', error);
+        this.toastService.error('Error', 'Failed to load warehouses');
+        this.isLoadingWarehouses = false;
       }
     });
   }
@@ -130,16 +158,16 @@ export class TransferVanComponent implements OnInit {
     });
   }
   
-  loadTransferInventoryByLocation(locationId: number): void {
+  loadWarehouseInventory(warehouseId: number): void {
     this.isLoadingInventory = true;
-    this.transferInventoryService.getTransferItemsByLocationId(locationId).subscribe({
+    this.warehouseInventoryService.getInventoryByWarehouse(warehouseId).subscribe({
       next: (items) => {
-        this.transferInventoryItems = items;
+        this.warehouseInventoryItems = items;
         
-        // Get unique products from transfer inventory
+        // Get unique products from warehouse inventory
         const uniqueProductIds = [...new Set(items.map(item => item.productId))];
         
-        // Load products that exist in this location's transfer inventory
+        // Load products that exist in this warehouse's inventory
         this.products = [];
         uniqueProductIds.forEach(productId => {
           const inventoryItem = items.find(item => item.productId === productId);
@@ -148,7 +176,7 @@ export class TransferVanComponent implements OnInit {
               value: productId,
               name: inventoryItem.productName,
               id: productId,
-              sku: inventoryItem.skuCode || ''
+              sku: inventoryItem.productSKU || ''
             });
           }
         });
@@ -156,16 +184,16 @@ export class TransferVanComponent implements OnInit {
         this.isLoadingInventory = false;
       },
       error: (error) => {
-        console.error('Error loading transfer inventory:', error);
-        this.toastService.error('Error', 'Failed to load location inventory');
+        console.error('Error loading warehouse inventory:', error);
+        this.toastService.error('Error', 'Failed to load warehouse inventory');
         this.isLoadingInventory = false;
       }
     });
   }
   
   loadProductVariations(productId: number): void {
-    // Get all inventory items for this product from the selected location
-    const productInventory = this.transferInventoryItems.filter(item => item.productId === productId);
+    // Get all inventory items for this product from the selected warehouse
+    const productInventory = this.warehouseInventoryItems.filter(item => item.productId === productId);
     
     // Map to variations with available quantity
     this.allVariations = productInventory.map(item => ({
@@ -243,8 +271,8 @@ export class TransferVanComponent implements OnInit {
       return;
     }
     
-    if (!this.selectedVan || !this.selectedLocation) {
-      this.toastService.error('Validation Error', 'Please select van and location');
+    if (!this.selectedVan || !this.selectedWarehouse) {
+      this.toastService.error('Validation Error', 'Please select van and warehouse');
       return;
     }
     
@@ -260,11 +288,16 @@ export class TransferVanComponent implements OnInit {
       quantity: item.quantity
     }));
     
-    const transferData = {
+    const transferData: any = {
       vanId: this.selectedVan.id,
-      locationId: this.selectedLocation.id,
+      warehouseId: this.selectedWarehouse.id,
       items: items
     };
+    
+    // COMMENTED OUT FOR FUTURE PHASE: Add locationId when location is selected
+    // if (this.selectedLocation) {
+    //   transferData.locationId = this.selectedLocation.id;
+    // }
     
     this.isSaving = true;
     this.vanInventoryService.createTransfer(transferData).subscribe({
@@ -285,9 +318,11 @@ export class TransferVanComponent implements OnInit {
   onCancel() {
     this.vanForm.reset();
     this.selectedVan = null;
+    this.selectedWarehouse = null;
     this.selectedLocation = null;
     this.selectedProduct = null;
     this.vanSearchTerm = '';
+    this.warehouseSearchTerm = '';
     this.locationSearchTerm = '';
     this.productSearchTerm = '';
     this.transferCart = [];
@@ -333,6 +368,15 @@ export class TransferVanComponent implements OnInit {
     );
   }
   
+  getFilteredWarehouses() {
+    if (!this.warehouseSearchTerm) {
+      return this.warehouses;
+    }
+    return this.warehouses.filter(warehouse => 
+      warehouse.name.toLowerCase().includes(this.warehouseSearchTerm.toLowerCase())
+    );
+  }
+  
   getFilteredLocations() {
     if (!this.locationSearchTerm) {
       return this.locations;
@@ -355,6 +399,10 @@ export class TransferVanComponent implements OnInit {
     // Trigger filtering when user types
   }
   
+  filterWarehouses() {
+    // Trigger filtering when user types
+  }
+  
   filterLocations() {
     // Trigger filtering when user types
   }
@@ -370,13 +418,13 @@ export class TransferVanComponent implements OnInit {
     this.showVanDropdown = false;
   }
   
-  selectLocation(location: any) {
-    this.selectedLocation = location;
-    this.locationSearchTerm = location.name;
-    this.vanForm.patchValue({ location: location.value });
-    this.showLocationDropdown = false;
+  selectWarehouse(warehouse: any) {
+    this.selectedWarehouse = warehouse;
+    this.warehouseSearchTerm = warehouse.name;
+    this.vanForm.patchValue({ warehouse: warehouse.value });
+    this.showWarehouseDropdown = false;
     
-    // Clear product selection and load location inventory
+    // Clear product selection and load warehouse inventory
     this.selectedProduct = null;
     this.productSearchTerm = '';
     this.products = [];
@@ -384,8 +432,15 @@ export class TransferVanComponent implements OnInit {
     this.filteredVariations = [];
     this.transferCart = [];
     
-    // Load inventory for selected location
-    this.loadTransferInventoryByLocation(location.id);
+    // Load inventory for selected warehouse
+    this.loadWarehouseInventory(warehouse.id);
+  }
+  
+  selectLocation(location: any) {
+    this.selectedLocation = location;
+    this.locationSearchTerm = location.name;
+    this.vanForm.patchValue({ location: location.value });
+    this.showLocationDropdown = false;
   }
   
   selectProduct(product: any) {
@@ -394,13 +449,19 @@ export class TransferVanComponent implements OnInit {
     this.vanForm.patchValue({ product: product.value });
     this.showProductDropdown = false;
     
-    // Load variations from location inventory
+    // Load variations from warehouse inventory
     this.loadProductVariations(product.id);
   }
   
   hideVanDropdown() {
     setTimeout(() => {
       this.showVanDropdown = false;
+    }, 200);
+  }
+  
+  hideWarehouseDropdown() {
+    setTimeout(() => {
+      this.showWarehouseDropdown = false;
     }, 200);
   }
   
@@ -423,15 +484,22 @@ export class TransferVanComponent implements OnInit {
     this.showVanDropdown = false;
   }
   
+  clearWarehouse() {
+    this.selectedWarehouse = null;
+    this.warehouseSearchTerm = '';
+    this.vanForm.patchValue({ warehouse: '' });
+    this.showWarehouseDropdown = false;
+    this.products = [];
+    this.allVariations = [];
+    this.filteredVariations = [];
+    this.transferCart = [];
+  }
+  
   clearLocation() {
     this.selectedLocation = null;
     this.locationSearchTerm = '';
     this.vanForm.patchValue({ location: '' });
     this.showLocationDropdown = false;
-    this.products = [];
-    this.allVariations = [];
-    this.filteredVariations = [];
-    this.transferCart = [];
   }
   
   clearProduct() {
