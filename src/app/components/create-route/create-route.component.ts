@@ -55,6 +55,10 @@ export class CreateRouteComponent implements OnInit {
   // drivers: string[] = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Emily Davis', 'David Wilson'];
   selectedDriverOption: string = 'preAssigned';
   showCreateModal: boolean = false;
+  
+  // Confirmation modal properties
+  showConfirmModal: boolean = false;
+  confirmDriverName: string = '';
 
   // Driver dropdown properties
   driverSearchTerm: string = '';
@@ -163,14 +167,27 @@ export class CreateRouteComponent implements OnInit {
 
   createRoute() {
     // Check if any data is available before proceeding
-    if (this.selectedDriverName == '' ||this.dataSource.data.length === 0) {
-      alert('Select Atleast one driver to create a route.');
+    if (this.selectedDriverName == '' || this.dataSource.data.length === 0) {
+      alert('Select at least one driver to create a route.');
       return;
     }
+    
+    // Open confirmation modal with current driver pre-selected
+    this.confirmDriverName = this.selectedDriverName;
+    this.showConfirmModal = true;
+  }
+
+  closeConfirmModal() {
+    this.showConfirmModal = false;
+  }
+
+  confirmAndSaveRoute() {
+    // Update the selected driver name with confirmed driver
+    this.selectedDriverName = this.confirmDriverName;
+    
+    // Close modal and proceed with route creation
+    this.closeConfirmModal();
     this.saveRoute();
-    // Proceed with route creation using all available data
-    console.log('Creating route with all locations:', this.dataSource.data);
-    // this.showCreateModal = true;
   }
 
   viewMap(route: CreateRoutes) {
