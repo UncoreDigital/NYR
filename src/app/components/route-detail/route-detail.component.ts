@@ -145,6 +145,7 @@ export class RouteDetailComponent implements OnInit {
   showCreateRouteButton: boolean = false;
   approveRouteDisabled: boolean = false;
   recalculateRouteDisabled: boolean = false;
+  mapRouteData: any[] = [];
   
   constructor(private router: Router, private location: Location, private locationService: LocationService, private routeService: RouteService) { }
 
@@ -664,7 +665,8 @@ export class RouteDetailComponent implements OnInit {
                 //Step 4: parse optimized stops and update UI
                 this.routeService.getStopDetails(routeId.replace("plans/", "").trim()).subscribe({
                   next: (stopDetailsRes: any) => {
-                    console.log('StopDetails response:', stopDetailsRes);
+                    this.mapRouteData = stopDetailsRes?.stops || [];
+                    console.log('StopDetails response:', this.mapRouteData?.map(x => x.address).filter(addr => addr?.latitude && addr?.longitude) || []);
                   }
                 });
                 // Try to find optimized stops in response
@@ -851,6 +853,7 @@ export class RouteDetailComponent implements OnInit {
         this.driverLocations.map(loc => loc.shippingInventoryData = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData : []);
         this.driverLocations.map(loc => loc.shippingInventory = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData.length + ' Items' : '0 Items');
         this.allLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.id === loc.id) ? true : false);
+        this.recalculateRoute();
         // this.dataSource.data = this.locations;
         // const computedOptions = computePageSizeOptions(this.dataSource.data.length);
         // this.pageSizeOptions = computedOptions.length ? computedOptions : [25];

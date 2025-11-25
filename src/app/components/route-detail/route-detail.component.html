@@ -218,7 +218,7 @@
 
             <!-- Map View -->
             <div class="map-container" *ngIf="currentView === 'map'">
-                <app-route-map [showFullLayout]="false" (routeDataChanged)="onRouteDataChanged($event)"></app-route-map>
+                <app-route-map [showFullLayout]="false" [mapRouteData]="mapRouteData" (routeDataChanged)="onRouteDataChanged($event)"></app-route-map>
             </div>
         </div>
     </div>

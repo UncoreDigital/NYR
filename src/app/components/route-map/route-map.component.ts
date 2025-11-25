@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, AfterViewInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +9,6 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
 import { TransferInventoryService } from 'src/app/services/transfer-inventory.service';
 import { LocationService } from 'src/app/services/location.service';
-import { LocationResponse } from 'src/app/models/location.model';
 import * as L from 'leaflet';
 
 export interface RouteStop {
@@ -64,9 +63,10 @@ export interface ProductDetail {
   templateUrl: './route-map.component.html',
   styleUrl: './route-map.component.css'
 })
-export class RouteMapComponent implements OnInit, AfterViewInit {
+export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() showFullLayout: boolean = true; // Default to true for standalone usage
   @Output() routeDataChanged = new EventEmitter<RouteStop[]>();
+  @Input() mapRouteData: any[] = [];
   
   routeData: any = null;
   showAddStopModal = false;
@@ -260,9 +260,45 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
     this.initializeMap();
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    // Check if mapRouteData has changed and is not the first change
+    if (changes['mapRouteData'] && !changes['mapRouteData'].firstChange) {
+      console.log('mapRouteData changed, reinitializing map:', changes['mapRouteData'].currentValue);
+      // Reinitialize the map with new data
+      if (this.map) {
+        this.initializeMap();
+      }
+    }
+  }
+
   initializeMap(): void {
+    // Clear existing map if it exists
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
+
+    // Check if mapRouteData has valid stops
+    const stops: any[] = this.mapRouteData?.map(x => x.address).filter(addr => addr?.latitude && addr?.longitude) || [];
+    
+    if (stops.length === 0) {
+      console.warn('No valid stops with coordinates to display on map');
+      // Initialize map with default center if no stops
+      this.map = L.map('map', {
+        center: [23.0497, 72.5167],
+        zoom: 13
+      });
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+      }).addTo(this.map);
+      
+      return;
+    }
+
+    // Initialize new map
     this.map = L.map('map', {
-      center: [23.0497, 72.5167],
+      center: [stops[0].latitude, stops[0].longitude],
       zoom: 13
     });
 
@@ -271,48 +307,6 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
       maxZoom: 19
     }).addTo(this.map);
 
-    var stops: any[] = [
-      {
-        "addressLineOne": "Thaltej Metro Station",
-        "addressLineTwo": "2GX6+QXJ, Chowkdi Thaltej Road, Bhaikakanagar, 380059",
-        "city": null,
-        "state": null,
-        "zipCode": null,
-        "country": null,
-        "latitude": 23.0497594,
-        "longitude": 72.51673
-      },
-      {
-        "addressLineOne": "Ratanjali Solitaire",
-        "addressLineTwo": "Near Prerna Tirth Derasar, Gujarat 380015",
-        "city": null,
-        "state": null,
-        "zipCode": null,
-        "country": null,
-        "latitude": 23.0185522,
-        "longitude": 72.5190499
-      },
-      {
-        "addressLineOne": "Baghban Party Plot, Thaltej",
-        "addressLineTwo": "Gujarat 380059",
-        "city": null,
-        "state": null,
-        "zipCode": null,
-        "country": null,
-        "latitude": 23.0508191,
-        "longitude": 72.4988531
-      },
-      {
-        "addressLineOne": "Thaltej Metro Station",
-        "addressLineTwo": "2GX6+QXJ, Chowkdi Thaltej Road, Bhaikakanagar, 380059",
-        "city": null,
-        "state": null,
-        "zipCode": null,
-        "country": null,
-        "latitude": 23.0497594,
-        "longitude": 72.51673
-      }
-    ];
     // Add markers for stops
     stops.forEach(stop => {
       L.marker([
@@ -331,23 +325,9 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
     );
     this.map.fitBounds(group.getBounds());
 
+    // Draw route polyline
     const latlngs = stops.map(s => [s.latitude, s.longitude]);
     L.polyline(latlngs, { color: 'blue' }).addTo(this.map);
-
-    // Initialize the map here
-    // For now, we'll use a placeholder
-    // const mapContainer = document.getElementById('map');
-    // if (mapContainer) {
-    //   mapContainer.innerHTML = `
-    //     <div style="width: 100%; height: 100%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-    //       <div style="text-align: center; color: #666;">
-    //         <div style="font-size: 48px; margin-bottom: 16px;">🗺️</div>
-    //         <div>Interactive Map View</div>
-    //         <div style="font-size: 12px; margin-top: 8px;">Map integration will be implemented here</div>
-    //       </div>
-    //     </div>
-    //   `;
-    // }
   }
 
   getTotalTime(): string {
