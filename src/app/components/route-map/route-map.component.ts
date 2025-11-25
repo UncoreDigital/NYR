@@ -10,6 +10,7 @@ import { HeaderComponent } from '../header/header.component';
 import { TransferInventoryService } from 'src/app/services/transfer-inventory.service';
 import { LocationService } from 'src/app/services/location.service';
 import { LocationResponse } from 'src/app/models/location.model';
+import * as L from 'leaflet';
 
 export interface RouteStop {
   locationName: string;
@@ -98,6 +99,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
   routeStops: RouteStop[] = [];
 
   availableCustomers: Customer[] = [];
+  private map: any;
   // [
   //   { id: 1, locationName: 'Downtown Medical Center', locationAddress: '123 Main St, New York, NY 10001', driverName: 'John Smith', locationInventory: '5 Items', shippingInventory: '3 Items', status: 'Ready To Ship', selected: false },
   //   { id: 2, locationName: 'West Side Clinic', locationAddress: '456 Oak Ave, Los Angeles, CA 90210', driverName: 'Jane Doe', locationInventory: '8 Items', shippingInventory: '6 Items', status: 'Ready To Ship', selected: false },
@@ -116,6 +118,14 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
+
+    L.Icon.Default.mergeOptions({
+      iconUrl: 'assets/marker-icon.png',
+      shadowUrl: 'assets/marker-shadow.png',
+      iconRetinaUrl: 'assets/marker-icon.png',
+    });
+
     const state = history.state;
     console.log('Navigation state:', state);
     this.routeStops = state.selectedLocations || state.routeData?.routeStops || [];
@@ -251,20 +261,93 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
   }
 
   initializeMap(): void {
+    this.map = L.map('map', {
+      center: [23.0497, 72.5167],
+      zoom: 13
+    });
+
+    // OSM tile layer (FREE)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19
+    }).addTo(this.map);
+
+    var stops: any[] = [
+      {
+        "addressLineOne": "Thaltej Metro Station",
+        "addressLineTwo": "2GX6+QXJ, Chowkdi Thaltej Road, Bhaikakanagar, 380059",
+        "city": null,
+        "state": null,
+        "zipCode": null,
+        "country": null,
+        "latitude": 23.0497594,
+        "longitude": 72.51673
+      },
+      {
+        "addressLineOne": "Ratanjali Solitaire",
+        "addressLineTwo": "Near Prerna Tirth Derasar, Gujarat 380015",
+        "city": null,
+        "state": null,
+        "zipCode": null,
+        "country": null,
+        "latitude": 23.0185522,
+        "longitude": 72.5190499
+      },
+      {
+        "addressLineOne": "Baghban Party Plot, Thaltej",
+        "addressLineTwo": "Gujarat 380059",
+        "city": null,
+        "state": null,
+        "zipCode": null,
+        "country": null,
+        "latitude": 23.0508191,
+        "longitude": 72.4988531
+      },
+      {
+        "addressLineOne": "Thaltej Metro Station",
+        "addressLineTwo": "2GX6+QXJ, Chowkdi Thaltej Road, Bhaikakanagar, 380059",
+        "city": null,
+        "state": null,
+        "zipCode": null,
+        "country": null,
+        "latitude": 23.0497594,
+        "longitude": 72.51673
+      }
+    ];
+    // Add markers for stops
+    stops.forEach(stop => {
+      L.marker([
+        stop.latitude,
+        stop.longitude
+      ])
+        .addTo(this.map)
+        .bindPopup(`<b>${stop.addressLineOne}</b><br>${stop.addressLineTwo}`);
+    });
+
+    // Fit map to markers
+    const group = L.featureGroup(
+      stops.map(s =>
+        L.marker([s.latitude, s.longitude])
+      )
+    );
+    this.map.fitBounds(group.getBounds());
+
+    const latlngs = stops.map(s => [s.latitude, s.longitude]);
+    L.polyline(latlngs, { color: 'blue' }).addTo(this.map);
+
     // Initialize the map here
     // For now, we'll use a placeholder
-    const mapContainer = document.getElementById('map');
-    if (mapContainer) {
-      mapContainer.innerHTML = `
-        <div style="width: 100%; height: 100%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-          <div style="text-align: center; color: #666;">
-            <div style="font-size: 48px; margin-bottom: 16px;">🗺️</div>
-            <div>Interactive Map View</div>
-            <div style="font-size: 12px; margin-top: 8px;">Map integration will be implemented here</div>
-          </div>
-        </div>
-      `;
-    }
+    // const mapContainer = document.getElementById('map');
+    // if (mapContainer) {
+    //   mapContainer.innerHTML = `
+    //     <div style="width: 100%; height: 100%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+    //       <div style="text-align: center; color: #666;">
+    //         <div style="font-size: 48px; margin-bottom: 16px;">🗺️</div>
+    //         <div>Interactive Map View</div>
+    //         <div style="font-size: 12px; margin-top: 8px;">Map integration will be implemented here</div>
+    //       </div>
+    //     </div>
+    //   `;
+    // }
   }
 
   getTotalTime(): string {
