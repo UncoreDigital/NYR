@@ -521,6 +521,101 @@ export class RouteDetailComponent implements OnInit {
     return location;
   }
 
+  // Calculate distance between two coordinates using Haversine formula
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 3958.8; // Radius of Earth in miles
+    const dLat = this.toRadians(lat2 - lat1);
+    const dLon = this.toRadians(lon2 - lon1);
+    
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    
+    return Math.round(distance * 10) / 10; // Round to 1 decimal place
+  }
+
+  private toRadians(degrees: number): number {
+    return degrees * (Math.PI / 180);
+  }
+
+  // Process stops and calculate distances
+  private processStopsWithDistances(stops: any[]): any[] {
+    if (!stops || stops.length === 0) return [];
+
+    return stops.map((stop, index) => {
+      let distance = '0 Miles';
+      
+      if (index > 0) {
+        const prevStop = stops[index - 1];
+        const currentLat = stop.address?.latitude;
+        const currentLon = stop.address?.longitude;
+        const prevLat = prevStop.address?.latitude;
+        const prevLon = prevStop.address?.longitude;
+        
+        if (currentLat && currentLon && prevLat && prevLon) {
+          const distanceValue = this.calculateDistance(prevLat, prevLon, currentLat, currentLon);
+          distance = `${distanceValue} Miles`;
+        }
+      }
+      
+      return {
+        ...stop,
+        calculatedDistance: distance
+      };
+    });
+  }
+
+  // Update table data from optimized stops
+  private updateTableDataFromStops(stops: any[]): void {
+    if (!stops || stops.length === 0) return;
+
+    const tableData: routeDetail[] = stops.map((stop, index) => {
+      const matchedLocation = this.allLocations.find(loc => 
+        loc.fullAddress?.includes(stop.address?.addressLineOne)
+      );
+
+      return {
+        stop: `Stop ${index + 1}`,
+        deliveryDate: this.deliveryDate || new Date().toISOString().split('T')[0],
+        locationName: stop.address?.addressLineOne || matchedLocation?.locationName || `Location ${index + 1}`,
+        locationInventory: matchedLocation?.locationInventory || '0 Items',
+        locationInventoryData: matchedLocation?.locationInventoryData || [],
+        shippingInventoryData: matchedLocation?.shippingInventoryData || [],
+        shippingInventory: matchedLocation?.shippingInventory || '0 Items',
+        distance: stop.calculatedDistance || '0 Miles',
+        travelTime: '0 hr', // Will be calculated if available from API
+        deliveryTime: 'TBD',
+        status: 'Pending',
+        id: matchedLocation?.id,
+        fullAddress: `${stop.address?.addressLineOne}, ${stop.address?.addressLineTwo}`
+      };
+    });
+
+    this.dataSource.data = tableData;
+    this.updatePagination();
+    
+    // Calculate total distance
+    const totalDistanceValue = stops.reduce((sum, stop, index) => {
+      if (index > 0 && stop.calculatedDistance) {
+        const distValue = parseFloat(stop.calculatedDistance.replace(' Miles', ''));
+        return sum + (isNaN(distValue) ? 0 : distValue);
+      }
+      return sum;
+    }, 0);
+    
+    this.totalDistance = `${Math.round(totalDistanceValue * 10) / 10} Miles`;
+    this.totalStops = stops.length;
+    
+    // Reset button states after successful recalculation
+    this.hasRouteChanges = false;
+    this.updateButtonStates();
+    this.recalculateRouteDisabled = false;
+    this.showCreateRouteButton = true;
+  }
+
   // View toggle methods
   switchView(view: 'table' | 'map') {
     this.currentView = view;
@@ -665,8 +760,16 @@ export class RouteDetailComponent implements OnInit {
                 //Step 4: parse optimized stops and update UI
                 this.routeService.getStopDetails(routeId.replace("plans/", "").trim()).subscribe({
                   next: (stopDetailsRes: any) => {
-                    this.mapRouteData = stopDetailsRes?.stops || [];
-                    console.log('StopDetails response:', this.mapRouteData?.map(x => x.address).filter(addr => addr?.latitude && addr?.longitude) || []);
+                    const rawStops = stopDetailsRes?.stops || [];
+                    
+                    // Process stops and calculate distances between consecutive stops
+                    const stopsWithDistances = this.processStopsWithDistances(rawStops);
+                    
+                    this.mapRouteData = stopsWithDistances;
+                    console.log('StopDetails response with distances:', this.mapRouteData);
+                    
+                    // Update table data with the calculated distances
+                    this.updateTableDataFromStops(stopsWithDistances);
                   }
                 });
                 // Try to find optimized stops in response
