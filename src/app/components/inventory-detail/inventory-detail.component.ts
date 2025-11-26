@@ -7,6 +7,7 @@ import { WarehouseInventoryService } from '../../services/warehouse-inventory.se
 import { WarehouseInventoryDetailResponse } from '../../models/warehouse-inventory.model';
 import { TransferInventoryService } from '../../services/transfer-inventory.service';
 import { VanInventoryService } from '../../services/van-inventory.service';
+import { RestockRequestService } from '../../services/restock-request.service';
 
 export interface inventoryLocation {
   productName: string,
@@ -45,7 +46,8 @@ export class InventoryDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private warehouseInventoryService: WarehouseInventoryService,
     private transferInventoryService: TransferInventoryService,
-    private vanInventoryService: VanInventoryService
+    private vanInventoryService: VanInventoryService,
+    private restockRequestService: RestockRequestService
   ) { }
 
   ngOnInit(): void {
@@ -128,22 +130,26 @@ export class InventoryDetailComponent implements OnInit {
         }
       });
     } else if (this.sourceContext === 'location' && this.locationId) {
-      // Load transfer inventory items for location
+      // Load restock requests for location
       this.loading = true;
-      this.transferInventoryService.getTransferItemsByLocationId(this.locationId).subscribe({
-        next: (items) => {
-          this.inventoryLocation = items.map(item => ({
-            productName: item.productName,
-            skucode: item.skuCode || '',
-            variationType: item.variationType || 'N/A',
-            variationValue: item.variationValue || 'N/A',
-            quantity: item.quantity
-          }));
+      this.restockRequestService.getRequestsByLocation(this.locationId).subscribe({
+        next: (requests) => {
+          // Flatten all items from all requests for this location
+          const allItems = requests.flatMap(request => 
+            request.items.map(item => ({
+              productName: item.productName,
+              skucode: item.skuCode || '',
+              variationType: item.variationType || 'N/A',
+              variationValue: item.variationValue || 'N/A',
+              quantity: item.quantity
+            }))
+          );
+          this.inventoryLocation = allItems;
           this.dataSource.data = this.inventoryLocation;
           this.loading = false;
         },
         error: (error) => {
-          console.error('Error loading location inventory:', error);
+          console.error('Error loading restock requests:', error);
           this.loading = false;
         }
       });
@@ -201,8 +207,14 @@ export class InventoryDetailComponent implements OnInit {
   }
 
   transferToVan() {
-    console.log('Transfer To Van clicked');
-    this.router.navigate(['/tolocation']);
+    console.log('Request Inventory clicked');
+    if (this.sourceContext === 'location') {
+      // Navigate to request inventory page
+      this.router.navigate(['/tolocation']);
+    } else {
+      // Navigate to transfer inventory page
+      this.router.navigate(['/tolocation']);
+    }
   }
 
   viewVan(location: any): void {

@@ -4,9 +4,9 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
-import { VanInventoryService } from 'src/app/services/van-inventory.service';
-import { TransferTrackingResponse } from 'src/app/models/van-inventory.model';
 import { ToastService } from 'src/app/services/toast.service';
+import { LocationService } from 'src/app/services/location.service';
+import { TransferService, TransferResponse } from 'src/app/services/transfer.service';
 
 export interface Transfers {
   id: number;
@@ -59,38 +59,60 @@ export class TransfersComponent implements OnInit {
   locationSearchTerm: string = '';
   showLocationDropdown: boolean = false;
   selectedLocation: any = null;
+  isLoadingLocations: boolean = false;
   
-  // Location data array
-  locations = [
-    { value: 'us-planet-health', name: 'US - Planet Health' },
-    { value: 'uk-planet-health', name: 'UK - Planet Health' },
-    { value: 'india-avetis', name: 'India - Avetis' },
-    { value: 'canada-health-center', name: 'Canada - Health Center' },
-    { value: 'australia-medical', name: 'Australia - Medical Center' }
-  ];
+  // Location data array - will be populated from API
+  locations: any[] = [];
 
   constructor(
     private router: Router,
-    private vanInventoryService: VanInventoryService,
+    private transferService: TransferService,
+    private locationService: LocationService,
     private toastService: ToastService
   ) { }
 
   ngOnInit(): void {
     this.loadTransfers();
+    this.loadLocations();
+  }
+
+  loadLocations(): void {
+    this.isLoadingLocations = true;
+    this.locationService.getLocations().subscribe({
+      next: (locations) => {
+        this.locations = locations.map(l => ({
+          value: l.id,
+          name: l.locationName,
+          id: l.id,
+          customerId: l.customerId,
+          customerName: l.customerName
+        }));
+        this.isLoadingLocations = false;
+      },
+      error: (error) => {
+        console.error('Error loading locations:', error);
+        this.toastService.error('Error', 'Failed to load locations');
+        this.isLoadingLocations = false;
+      }
+    });
   }
 
   loadTransfers(): void {
     this.isLoading = true;
-    this.vanInventoryService.getAllTransfersTracking().subscribe({
-      next: (response: TransferTrackingResponse[]) => {
+    
+    // Load only RestockRequest transfers (exclude VanTransfer)
+    this.transferService.getTransfersByType('RestockRequest').subscribe({
+      next: (response: TransferResponse[]) => {
         this.transfers = response.map(transfer => ({
           id: transfer.id,
-          locationName: transfer.locationName,
+          locationName: transfer.locationName || '-',
           customerName: transfer.customerName,
-          deliveryDate: transfer.deliveryDate ? this.formatDate(transfer.deliveryDate) : '-',
+          deliveryDate: transfer.deliveryDate ? this.formatDate(transfer.deliveryDate) : 
+                       (transfer.requestDate ? this.formatDate(transfer.requestDate) : '-'),
           driver: transfer.driverName || '-',
           status: this.mapStatusFromApi(transfer.status)
         }));
+        
         this.filteredTransfers = [...this.transfers];
         this.applyFilters();
         this.isLoading = false;
@@ -116,7 +138,8 @@ export class TransfersComponent implements OnInit {
       'In Transit': 'in-transit',
       'Delivered': 'delivered',
       'Followup Requested': 'follow-up-requested',
-      'Followup Completed': 'follow-up-completed'
+      'Followup Completed': 'follow-up-completed',
+      'Restock Request': 'restock-request'
     };
     return statusMap[status] || status.toLowerCase().replace(/\s+/g, '-');
   }
@@ -209,7 +232,8 @@ export class TransfersComponent implements OnInit {
       'in-transit': 'In transit',
       'follow-up-requested': 'Follow up requested',
       'follow-up-completed': 'Follow up completed',
-      'driver-assigned': 'Driver Assigned'
+      'driver-assigned': 'Driver Assigned',
+      'restock-request': 'Restock Request'
     };
     return statusMap[status] || status;
   }
@@ -222,7 +246,8 @@ export class TransfersComponent implements OnInit {
       'follow-up': 'status-follow-up',
       'follow-up-requested': 'status-follow-up',
       'follow-up-completed': 'status-follow-up-completed',
-      'driver-assigned': 'status-driver-assigned'
+      'driver-assigned': 'status-driver-assigned',
+      'restock-request': 'status-pending'
     };
     return classMap[status] || 'status-default';
   }
@@ -260,6 +285,10 @@ export class TransfersComponent implements OnInit {
   }
 
   transferToLocation() {
+    this.router.navigate(['/tolocation'], { queryParams: { from: 'transfers' } });
+  }
+
+  requestInventory() {
     this.router.navigate(['/tolocation'], { queryParams: { from: 'transfers' } });
   }
 

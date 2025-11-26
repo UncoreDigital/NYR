@@ -4,7 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { CustomerService } from '../../services/customer.service';
 import { LocationService } from '../../services/location.service';
 import { ProductService } from '../../services/product.service';
-import { TransferInventoryService } from '../../services/transfer-inventory.service';
+import { RestockRequestService } from '../../services/restock-request.service';
 import { ToastService } from '../../services/toast.service';
 import { WarehouseService } from '../../services/warehouse.service';
 import { WarehouseInventoryService } from '../../services/warehouse-inventory.service';
@@ -75,7 +75,7 @@ export class TransferLocationComponent implements OnInit {
     private customerService: CustomerService,
     private locationService: LocationService,
     private productService: ProductService,
-    private transferInventoryService: TransferInventoryService,
+    private restockRequestService: RestockRequestService,
     private toastService: ToastService,
     private warehouseService: WarehouseService,
     private warehouseInventoryService: WarehouseInventoryService
@@ -84,7 +84,7 @@ export class TransferLocationComponent implements OnInit {
     this.vanForm = this.fb.group({
       customer: ['', Validators.required],
       location: ['', Validators.required],
-      warehouse: ['', Validators.required],
+      // warehouse: ['', Validators.required], // COMMENTED OUT
       product: [''],
       quantity: [1, [Validators.required, Validators.min(1)]]
     });
@@ -102,7 +102,8 @@ export class TransferLocationComponent implements OnInit {
     });
     
     this.loadCustomers();
-    this.loadWarehouses();
+    // this.loadWarehouses(); // COMMENTED OUT
+    this.loadAllProducts();
   }
   
   loadWarehouses(): void {
@@ -164,55 +165,50 @@ export class TransferLocationComponent implements OnInit {
     });
   }
   
-  loadWarehouseInventory(warehouseId: number): void {
-    this.isLoadingInventory = true;
-    this.warehouseInventoryService.getInventoryByWarehouse(warehouseId).subscribe({
-      next: (inventory) => {
-        this.warehouseInventory = inventory;
-        
-        // Get unique products from inventory
-        const uniqueProductIds = [...new Set(inventory.map(item => item.productId))];
-        
-        // Load products that exist in this warehouse
-        this.products = [];
-        uniqueProductIds.forEach(productId => {
-          const inventoryItem = inventory.find(item => item.productId === productId);
-          if (inventoryItem) {
-            this.products.push({
-              value: productId,
-              name: inventoryItem.productName,
-              id: productId,
-              sku: inventoryItem.productSKU || ''
-            });
-          }
-        });
-        
-        this.isLoadingInventory = false;
+  loadAllProducts(): void {
+    this.isLoadingProducts = true;
+    this.productService.getProducts().subscribe({
+      next: (products) => {
+        this.products = products.map(p => ({
+          value: p.id,
+          name: p.name,
+          id: p.id,
+          sku: p.barcodeSKU || ''
+        }));
+        this.isLoadingProducts = false;
       },
       error: (error) => {
-        console.error('Error loading warehouse inventory:', error);
-        this.toastService.error('Error', 'Failed to load warehouse inventory');
-        this.isLoadingInventory = false;
+        console.error('Error loading products:', error);
+        this.toastService.error('Error', 'Failed to load products');
+        this.isLoadingProducts = false;
       }
     });
   }
   
   loadProductVariations(productId: number): void {
-    // Get all inventory items for this product from the selected warehouse
-    const productInventory = this.warehouseInventory.filter(item => item.productId === productId);
-    
-    // Map to variations with available quantity
-    this.allVariations = productInventory.map(item => ({
-      id: item.productVariationId,
-      variationId: item.productVariationId,
-      variationType: item.variationType || 'N/A',
-      variationValue: item.variationValue || 'N/A',
-      availableQuantity: item.quantity,
-      transferQuantity: 0,
-      inventoryId: item.id
-    }));
-    
-    this.filteredVariations = [...this.allVariations];
+    // Load all variations for the selected product
+    this.productService.getProductById(productId).subscribe({
+      next: (product) => {
+        if (product.variations && product.variations.length > 0) {
+          this.allVariations = product.variations.map(variation => ({
+            id: variation.id,
+            variationId: variation.id,
+            variationType: variation.variationType || 'N/A',
+            variationValue: variation.variationValue || 'N/A',
+            requestQuantity: 0
+          }));
+        } else {
+          this.allVariations = [];
+        }
+        this.filteredVariations = [...this.allVariations];
+      },
+      error: (error) => {
+        console.error('Error loading product variations:', error);
+        this.toastService.error('Error', 'Failed to load product variations');
+        this.allVariations = [];
+        this.filteredVariations = [];
+      }
+    });
   }
   
   applyVariationFilter(event: any): void {
@@ -224,12 +220,12 @@ export class TransferLocationComponent implements OnInit {
   }
   
   addVariationToCart(variation: any): void {
-    if (variation.transferQuantity && variation.transferQuantity > 0 && variation.transferQuantity <= variation.availableQuantity) {
+    if (variation.requestQuantity && variation.requestQuantity > 0) {
       const existingIndex = this.transferCart.findIndex(item => item.variationId === variation.variationId);
       
       if (existingIndex >= 0) {
         // Update existing cart item
-        this.transferCart[existingIndex].quantity = variation.transferQuantity;
+        this.transferCart[existingIndex].quantity = variation.requestQuantity;
       } else {
         // Add new cart item
         this.transferCart.push({
@@ -238,16 +234,13 @@ export class TransferLocationComponent implements OnInit {
           variationId: variation.variationId,
           variationType: variation.variationType,
           variationValue: variation.variationValue,
-          quantity: variation.transferQuantity,
-          availableQuantity: variation.availableQuantity
+          quantity: variation.requestQuantity
         });
       }
       
-      // Reset transfer quantity
-      variation.transferQuantity = 0;
-      this.toastService.success('Added', 'Item added to transfer cart');
-    } else if (variation.transferQuantity > variation.availableQuantity) {
-      this.toastService.error('Error', `Quantity cannot exceed available quantity (${variation.availableQuantity})`);
+      // Reset request quantity
+      variation.requestQuantity = 0;
+      this.toastService.success('Added', 'Item added to request cart');
     }
   }  
   
@@ -258,11 +251,11 @@ export class TransferLocationComponent implements OnInit {
   
   updateCartItemQuantity(index: number, quantity: number): void {
     const item = this.transferCart[index];
-    if (quantity > 0 && quantity <= item.availableQuantity) {
+    if (quantity > 0) {
       item.quantity = quantity;
-    } else if (quantity > item.availableQuantity) {
-      this.toastService.error('Error', `Quantity cannot exceed available quantity (${item.availableQuantity})`);
-      item.quantity = item.availableQuantity;
+    } else {
+      this.toastService.error('Error', 'Quantity must be at least 1');
+      item.quantity = 1;
     }
   }
   
@@ -277,40 +270,39 @@ export class TransferLocationComponent implements OnInit {
       return;
     }
     
-    if (!this.selectedCustomer || !this.selectedLocation || !this.selectedWarehouse) {
-      this.toastService.error('Validation Error', 'Please select customer, location, and warehouse');
+    if (!this.selectedCustomer || !this.selectedLocation) {
+      this.toastService.error('Validation Error', 'Please select customer and location');
       return;
     }
     
     if (this.transferCart.length === 0) {
-      this.toastService.error('Validation Error', 'Please add items to transfer cart');
+      this.toastService.error('Validation Error', 'Please add items to request cart');
       return;
     }
     
-    // Prepare items from transfer cart with warehouse ID
+    // Prepare items from request cart
     const items = this.transferCart.map(item => ({
       productId: item.productId,
       productVariationId: item.variationId,
-      quantity: item.quantity,
-      warehouseId: this.selectedWarehouse.id
+      quantity: item.quantity
     }));
     
-    const transferData = {
+    const requestData = {
       customerId: this.selectedCustomer.id,
       locationId: this.selectedLocation.id,
       items: items
     };
     
     this.isSaving = true;
-    this.transferInventoryService.createTransfer(transferData).subscribe({
+    this.restockRequestService.createRequest(requestData).subscribe({
       next: (response) => {
-        this.toastService.success('Success', `Transfer inventory created successfully. ${this.transferCart.length} item(s) transferred.`);
+        this.toastService.success('Success', `Restock request created successfully. ${this.transferCart.length} item(s) requested.`);
         this.isSaving = false;
         this.router.navigate(['/inlocation']);
       },
       error: (error) => {
-        console.error('Error creating transfer:', error);
-        const errorMessage = error.error?.message || error.error || 'Failed to create transfer inventory';
+        console.error('Error creating restock request:', error);
+        const errorMessage = error.error?.message || error.error || 'Failed to create restock request';
         this.toastService.error('Error', errorMessage);
         this.isSaving = false;
       }
@@ -431,23 +423,24 @@ export class TransferLocationComponent implements OnInit {
     this.loadLocationsByCustomer(customer.id);
   }
   
-  selectWarehouse(warehouse: any) {
-    this.selectedWarehouse = warehouse;
-    this.warehouseSearchTerm = warehouse.name;
-    this.vanForm.patchValue({ warehouse: warehouse.value });
-    this.showWarehouseDropdown = false;
-    
-    // Clear product selection and load warehouse inventory
-    this.selectedProduct = null;
-    this.productSearchTerm = '';
-    this.products = [];
-    this.allVariations = [];
-    this.filteredVariations = [];
-    this.transferCart = [];
-    
-    // Load inventory for selected warehouse
-    this.loadWarehouseInventory(warehouse.id);
-  }
+  // COMMENTED OUT: Warehouse selection
+  // selectWarehouse(warehouse: any) {
+  //   this.selectedWarehouse = warehouse;
+  //   this.warehouseSearchTerm = warehouse.name;
+  //   this.vanForm.patchValue({ warehouse: warehouse.value });
+  //   this.showWarehouseDropdown = false;
+  //   
+  //   // Clear product selection and load warehouse inventory
+  //   this.selectedProduct = null;
+  //   this.productSearchTerm = '';
+  //   this.products = [];
+  //   this.allVariations = [];
+  //   this.filteredVariations = [];
+  //   this.transferCart = [];
+  //   
+  //   // Load inventory for selected warehouse
+  //   this.loadWarehouseInventory(warehouse.id);
+  // }
   
   selectLocation(location: any) {
     this.selectedLocation = location;
@@ -462,7 +455,7 @@ export class TransferLocationComponent implements OnInit {
     this.vanForm.patchValue({ product: product.value });
     this.showProductDropdown = false;
     
-    // Load variations from warehouse inventory
+    // Load variations for the product
     this.loadProductVariations(product.id);
   }
   

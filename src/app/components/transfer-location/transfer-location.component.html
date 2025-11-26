@@ -32,7 +32,7 @@
 
             <!-- Page Header -->
             <div class="page-header">
-                <h1>Transfer To Location</h1>
+                <h1>Request Inventory</h1>
 
             </div>
 
@@ -58,7 +58,7 @@
  
                    <div class="form-row">
                         <div class="form-group">
-                            <label>Select Customer</label>
+                            <label>From Customer</label>
                             <div class="custom-select-container">
                                 <div class="search-wrapper">
                                     <mat-icon class="search-icon">search</mat-icon>
@@ -96,7 +96,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Select Location</label>
+                            <label>To Location</label>
                             <div class="custom-select-container">
                                 <div class="search-wrapper">
                                     <mat-icon class="search-icon">search</mat-icon>
@@ -133,7 +133,8 @@
                             </div>
                         </div>
                         
-                        <div class="form-group">
+                        <!-- COMMENTED OUT FOR NOW: Warehouse Selection -->
+                        <!-- <div class="form-group">
                             <label>Select Warehouse</label>
                             <div class="custom-select-container">
                                 <div class="search-wrapper">
@@ -170,7 +171,7 @@
                                     <div class="dropdown-item no-results">No warehouses found</div>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
 
                     </div>
                     <div class="form-row">
@@ -187,7 +188,7 @@
                                            (focus)="showProductDropdown = true"
                                            (blur)="hideProductDropdown()"
                                            (input)="filterProducts()"
-                                           [disabled]="isLoadingInventory || !selectedWarehouse">
+                                           [disabled]="isLoadingProducts">
                                     <button type="button" 
                                             class="clear-button" 
                                             *ngIf="selectedProduct"
@@ -209,7 +210,7 @@
                                 </div>
                                 <div class="dropdown-list" *ngIf="showProductDropdown && !isLoadingInventory && getFilteredProducts().length === 0">
                                     <div class="dropdown-item no-results">
-                                        {{selectedWarehouse ? 'No products found in this warehouse' : 'Please select a warehouse first'}}
+                                        No products found
                                     </div>
                                 </div>
                             </div>
@@ -227,7 +228,7 @@
 
                     <!-- Product Variations Section (Manual Mode) -->
                     <div class="variation-section" *ngIf="selectedTransferOption === 'manual' && selectedProduct && allVariations.length > 0">
-                        <h3>Product Variations - Available in Warehouse</h3>
+                        <h3>Product Variations</h3>
                         
                         <!-- Search Bar -->
                         <div class="search-container">
@@ -244,8 +245,7 @@
                                     <tr>
                                         <th>VARIATION TYPE</th>
                                         <th>VARIATION VALUE</th>
-                                        <th>AVAILABLE QTY</th>
-                                        <th>TRANSFER QTY</th>
+                                        <th>REQUEST QTY</th>
                                         <th>ACTION</th>
                                     </tr>
                                 </thead>
@@ -253,28 +253,26 @@
                                     <tr *ngFor="let variation of filteredVariations">
                                         <td>{{variation.variationType}}</td>
                                         <td>{{variation.variationValue}}</td>
-                                        <td><span class="available-quantity">{{variation.availableQuantity}}</span></td>
                                         <td>
                                             <input type="number" 
                                                    class="variation-value-input" 
-                                                   [(ngModel)]="variation.transferQuantity" 
+                                                   [(ngModel)]="variation.requestQuantity" 
                                                    [ngModelOptions]="{standalone: true}"
                                                    placeholder="0"
-                                                   min="0"
-                                                   [max]="variation.availableQuantity">
+                                                   min="1">
                                         </td>
                                         <td>
                                             <button type="button" 
                                                     class="btn-add-variation" 
                                                     [class.btn-added]="isVariationInCart(variation)"
-                                                    [disabled]="!variation.transferQuantity || variation.transferQuantity <= 0 || variation.transferQuantity > variation.availableQuantity"
+                                                    [disabled]="!variation.requestQuantity || variation.requestQuantity <= 0"
                                                     (click)="addVariationToCart(variation)">
                                                 {{isVariationInCart(variation) ? 'Added' : 'Add'}}
                                             </button>
                                         </td>
                                     </tr>
                                     <tr *ngIf="filteredVariations.length === 0" class="empty-row">
-                                        <td colspan="5">
+                                        <td colspan="4">
                                             <mat-icon>search_off</mat-icon>
                                             <div>No variations found</div>
                                         </td>
@@ -287,19 +285,18 @@
                     <!-- No Variations Message (Manual Mode) -->
                     <div class="no-product-message" *ngIf="selectedTransferOption === 'manual' && selectedProduct && allVariations.length === 0">
                         <mat-icon>info</mat-icon>
-                        <p>No inventory available for this product in the selected warehouse.</p>
+                        <p>No variations available for this product.</p>
                     </div>
 
-                    <!-- Transfer Cart -->
+                    <!-- Request Cart -->
                     <div class="inventory-cart-section" *ngIf="transferCart.length > 0">
-                        <h4>Transfer Cart</h4>
+                        <h4>Request Cart</h4>
                         <div class="cart-table-container">
                             <table class="cart-table">
                                 <thead>
                                     <tr>
                                         <th>PRODUCT</th>
                                         <th>VARIATION</th>
-                                        <th>AVAILABLE</th>
                                         <th>QUANTITY</th>
                                         <th>ACTION</th>
                                     </tr>
@@ -308,14 +305,12 @@
                                     <tr *ngFor="let item of transferCart; let i = index">
                                         <td>{{item.productName}}</td>
                                         <td>{{item.variationType}} - {{item.variationValue}}</td>
-                                        <td><span class="available-quantity">{{item.availableQuantity}}</span></td>
                                         <td>
                                             <input type="number" 
                                                    class="cart-quantity-input" 
                                                    [(ngModel)]="item.quantity" 
                                                    [ngModelOptions]="{standalone: true}"
                                                    min="1"
-                                                   [max]="item.availableQuantity"
                                                    (input)="updateCartItemQuantity(i, item.quantity)">
                                         </td>
                                         <td>
@@ -334,7 +329,7 @@
                         <button type="submit" class="btn btn-primary" 
                                 [disabled]="isSaving || transferCart.length === 0 || selectedTransferOption === 'scan'">
                             <mat-spinner *ngIf="isSaving" diameter="16" style="display: inline-block; margin-right: 8px;"></mat-spinner>
-                            {{ isSaving ? 'Saving...' : 'Save Transfer' }}
+                            {{ isSaving ? 'Saving...' : 'Save' }}
                         </button>
                     </div>
                 </form>
