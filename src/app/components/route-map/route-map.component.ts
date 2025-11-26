@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, AfterViewInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +9,7 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
 import { TransferInventoryService } from 'src/app/services/transfer-inventory.service';
 import { LocationService } from 'src/app/services/location.service';
-import { LocationResponse } from 'src/app/models/location.model';
+import * as L from 'leaflet';
 
 export interface RouteStop {
   locationName: string;
@@ -63,9 +63,10 @@ export interface ProductDetail {
   templateUrl: './route-map.component.html',
   styleUrl: './route-map.component.css'
 })
-export class RouteMapComponent implements OnInit, AfterViewInit {
+export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() showFullLayout: boolean = true; // Default to true for standalone usage
   @Output() routeDataChanged = new EventEmitter<RouteStop[]>();
+  @Input() mapRouteData: any[] = [];
   
   routeData: any = null;
   showAddStopModal = false;
@@ -98,6 +99,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
   routeStops: RouteStop[] = [];
 
   availableCustomers: Customer[] = [];
+  private map: any;
   // [
   //   { id: 1, locationName: 'Downtown Medical Center', locationAddress: '123 Main St, New York, NY 10001', driverName: 'John Smith', locationInventory: '5 Items', shippingInventory: '3 Items', status: 'Ready To Ship', selected: false },
   //   { id: 2, locationName: 'West Side Clinic', locationAddress: '456 Oak Ave, Los Angeles, CA 90210', driverName: 'Jane Doe', locationInventory: '8 Items', shippingInventory: '6 Items', status: 'Ready To Ship', selected: false },
@@ -116,6 +118,14 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
+
+    L.Icon.Default.mergeOptions({
+      iconUrl: 'assets/marker-icon.png',
+      shadowUrl: 'assets/marker-shadow.png',
+      iconRetinaUrl: 'assets/marker-icon.png',
+    });
+
     const state = history.state;
     console.log('Navigation state:', state);
     this.routeStops = state.selectedLocations || state.routeData?.routeStops || [];
@@ -250,21 +260,74 @@ export class RouteMapComponent implements OnInit, AfterViewInit {
     this.initializeMap();
   }
 
-  initializeMap(): void {
-    // Initialize the map here
-    // For now, we'll use a placeholder
-    const mapContainer = document.getElementById('map');
-    if (mapContainer) {
-      mapContainer.innerHTML = `
-        <div style="width: 100%; height: 100%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-          <div style="text-align: center; color: #666;">
-            <div style="font-size: 48px; margin-bottom: 16px;">🗺️</div>
-            <div>Interactive Map View</div>
-            <div style="font-size: 12px; margin-top: 8px;">Map integration will be implemented here</div>
-          </div>
-        </div>
-      `;
+  ngOnChanges(changes: SimpleChanges): void {
+    // Check if mapRouteData has changed and is not the first change
+    if (changes['mapRouteData'] && !changes['mapRouteData'].firstChange) {
+      console.log('mapRouteData changed, reinitializing map:', changes['mapRouteData'].currentValue);
+      // Reinitialize the map with new data
+      if (this.map) {
+        this.initializeMap();
+      }
     }
+  }
+
+  initializeMap(): void {
+    // Clear existing map if it exists
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
+
+    // Check if mapRouteData has valid stops
+    const stops: any[] = this.mapRouteData?.map(x => x.address).filter(addr => addr?.latitude && addr?.longitude) || [];
+    
+    if (stops.length === 0) {
+      console.warn('No valid stops with coordinates to display on map');
+      // Initialize map with default center if no stops
+      this.map = L.map('map', {
+        center: [23.0497, 72.5167],
+        zoom: 13
+      });
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+      }).addTo(this.map);
+      
+      return;
+    }
+
+    // Initialize new map
+    this.map = L.map('map', {
+      center: [stops[0].latitude, stops[0].longitude],
+      zoom: 13
+    });
+
+    // OSM tile layer (FREE)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19
+    }).addTo(this.map);
+
+    // Add markers for stops
+    stops.forEach(stop => {
+      L.marker([
+        stop.latitude,
+        stop.longitude
+      ])
+        .addTo(this.map)
+        .bindPopup(`<b>${stop.addressLineOne}</b><br>${stop.addressLineTwo}`);
+    });
+
+    // Fit map to markers
+    const group = L.featureGroup(
+      stops.map(s =>
+        L.marker([s.latitude, s.longitude])
+      )
+    );
+    this.map.fitBounds(group.getBounds());
+
+    // Draw route polyline
+    const latlngs = stops.map(s => [s.latitude, s.longitude]);
+    L.polyline(latlngs, { color: 'blue' }).addTo(this.map);
   }
 
   getTotalTime(): string {
