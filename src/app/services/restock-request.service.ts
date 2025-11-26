@@ -16,6 +16,17 @@ export interface RestockRequestResponse {
   items: RestockRequestItemResponse[];
 }
 
+export interface RestockRequestSummaryResponse {
+  locationId: number;
+  locationName: string;
+  customerId: number;
+  customerName: string;
+  contactPerson?: string;
+  locationNumber?: string;
+  totalRequests: number;
+  totalItems: number;
+}
+
 export interface RestockRequestItemResponse {
   id: number;
   productId: number;
@@ -61,6 +72,10 @@ export class RestockRequestService {
 
   getRequestsByCustomer(customerId: number): Observable<RestockRequestResponse[]> {
     return this.http.get<RestockRequestResponse[]>(`${this.API_URL}/RestockRequest/customer/${customerId}`);
+  }
+
+  getRequestsSummary(): Observable<RestockRequestSummaryResponse[]> {
+    return this.http.get<RestockRequestSummaryResponse[]>(`${this.API_URL}/RestockRequest/summary`);
   }
 
   createRequest(payload: CreateRestockRequestRequest): Observable<RestockRequestResponse> {

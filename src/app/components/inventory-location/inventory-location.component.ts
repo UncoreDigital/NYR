@@ -3,8 +3,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
-import { TransferInventoryService } from '../../services/transfer-inventory.service';
-import { TransferInventoryLocationResponse } from '../../models/transfer-inventory.model';
+import { RestockRequestService } from '../../services/restock-request.service';
 import { ToastService } from '../../services/toast.service';
 import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
@@ -52,7 +51,7 @@ export class InventoryLocationComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private transferInventoryService: TransferInventoryService,
+    private restockRequestService: RestockRequestService,
     private toastService: ToastService
   ) { }
 
@@ -63,14 +62,15 @@ export class InventoryLocationComponent implements OnInit {
   loadLocations(): void {
     this.isLoading = true;
     
-    this.transferInventoryService.getLocationsWithTransfers().subscribe({
-      next: (locations: TransferInventoryLocationResponse[]) => {
-        this.inventoryLocation = locations.map(loc => ({
+    // Get location summary from restock requests
+    this.restockRequestService.getRequestsSummary().subscribe({
+      next: (summary) => {
+        this.inventoryLocation = summary.map(loc => ({
           locationId: loc.locationId,
-          location: loc.locationName,
-          customer: loc.customerName,
-          contactPerson: loc.contactPerson || '',
-          locationNumber: loc.locationNumber || ''
+          location: loc.locationName || '-',
+          customer: loc.customerName || '-',
+          contactPerson: loc.contactPerson || '-',
+          locationNumber: loc.locationNumber || '-'
         }));
         this.filteredLocations = [...this.inventoryLocation];
         this.dataSource.data = this.filteredLocations;
@@ -78,7 +78,7 @@ export class InventoryLocationComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading transfer inventory locations:', error);
+        console.error('Error loading restock request locations:', error);
         this.toastService.error('Error', 'Failed to load locations. Please try again.');
         this.isLoading = false;
       }
