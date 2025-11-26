@@ -102,20 +102,14 @@
   </div>
 </div>
 <div class="modal-backdrop" *ngIf="showFollowUpModal">
-  <div class="modal-success" style="padding: 25px 30px;">
+  <div class="modal-success" style="padding: 25px 30px; position: relative;">
+    <button type="button" 
+            class="close-modal-btn" 
+            (click)="closeFollowUpModal()"
+            style="position: absolute; top: 15px; right: 15px; background: none; border: none; cursor: pointer; padding: 5px;">
+      <mat-icon style="color: #666;">close</mat-icon>
+    </button>
     <div class="availability-times" style="margin-bottom:10px; text-align: left;">
-      <!-- <div class="form-row">
-        <div class="form-group">
-          <label>Select Customer</label>
-          <select class="form-control">
-            <option value="" disabled selected>Select a role</option>
-            <option value="admin">Admin</option>
-            <option value="warehouse">Warehouse and Inventory</option>
-            <option value="driver">Drivers</option>
-            <option value="location">Location Staff</option>
-          </select>
-        </div>        
-      </div> -->
       <div class="form-row">
         <div class="form-group">
           <label>Select Location</label>
@@ -146,7 +140,7 @@
                    *ngFor="let location of getFilteredLocations()"
                    (mousedown)="selectLocation(location)"
                    [class.selected]="selectedLocation?.value === location.value">
-                {{location.name}}
+                {{location.name}} - {{location.customerName}}
               </div>
             </div>
             <div class="dropdown-list" *ngIf="showLocationDropdown && !isLoadingLocations && getFilteredLocations().length === 0">

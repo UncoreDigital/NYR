@@ -7,6 +7,7 @@ import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 import { ToastService } from 'src/app/services/toast.service';
 import { LocationService } from 'src/app/services/location.service';
 import { TransferService, TransferResponse } from 'src/app/services/transfer.service';
+import { FollowupRequestService, CreateFollowupRequest } from 'src/app/services/followup-request.service';
 
 export interface Transfers {
   id: number;
@@ -68,6 +69,7 @@ export class TransfersComponent implements OnInit {
     private router: Router,
     private transferService: TransferService,
     private locationService: LocationService,
+    private followupRequestService: FollowupRequestService,
     private toastService: ToastService
   ) { }
 
@@ -139,7 +141,8 @@ export class TransfersComponent implements OnInit {
       'Delivered': 'delivered',
       'Followup Requested': 'follow-up-requested',
       'Followup Completed': 'follow-up-completed',
-      'Restock Request': 'restock-request'
+      'Restock Request': 'restock-requested',
+      'Restock Requested': 'restock-requested'
     };
     return statusMap[status] || status.toLowerCase().replace(/\s+/g, '-');
   }
@@ -230,10 +233,10 @@ export class TransfersComponent implements OnInit {
       'pending': 'Pending',
       'delivered': 'Delivered',
       'in-transit': 'In transit',
-      'follow-up-requested': 'Follow up requested',
-      'follow-up-completed': 'Follow up completed',
+      'follow-up-requested': 'Followup requested',
+      'follow-up-completed': 'Followup completed',
       'driver-assigned': 'Driver Assigned',
-      'restock-request': 'Restock Request'
+      'restock-requested': 'Restock requested'
     };
     return statusMap[status] || status;
   }
@@ -270,8 +273,33 @@ export class TransfersComponent implements OnInit {
   }
 
   saveFollowUp() {
+    if (!this.selectedLocation) {
+      this.toastService.error('Error', 'Please select a location');
+      return;
+    }
+
+    const request: CreateFollowupRequest = {
+      customerId: this.selectedLocation.customerId,
+      locationId: this.selectedLocation.id
+    };
+
+    this.followupRequestService.createFollowupRequest(request).subscribe({
+      next: (response) => {
+        this.toastService.success('Success', 'Followup request created successfully');
+        this.showFollowUpModal = false;
+        this.clearLocation();
+        this.loadTransfers(); // Reload transfers to show the new followup request
+      },
+      error: (error) => {
+        console.error('Error creating followup request:', error);
+        this.toastService.error('Error', 'Failed to create followup request');
+      }
+    });
+  }
+
+  closeFollowUpModal() {
     this.showFollowUpModal = false;
-    this.router.navigate(['/transfers']);
+    this.clearLocation();
   }
 
   transferDetail(iconName: string) {
@@ -312,7 +340,7 @@ export class TransfersComponent implements OnInit {
   
   selectLocation(location: any) {
     this.selectedLocation = location;
-    this.locationSearchTerm = location.name;
+    this.locationSearchTerm = `${location.name} - ${location.customerName}`;
     this.showLocationDropdown = false;
   }
   
