@@ -13,6 +13,7 @@ export interface TransferResponse {
   deliveryDate?: string;
   requestDate: string;
   driverName?: string;
+  driverId?: number;
   status: string;
   totalItems: number;
   createdAt: string;

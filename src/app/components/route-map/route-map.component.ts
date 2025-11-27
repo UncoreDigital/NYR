@@ -15,7 +15,7 @@ export interface RouteStop {
   locationName: string;
   eta: string;
   items?: number;
-  status: 'delivered' | 'in-progress' | 'not-delivered' | 'pending';
+  status: 'delivered' | 'in-progress' | 'not-delivered' | 'pending' | 'In Progress' | 'Not Delivered';
   distance?: string;
   locationInventory?: string;
   locationInventoryData?: any[];
@@ -536,15 +536,15 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
       // Set all route stops to completed status
       this.routeStops = this.routeStops.map(stop => ({
         ...stop,
-        status: 'delivered' as const
+        // status: 'delivered' as const
       }));
-      this.routeStops[0].status = 'not-delivered' as const;
+      // this.routeStops[0].status = 'not-delivered' as const;
       console.log('Updated all route stops to completed status');
     } else if (this.isNotStartedRoute) {
       // Set all route stops to pending status
       this.routeStops = this.routeStops.map(stop => ({
         ...stop,
-        status: 'pending' as const
+        // status: 'pending' as const
       }));
       console.log('Updated all route stops to pending status');
     }

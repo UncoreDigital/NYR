@@ -154,6 +154,8 @@ export class RouteDetailComponent implements OnInit {
     const state = history.state;
     console.log('Navigation state:', state);
     this.routeCreationData = state.routeData || {};
+    const routeData = state.routeData;
+    this.routeStatus = routeData.status || '';
     // Check if data comes from create-route (selectedLocations)
     if (state.routeData['selectedDriver']) {
       this.selectedLocations = state.selectedLocations || [];
@@ -166,8 +168,7 @@ export class RouteDetailComponent implements OnInit {
     // } 
     // // Check if data comes from routes table (routeData)
     // else if (state && state.routeData) {
-      const routeData = state.routeData;
-      this.routeStatus = routeData.status || '';
+      
       
       // Check if we're coming from a completed route
       this.isFromCompletedRoute = this.routeStatus.toLowerCase() === 'completed';
@@ -630,14 +631,16 @@ export class RouteDetailComponent implements OnInit {
   getStatusClass(status: string): string {
     const classMap: { [key: string]: string } = {
       'Delivered': 'status-completed',
+      'Completed': 'status-completed',
       'InComplete': 'status-inComplete',
       'In Progress': 'status-in-progress',
       'Not Started': 'status-not-started',
       'Pending': 'status-pending',
       'Draft': 'status-draft',
       'Not-delivered': 'status-inComplete',
+      'Not Delivered': 'status-inComplete',
     };
-    return classMap[status] || 'status-default';
+    return classMap[status] || status;
   }
 
   getDisplayStatus(originalStatus: string): string {
@@ -929,9 +932,13 @@ export class RouteDetailComponent implements OnInit {
     
     const statusMapping: { [key: string]: string } = {
       'delivered': 'Delivered',
+      'Delivered': 'Delivered',
       'in-progress': 'In Progress',
+      'In Progress': 'In Progress',
       'pending': 'Pending',
-      'draft': 'Not Started'
+      'draft': 'Not Started',
+      'Not Delivered': 'Not Delivered',
+      'status-inComplete': 'Not Delivered',
     };
     return statusMapping[mapStatus] || 'Not Started';
   }

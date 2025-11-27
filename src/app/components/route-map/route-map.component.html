@@ -72,10 +72,10 @@
                         <div class="stops-list">
                             <div class="stop-item" 
                                  *ngFor="let stop of routeStops; let i = index"
-                                 [class.completed]="!isDraftRoute ? stop.status === 'delivered' : false"
-                                 [class.in-transit]="!isDraftRoute ? stop.status === 'in-progress' : false"
+                                 [class.completed]="!isDraftRoute ? stop.status.toLowerCase() === 'delivered' : false"
+                                 [class.in-transit]="!isDraftRoute ? (stop.status === 'in-progress' || stop.status === 'In Progress') : false"
                                  [class.pending]="!isDraftRoute ? stop.status.toLowerCase() === 'pending' : false"
-                                 [class.not-delivered]="!isDraftRoute ? stop.status === 'not-delivered' : false">
+                                 [class.not-delivered]="!isDraftRoute ? (stop.status === 'not-delivered' || stop.status === 'Not Delivered') : false">
                                 <div class="stop-header">
                                     <div style="color: #02c3b4; font-weight: 500;">
                                         <span>Stop {{ i + 1 }}</span>

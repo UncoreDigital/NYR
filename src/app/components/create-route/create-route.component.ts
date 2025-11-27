@@ -8,6 +8,8 @@ import { UserResponse } from 'src/app/models/user.model';
 import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 import { LocationService } from 'src/app/services/location.service';
 import { LocationResponse } from 'src/app/models/location.model';
+import { RestockRequestService, RestockRequestSummaryResponse } from 'src/app/services/restock-request.service';
+import { TransferResponse, TransferService } from 'src/app/services/transfer.service';
 
 export interface CreateRoutes {
   id: number;
@@ -74,7 +76,9 @@ export class CreateRouteComponent implements OnInit {
   // Unique warehouse names for filter
   warehouseNames: string[] = ['Warehouse A', 'Warehouse B', 'Warehouse C', 'Warehouse D'];
 
-  constructor(private router: Router, private userService: UserService, private locationService: LocationService) { }
+  constructor(private router: Router, private userService: UserService, private locationService: LocationService,
+    private transferService: TransferService
+  ) { }
 
   ngOnInit(): void {
     // Initialize single table with all data
@@ -84,26 +88,27 @@ export class CreateRouteComponent implements OnInit {
   }
 
   loadLocations(): void {
-    this.locationService.getLocations().subscribe({
-      next: (locations: LocationResponse[]) => {
+    this.transferService.getTransfersByType('RestockRequest').subscribe({
+      next: (response: TransferResponse[]) => {
         // Map LocationResponse to CreateRoutes model
-        this.createRoutes = locations.map(loc => ({
-          id: loc.id,
+        this.createRoutes = response.map(loc => ({
+          id: loc.locationId || 0,
           shippingDate: this.selectedDate || '',
           locationName: loc.locationName,
-          locationAddress: `${loc.addressLine1}${loc.city ? ', ' + loc.city : ''}`,
-          driverName: loc.userName ?? '',
-          status: 'Pending',
+          locationAddress:  '' , //`${loc.addressLine1}${loc.city ? ', ' + loc.city : ''}`,
+          driverName: loc.driverName ?? '',
+          status: loc.status,
           totalStops: 1,
-          userId: loc.userId,
-          userName: loc.userName ?? ''
+          userId: loc.driverId,
+          userName: loc.driverName ?? '',
+          driverId: loc.driverId
         }));
         this.dataSource.data = [...this.createRoutes];
         this.updatePagination();
         this.applyFilter();
       },
-      error: (err) => {
-        console.error('Error loading locations:', err);
+      error: (error) => {
+        console.error('Error loading locations:', error);
         // keep existing data (empty) and pagination
         this.updatePagination();
       }
@@ -146,7 +151,9 @@ export class CreateRouteComponent implements OnInit {
       const driverLower = this.selectedDriverName?.toLowerCase() || '';
       const searchLower = this.searchTerm?.toLowerCase() || '';
 
-      const filterFunction = (route: CreateRoutes) => {
+      const filterFunction = (route: any) => {
+        let driverName = this.driverOptions.filter(x => x.id == route.driverId)?.[0]?.name;
+        route.driverName = driverName || '';
         const matchesDriver = !this.selectedDriverName ||
           route.driverName.toLowerCase().includes(driverLower);
         const matchesSearch = !this.searchTerm ||
