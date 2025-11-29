@@ -45,8 +45,8 @@ export class AddUserComponent implements OnInit {
   roles = [
     { id: 1, name: 'Administrators' },
     { id: 2, name: 'Warehouse and Inventory' },
-    { id: 3, name: 'Drivers' },
-    { id: 4, name: 'Location Staff' }
+    { id: 3, name: 'Location Staff' },
+    { id: 4, name: 'Drivers' }
   ];
 
   // Role dropdown properties
@@ -221,7 +221,7 @@ export class AddUserComponent implements OnInit {
           this.populateForm(user);
           
           // Load driver availability if user is a driver
-          if (user.roleId === 3) {
+          if (user.roleId === 4) {
             this.loadDriverAvailability();
           }
           
@@ -349,8 +349,8 @@ export class AddUserComponent implements OnInit {
           email: formValue.email,
           phoneNumber: formValue.phoneNumber,
           roleId: formValue.roleId,
-          customerId: formValue.roleId === 3 ? null : (formValue.customerId || 0),
-          locationId: formValue.roleId === 3 ? null : (formValue.locationId || 0),
+          customerId: formValue.roleId === 4 ? null : (formValue.customerId || 0),
+          locationId: formValue.roleId === 4 ? null : (formValue.locationId || 0),
           isActive: this.currentUser?.isActive ?? true
         };
 
@@ -378,8 +378,8 @@ export class AddUserComponent implements OnInit {
           phoneNumber: formValue.phoneNumber,
           password: formValue.password,
           roleId: formValue.roleId,
-          customerId: formValue.roleId === 3 ? null : (formValue.customerId || 0),
-          locationId: formValue.roleId === 3 ? null : (formValue.locationId || 0)
+          customerId: formValue.roleId === 4 ? null : (formValue.customerId || 0),
+          locationId: formValue.roleId === 4 ? null : (formValue.locationId || 0)
         };
 
         this.userService.createUser(userData).subscribe({
@@ -387,7 +387,7 @@ export class AddUserComponent implements OnInit {
             console.log('User created successfully:', response);
             
             // If user is a driver and has pending driver availability, save it
-            if (formValue.roleId === 3 && this.pendingDriverAvailabilities.length > 0) {
+            if (formValue.roleId === 4 && this.pendingDriverAvailabilities.length > 0) {
               this.saveDriverAvailabilityForNewUser(response.id);
             } else {
               this.isSaving = false;
