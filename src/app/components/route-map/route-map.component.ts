@@ -100,15 +100,6 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
 
   availableCustomers: Customer[] = [];
   private map: any;
-  // [
-  //   { id: 1, locationName: 'Downtown Medical Center', locationAddress: '123 Main St, New York, NY 10001', driverName: 'John Smith', locationInventory: '5 Items', shippingInventory: '3 Items', status: 'Ready To Ship', selected: false },
-  //   { id: 2, locationName: 'West Side Clinic', locationAddress: '456 Oak Ave, Los Angeles, CA 90210', driverName: 'Jane Doe', locationInventory: '8 Items', shippingInventory: '6 Items', status: 'Ready To Ship', selected: false },
-  //   { id: 3, locationName: 'Central Hospital', locationAddress: '789 Pine Rd, Chicago, IL 60601', driverName: 'Mike Johnson', locationInventory: '12 Items', shippingInventory: '9 Items', status: 'Ready To Ship', selected: false },
-  //   { id: 4, locationName: 'South Medical Plaza', locationAddress: '321 Elm St, Houston, TX 77001', driverName: 'Sarah Wilson', locationInventory: '6 Items', shippingInventory: '4 Items', status: 'Ready To Ship', selected: false },
-  //   { id: 5, locationName: 'East Valley Clinic', locationAddress: '654 Maple Dr, Phoenix, AZ 85001', driverName: 'David Brown', locationInventory: '9 Items', shippingInventory: '7 Items', status: 'Ready To Ship', selected: false },
-  //   { id: 6, locationName: 'North Point Medical', locationAddress: '987 Cedar Ln, Philadelphia, PA 19101', driverName: 'Lisa Anderson', locationInventory: '4 Items', shippingInventory: '2 Items', status: 'Ready To Ship', selected: false },
-  //   { id: 7, locationName: 'Metro Health Center', locationAddress: 'Address Not Available', driverName: 'Not Assigned', locationInventory: '7 Items', shippingInventory: '5 Items', status: 'Follow up', selected: false }
-  // ];
 
   constructor(
     private route: ActivatedRoute,
@@ -193,65 +184,27 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   getInventoryobyLocation(): void {
-    this.routeStops?.forEach((stop, index) => {
-      this.transferInventoryService.getTransferItemsByLocationId(stop.id || 0).subscribe({
-        next: (items) => {
-          console.log('Inventory items for location', stop.locationName, items);
-          const updated = { ...this.routeStops[index], locationInventory: `0 Items`, locationInventoryData: items, shippingInventory: `${items.length} Items` };
-          this.routeStops = [
-            ...this.routeStops!.slice(0, index),
-            updated,
-            ...this.routeStops!.slice(index + 1)
-          ];
-          console.log(this.routeStops);
-        },
-        error: (error) => {
-          console.error('Error loading location inventory:', error);
-        }
-      });
+    this.routeStops?.forEach((stop: any, index) => {
+      // this.transferInventoryService.getTransferItemsByLocationId(stop.id || 0).subscribe({
+      //   next: (items) => {
+      //     console.log('Inventory items for location', stop.locationName, items);
+      const updated = { ...this.routeStops[index], locationInventory: `0 Items`, locationInventoryData: stop?.shippingInventory || [], shippingInventory: `${stop?.shippingInventory?.length || 0} Items` };
+      this.routeStops = [
+        ...this.routeStops!.slice(0, index),
+        updated,
+        ...this.routeStops!.slice(index + 1)
+      ];
+      //     console.log(this.routeStops);
+      //   },
+      //   error: (error) => {
+      //     console.error('Error loading location inventory:', error);
+      //   }
+      // });
     });
   }
 
   initializeCustomers(): void {
     this.assignedLocations = [];
-    // [
-    //   {
-    //     id: 1,
-    //     locationName: 'Downtown Medical Center',
-    //     locationAddress: '123 Main St, Downtown',
-    //     driverName: 'James Miller',
-    //     status: 'Ready To Ship',
-    //     selected: false,
-    //     locationInventory: '2 items',
-    //     shippingInventory: '2 items'
-    //   },
-    //   {
-    //     id: 2,
-    //     locationName: 'Southside Clinic',
-    //     locationAddress: '456 Oak Ave, Southside',
-    //     driverName: 'James Miller',
-    //     status: 'Follow up',
-    //     selected: false,
-    //     locationInventory: '1 item',
-    //     shippingInventory: '1 item'
-    //   }
-    // ];
-
-    // this.allLocations = this.assignedLocations,
-    // [
-    //   ...this.assignedLocations,
-    //   {
-    //     id: 3,
-    //     locationName: 'Northgate Hospital',
-    //     locationAddress: '789 Pine St, Northgate',
-    //     driverName: 'Sarah Johnson',
-    //     status: 'Ready To Ship',
-    //     selected: false,
-    //     locationInventory: '1 item',
-    //     shippingInventory: '1 item'
-    //   }
-    // ];
-
     // Set initial customers based on locationViewType
     this.customers = this.locationViewType === 'assigned' ? this.assignedLocations : this.allLocations;
   }

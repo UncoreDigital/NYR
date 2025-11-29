@@ -15,8 +15,12 @@ export class RouteService {
     return this.http.post<any>(`${this.API_URL}/Routes`, payload);
   }
   
-  getRoutes(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.API_URL}/Routes`);
+  getRoutes(driverId?: number): Observable<any[]> {
+    let url = `${this.API_URL}/Routes`;
+    if (driverId) {
+      url += `?driverId=${driverId}`;
+    }
+    return this.http.get<any[]>(url);
   }
 
   // SpokeController integrations
