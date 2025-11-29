@@ -92,11 +92,11 @@ export class AddUserComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', Validators.required],
       password: ['', Validators.required], // Will be updated based on mode
-      address1: [''],
-      address2: [''],
+      addressLine1: [''],
+      addressLine2: [''],
       city: [''],
       state: [''],
-      zip: [''],
+      zipCode: [''],
       contactName: [''],
       contactLastName: [''],
       homeAddress: [''],
@@ -222,6 +222,7 @@ export class AddUserComponent implements OnInit {
           
           // Load driver availability if user is a driver
           if (user.roleId === 4) {
+            this.roleSearchTerm = this.roles.find(r => r.id === 4)?.name || '';
             this.loadDriverAvailability();
           }
           
@@ -244,14 +245,21 @@ export class AddUserComponent implements OnInit {
       name: user.name,
       email: user.email,
       phoneNumber: user.phoneNumber,
+      addressLine1: user.addressLine1 || '',
+      addressLine2: user.addressLine2 || '',
+      city: user.city || '',
+      state: user.state || '',
+      zipCode: user.zipCode || '',
       password: '', // Don't populate password for security
       homeAddress: '', // These fields might not be in the API response
-      startingPoint: ''
+      startingPoint: this.warehouses.find(c => c.id === user.customerId)?.name || ''
     });
     
     // Set starting point selection if available
     this.setSelectedStartingPoint(this.userForm.get('startingPoint')?.value || '');
-    
+    if (this.userForm.value.roleId === 4) {
+      this.startingPointSearchTerm = this.userForm.get('startingPoint')?.value || '';
+    }
     // Load locations if customer is selected
     if (user.customerId && user.customerId > 0) {
       this.loadLocationsForEdit(user.customerId, user.locationId || 0);
@@ -267,7 +275,7 @@ export class AddUserComponent implements OnInit {
         this.selectedStartingPoint = homeOption;
         this.startingPointSearchTerm = homeOption.name;
       }
-    } else if (startingPointValue.startsWith('warehouse_')) {
+    } else if (startingPointValue?.startsWith('warehouse_')) {
       const warehouseId = startingPointValue.replace('warehouse_', '');
       const warehouseOption = this.startingPointOptions.find(opt => 
         opt.type === 'warehouse' && opt.warehouseData?.id == warehouseId
@@ -348,8 +356,13 @@ export class AddUserComponent implements OnInit {
           name: formValue.name,
           email: formValue.email,
           phoneNumber: formValue.phoneNumber,
+          addressLine1: formValue.addressLine1,
+          addressLine2: formValue.addressLine2,
+          city: formValue.city,
+          state: formValue.state,
+          zipCode: formValue.zipCode,
           roleId: formValue.roleId,
-          customerId: formValue.roleId === 4 ? null : (formValue.customerId || 0),
+          customerId: formValue.roleId === 4 ? this.selectedStartingPoint?.warehouseData?.id : (formValue.customerId || 0),
           locationId: formValue.roleId === 4 ? null : (formValue.locationId || 0),
           isActive: this.currentUser?.isActive ?? true
         };
@@ -376,9 +389,14 @@ export class AddUserComponent implements OnInit {
           name: formValue.name,
           email: formValue.email,
           phoneNumber: formValue.phoneNumber,
+          addressLine1: formValue.addressLine1,
+          addressLine2: formValue.addressLine2,
+          city: formValue.city,
+          state: formValue.state,
+          zipCode: formValue.zipCode,
           password: formValue.password,
           roleId: formValue.roleId,
-          customerId: formValue.roleId === 4 ? null : (formValue.customerId || 0),
+          customerId: formValue.roleId === 4 ? this.selectedStartingPoint?.warehouseData?.id : (formValue.customerId || 0),
           locationId: formValue.roleId === 4 ? null : (formValue.locationId || 0)
         };
 

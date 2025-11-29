@@ -5,6 +5,11 @@ export interface UserResponse {
   name: string;
   email: string;
   phoneNumber: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  zipCode: string;
   roleId: number;
   roleName: string;
   customerId: number | null;
@@ -53,6 +58,11 @@ export interface CreateUserRequest {
   name: string;
   email: string;
   phoneNumber: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  zipCode: string;
   password: string;
   roleId: number;
   customerId: number | null;
@@ -63,6 +73,11 @@ export interface UpdateUserRequest {
   name: string;
   email: string;
   phoneNumber: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
   roleId: number;
   customerId: number | null;
   locationId: number | null;
