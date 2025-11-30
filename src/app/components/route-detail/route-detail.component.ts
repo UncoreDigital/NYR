@@ -424,7 +424,7 @@ export class RouteDetailComponent implements OnInit {
       this.syncWithRouteMapData(this.routeMapComponent.routeStops);
     }
     let routes: any[] = [];
-    this.dataSource.data.forEach(route => {
+    this.dataSource.data.forEach((route: any) => {
       let matchedData: any = this.allLocations.find(loc => route.id == loc.id);
       let address = matchedData ? matchedData.addressLine1 + ', ' + matchedData.addressLine2 + ', ' + matchedData.state + ' ' + matchedData.zipCode : '';
       routes.push({
@@ -433,7 +433,9 @@ export class RouteDetailComponent implements OnInit {
         address: address,
         customerId: matchedData ? matchedData.customerId : '',
         contactPhone: matchedData ? (matchedData?.contactPhone ? matchedData.contactPhone : (matchedData.locationPhone || '')) : '',
-        notes: ''
+        notes: '',
+        restockRequestId: route?.type?.toLowerCase() != "followuprequest" ? route.requestId : 0,
+        followupRequestId: route?.type?.toLowerCase() == "followuprequest" ? route.requestId : 0,
       });
     });
     const payload: any = {
@@ -899,7 +901,9 @@ export class RouteDetailComponent implements OnInit {
         deliveryTime: stop.eta || 'N/A',
         status: this.mapRouteStatusToTableStatus(stop.status),
         id: stop.id,
-        fullAddress: stop.fullAddress || ''
+        fullAddress: stop.fullAddress || '',
+        type: stop.type || '',
+        requestId: stop.requestId || null,
       }));
       
       // Update the data source for the table
