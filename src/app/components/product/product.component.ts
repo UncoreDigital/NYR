@@ -7,7 +7,6 @@ import { Router } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { ProductApiModel } from '../../models/product.model';
 import { ToastService } from '../../services/toast.service';
-import { Product } from '../../models/product.model';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 

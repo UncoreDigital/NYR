@@ -1,10 +1,6 @@
-import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { MatIconModule } from '@angular/material/icon';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { HeaderComponent } from '../../header/header.component';
-import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { SupplierService } from '../../../services/supplier.service';
 import { CreateSupplierRequest, UpdateSupplierRequest, SupplierApiModel } from '../../../models/supplier.model';
 import { ToastService } from '../../../services/toast.service';

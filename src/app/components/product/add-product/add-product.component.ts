@@ -1,11 +1,6 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit, HostListener } from '@angular/core';
-import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { MatIconModule } from '@angular/material/icon';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { HeaderComponent } from '../../header/header.component';
-import { SidebarComponent } from '../../sidebar/sidebar.component';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ProductService } from '../../../services/product.service';
 import { ToastService } from '../../../services/toast.service';
 import { ProductApiModel } from '../../../models/product.model';

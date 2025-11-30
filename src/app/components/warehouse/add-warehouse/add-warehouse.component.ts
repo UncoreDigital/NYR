@@ -1,11 +1,6 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { ReactiveFormsModule, FormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { HeaderComponent } from '../../header/header.component';
-import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { WarehouseService } from '../../../services/warehouse.service';
 import { CreateWarehouseRequest, UpdateWarehouseRequest, WarehouseResponse } from '../../../models/warehouse.model';
 import { ToastService } from '../../../services/toast.service';
