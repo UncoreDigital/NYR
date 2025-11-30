@@ -81,7 +81,6 @@ export class CreateRouteComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Initialize single table with all data
     // Load locations and drivers from API
     this.loadDrivers();
     this.loadLocations();
@@ -91,11 +90,11 @@ export class CreateRouteComponent implements OnInit {
     this.transferService.getTransfersByType('RestockRequest').subscribe({
       next: (response: TransferResponse[]) => {
         // Map LocationResponse to CreateRoutes model
-        this.createRoutes = response.map(loc => ({
+        this.createRoutes = response.filter(x => ['restock requested', 'followup requested'].includes(x.status?.toLowerCase())).map(loc => ({
           id: loc.locationId || 0,
           shippingDate: loc.requestDate || '',
           locationName: loc.locationName,
-          locationAddress:  loc.locationAddress , //`${loc.addressLine1}${loc.city ? ', ' + loc.city : ''}`,
+          locationAddress:  loc.locationAddress,
           driverName: loc.driverName ?? '',
           status: loc.status,
           totalStops: 1,
