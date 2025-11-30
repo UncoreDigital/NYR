@@ -25,17 +25,11 @@ export interface RouteStop {
 }
 
 export interface Customer {
-  // id: number;
-  // locationName: string;
   locationAddress?: string;
   driverName?: string;
-  // locationInventory: string;
-  // shippingInventory: string;
-  // status: string;
   locationName: string;
   eta: string;
   items?: number;
-  // status: 'delivered' | 'in-progress' | 'not-delivered' | 'pending';
   distance?: string;
   locationInventory?: string;
   locationInventoryData?: any[];
@@ -95,16 +89,12 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   // Shipping inventory modal properties
   showShippingInventoryModal = false;
   selectedShippingInventory: ProductDetail[] = [];
-  
   routeStops: RouteStop[] = [];
-
   availableCustomers: Customer[] = [];
   private map: any;
 
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
-    private transferInventoryService: TransferInventoryService,
     private locationService: LocationService
   ) {}
 
@@ -122,8 +112,6 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
     this.routeStops = state.selectedLocations || state.routeData?.routeStops || [];
     //Temp Solution to get route data from state
     this.getInventoryobyLocation();
-    // this.routeStops.map(stop => stop.locationInventory = "2 Items");
-    // this.routeStops.map(stop => stop.shippingInventory = "2 Items");
 
      if (state.routeData['selectedDriver'] || state.routeData?.routeStops) {
         this.routeData = {
@@ -155,10 +143,6 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
       this.isDraftRoute = this.routeData.status.toLowerCase() === 'draft';
       this.isCompletedRoute = this.routeData.status.toLowerCase() === 'completed';
       this.isNotStartedRoute = this.routeData.status.toLowerCase() === 'not started';
-      console.log('Route status:', this.routeData.status);
-      console.log('Is draft route:', this.isDraftRoute);
-      console.log('Is completed route:', this.isCompletedRoute);
-      console.log('Is not started route:', this.isNotStartedRoute);
     }
 
     // Update route stops status based on route completion status

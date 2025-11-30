@@ -92,54 +92,6 @@
 <div class="modal-backdrop" *ngIf="showCreateModal" (click)="closeModal()">
     <div class="modal-success" (click)="$event.stopPropagation()" style="padding: 20px; width: 30%;">
         <div class="modal-content">
-
-            <!-- Driver Assignment Options -->
-            <!-- <div class="driver-assignment-section">
-                <div class="radio-group" style="margin-bottom: 20px;">
-                    <label class="radio-option mr-15">
-                        <input type="radio" name="driverAssignment" value="preAssigned"
-                            (change)="onDriverOptionChange($event)" [(ngModel)]="selectedDriverOption"
-                            class="radio-input mr-2">
-                        <span class="radio-label">Pre Assigned Drivers</span>
-                    </label>
-
-                    <label class="radio-option">
-                        <input type="radio" name="driverAssignment" value="assign" [(ngModel)]="selectedDriverOption"
-                            (change)="onDriverOptionChange($event)" class="radio-input mr-2">
-                        <span class="radio-label">Assign Drivers</span>
-                    </label>
-                </div>
-            </div> -->
-
-            <!-- Available Driver Input -->
-            <!-- <div class="form-group" *ngIf="selectedDriverOption === 'assign'">
-                <label class="form-label" style="text-align: left;">Available Driver</label>
-                <div class="input-container" style="text-align: left;">
-                    <div class="custom-select-container">
-                        <div class="search-wrapper">
-                            <mat-icon class="search-icon">search</mat-icon>
-                            <input type="text" class="search-input" [(ngModel)]="driverSearchTerm"
-                                placeholder="Search and select driver..." (focus)="showDriverDropdown = true"
-                                (blur)="hideDriverDropdown()" (input)="filterDrivers()">
-                            <button type="button" class="clear-button" *ngIf="selectedDriverObj" (click)="clearDriver()"
-                                title="Clear selection">
-                                <mat-icon>close</mat-icon>
-                            </button>
-                        </div>
-                        <div class="dropdown-list" *ngIf="showDriverDropdown && getFilteredDrivers().length > 0">
-                            <div class="dropdown-item" *ngFor="let driver of getFilteredDrivers()"
-                                (mousedown)="selectDriver(driver)"
-                                [class.selected]="selectedDriverObj?.value === driver.value">
-                                {{driver.name}}
-                            </div>
-                        </div>
-                        <div class="dropdown-list" *ngIf="showDriverDropdown && getFilteredDrivers().length === 0">
-                            <div class="dropdown-item no-results">No drivers found</div>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-
             <!-- Select Date Input -->
             <div class="form-group">
                 <label class="form-label" style="text-align: left;">Select Date</label>

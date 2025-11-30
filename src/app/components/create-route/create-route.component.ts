@@ -2,13 +2,11 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { Routes, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { UserService } from 'src/app/services/user.service';
 import { UserResponse } from 'src/app/models/user.model';
 import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 import { LocationService } from 'src/app/services/location.service';
-import { LocationResponse } from 'src/app/models/location.model';
-import { RestockRequestService, RestockRequestSummaryResponse } from 'src/app/services/restock-request.service';
 import { TransferResponse, TransferService } from 'src/app/services/transfer.service';
 
 export interface CreateRoutes {
@@ -54,8 +52,6 @@ export class CreateRouteComponent implements OnInit {
   createRoutes: CreateRoutes[] = [];
   selectedDate: string = new Date().toISOString().split('T')[0];
   selectedDriver: string = '';
-  // drivers: string[] = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Emily Davis', 'David Wilson'];
-  selectedDriverOption: string = 'preAssigned';
   showCreateModal: boolean = false;
   
   // Confirmation modal properties
@@ -74,7 +70,7 @@ export class CreateRouteComponent implements OnInit {
   driverOptions: Array<{ id?: number; value: string; name: string }> = [];
 
   // Unique warehouse names for filter
-  warehouseNames: string[] = ['Warehouse A', 'Warehouse B', 'Warehouse C', 'Warehouse D'];
+  warehouseNames: string[] = [];
 
   constructor(private router: Router, private userService: UserService, private locationService: LocationService,
     private transferService: TransferService
@@ -234,11 +230,6 @@ export class CreateRouteComponent implements OnInit {
     this.showCreateModal = false;
   }
 
-  // onDriverOptionChange(event: any) {
-  //   this.selectedDriverOption = event.target.value;
-  //   this.selectedDriver = '';
-  // }
-
   // Driver dropdown methods
   getFilteredDrivers() {
     if (!this.driverSearchTerm.trim()) {
@@ -295,8 +286,6 @@ export class CreateRouteComponent implements OnInit {
     this.selectedWarehouseName = this.selectedDriverName;
     this.applyFilter();
   }
-
-
 
   onDateFilterChange() {
     this.applyFilter();
