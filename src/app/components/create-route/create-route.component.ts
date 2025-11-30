@@ -14,7 +14,7 @@ import { TransferResponse, TransferService } from 'src/app/services/transfer.ser
 export interface CreateRoutes {
   id: number;
   locationName: string;
-  locationAddress: string;
+  locationAddress?: string;
   driverName: string;
   status: string;
   selected?: boolean;
@@ -30,7 +30,7 @@ export interface CreateRoutes {
   styleUrls: ['./create-route.component.css']
 })
 export class CreateRouteComponent implements OnInit {
-  displayedColumns: string[] = ['locationName', 'locationAddress', 'status'];
+  displayedColumns: string[] = ['locationName', 'locationAddress', 'shippingDate', 'status'];
   dataSource = new MatTableDataSource<CreateRoutes>();
 
   private _paginator!: MatPaginator;
@@ -93,9 +93,9 @@ export class CreateRouteComponent implements OnInit {
         // Map LocationResponse to CreateRoutes model
         this.createRoutes = response.map(loc => ({
           id: loc.locationId || 0,
-          shippingDate: this.selectedDate || '',
+          shippingDate: loc.requestDate || '',
           locationName: loc.locationName,
-          locationAddress:  '' , //`${loc.addressLine1}${loc.city ? ', ' + loc.city : ''}`,
+          locationAddress:  loc.locationAddress , //`${loc.addressLine1}${loc.city ? ', ' + loc.city : ''}`,
           driverName: loc.driverName ?? '',
           status: loc.status,
           totalStops: 1,
@@ -149,24 +149,7 @@ export class CreateRouteComponent implements OnInit {
     // Apply warehouse name filter and search term filter
     if (this.selectedDriverName || this.searchTerm) {
       // Filter by selected driver name (if any) and by the search term across multiple fields
-      const driverLower = this.selectedDriverName?.toLowerCase() || '';
-      const searchLower = this.searchTerm?.toLowerCase() || '';
-
-      const filterFunction = (route: any) => {
-        let driverName = this.driverOptions.filter(x => x.id == route.driverId)?.[0]?.name;
-        route.driverName = driverName || '';
-        const matchesDriver = !this.selectedDriverName ||
-          route.driverName.toLowerCase().includes(driverLower);
-        const matchesSearch = !this.searchTerm ||
-          route.locationName.toLowerCase().includes(searchLower) ||
-          route.locationAddress.toLowerCase().includes(searchLower) ||
-          route.driverName.toLowerCase().includes(searchLower) ||
-          route.status.toLowerCase().includes(searchLower);
-
-        return matchesDriver && matchesSearch;
-      };
-
-      filteredData = filteredData.filter(filterFunction);
+      filteredData = filteredData.filter(x => x.driverName == this.selectedDriverName && x.shippingDate.split('T')[0] == this.selectedDate)
     }
 
     this.dataSource.data = filteredData;
@@ -309,7 +292,7 @@ export class CreateRouteComponent implements OnInit {
 
   onWarehouseNameFilterChange() {
     this.selectedWarehouseName = this.selectedDriverName;
-    this.applyWarehouseFilter();
+    this.applyFilter();
   }
 
 
