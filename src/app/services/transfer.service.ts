@@ -17,6 +17,7 @@ export interface TransferResponse {
   status: string;
   totalItems: number;
   createdAt: string;
+  shippingInventory?: any[];
 }
 
 export interface TransferSummaryResponse {

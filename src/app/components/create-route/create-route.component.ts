@@ -101,7 +101,8 @@ export class CreateRouteComponent implements OnInit {
           totalStops: 1,
           userId: loc.driverId,
           userName: loc.driverName ?? '',
-          driverId: loc.driverId
+          driverId: loc.driverId,
+          shippingInventory: loc.shippingInventory
         }));
         this.dataSource.data = [...this.createRoutes];
         this.updatePagination();
