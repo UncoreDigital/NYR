@@ -57,6 +57,7 @@ export class CreateRouteComponent implements OnInit {
   // Confirmation modal properties
   showConfirmModal: boolean = false;
   confirmDriverName: string = '';
+  confirmDate: string = '';
 
   // Driver dropdown properties
   driverSearchTerm: string = '';
@@ -146,7 +147,10 @@ export class CreateRouteComponent implements OnInit {
     // Apply warehouse name filter and search term filter
     if (this.selectedDriverName || this.searchTerm) {
       // Filter by selected driver name (if any) and by the search term across multiple fields
-      filteredData = filteredData.filter(x => x.driverName == this.selectedDriverName && x.shippingDate.split('T')[0] == this.selectedDate)
+      filteredData = filteredData.filter(x => x.driverName == this.selectedDriverName);
+      if (this.selectedDate != "") {
+        filteredData = filteredData.filter(x => x.shippingDate.split('T')[0] == this.selectedDate);
+      }
     }
 
     this.dataSource.data = filteredData;
@@ -160,8 +164,9 @@ export class CreateRouteComponent implements OnInit {
       return;
     }
     
-    // Open confirmation modal with current driver pre-selected
+    // Open confirmation modal with current driver and date pre-selected
     this.confirmDriverName = this.selectedDriverName;
+    this.confirmDate = this.selectedDate;
     this.showConfirmModal = true;
   }
 
@@ -170,8 +175,9 @@ export class CreateRouteComponent implements OnInit {
   }
 
   confirmAndSaveRoute() {
-    // Update the selected driver name with confirmed driver
+    // Update the selected driver name and date with confirmed values
     this.selectedDriverName = this.confirmDriverName;
+    this.selectedDate = this.confirmDate;
     
     // Close modal and proceed with route creation
     this.closeConfirmModal();
