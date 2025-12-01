@@ -135,12 +135,15 @@ export class AddLocationComponent implements OnInit {
       comments: location.comments,
       userId: location.userId || ''
     });
-    
+    this.driverSearchTerm = location.userName || '';
     // Set selected customer for dropdown
     const customer = this.customers.find(c => c.id === location.customerId);
     if (customer) {
       this.selectedCustomer = customer;
       this.customerSearchTerm = customer.companyName;
+    } else {
+      this.selectedCustomer = location.customerId;
+      this.customerSearchTerm = location.customerName || '';
     }
   }
 
