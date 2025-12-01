@@ -159,10 +159,10 @@ export class CreateRouteComponent implements OnInit {
 
   createRoute() {
     // Check if any data is available before proceeding
-    if (this.selectedDriverName == '' || this.dataSource.data.length === 0) {
-      alert('Select at least one driver to create a route.');
-      return;
-    }
+    // if (this.selectedDriverName == '' || this.dataSource.data.length === 0) {
+    //   alert('Select at least one driver to create a route.');
+    //   return;
+    // }
     
     // Open confirmation modal with current driver and date pre-selected
     this.confirmDriverName = this.selectedDriverName;
