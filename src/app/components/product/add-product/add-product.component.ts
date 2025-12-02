@@ -42,6 +42,10 @@ export class AddProductComponent implements OnInit {
   isEditMode = false;
   productId: number | null = null;
   isLoadingProduct = false;
+  
+  // Variation combinations (like Amazon)
+  variationCombinations: any[] = [];
+  selectedOptions: Map<string, string[]> = new Map();
 
   // Category dropdown properties
   categorySearchTerm: string = '';
@@ -265,11 +269,18 @@ export class AddProductComponent implements OnInit {
     // Set universal flag
     this.universal = product.isUniversal;
 
-    // Set variations - group by variation type
+    // Set variations - group by variation type and reconstruct combinations
     if (product.variations && product.variations.length > 0) {
       const variationGroups = new Map<string, any>();
+      const variationValuesByType = new Map<string, Set<string>>();
       
+      // First pass: collect all variation types and their values
       product.variations.forEach(v => {
+        if (!variationValuesByType.has(v.variationType)) {
+          variationValuesByType.set(v.variationType, new Set());
+        }
+        variationValuesByType.get(v.variationType)!.add(v.variationValue);
+        
         if (!variationGroups.has(v.variationType)) {
           // Find the master variation
           const masterVar = this.masterVariations.find(mv => mv.name === v.variationType);
@@ -298,9 +309,29 @@ export class AddProductComponent implements OnInit {
       });
       
       this.selectedVariations = Array.from(variationGroups.values());
+      
+      // Set selected options for each variation type
+      variationValuesByType.forEach((values, typeName) => {
+        this.selectedOptions.set(typeName, Array.from(values));
+      });
+      
       this.updateVariationFormControl();
       
+      // Generate combinations based on the loaded variations
+      this.generateVariationCombinations();
+      
+      // Set default values for combinations (API doesn't store per-variant data yet)
+      if (this.variationCombinations.length > 0) {
+        this.variationCombinations.forEach(combo => {
+          combo.sku = '';
+          combo.price = product.price;
+          combo.stock = 0;
+          combo.enabled = true;
+        });
+      }
+      
       console.log('Loaded variations for edit:', this.selectedVariations);
+      console.log('Loaded combinations for edit:', this.variationCombinations);
     }
   }
 
@@ -323,27 +354,59 @@ export class AddProductComponent implements OnInit {
       const formData = this.productForm.value;
       
       // Map form data to API payload
-      // Generate variations from selected variations
+      // Generate variations from combinations (like Amazon)
       const generatedVariations: any[] = [];
-      this.selectedVariations.forEach(variation => {
-        if (variation.valueType === 'Dropdown') {
-          // For dropdown, create a variation for each option
-          variation.options.forEach((option: any) => {
+      
+      if (this.variationCombinations.length > 0) {
+        // Use enabled combinations only and create variations for each combination
+        const enabledCombos = this.variationCombinations.filter(combo => combo.enabled);
+        
+        // Create a unique set of variation type-value pairs
+        const variationSet = new Set<string>();
+        enabledCombos.forEach(combo => {
+          combo.values.forEach((val: any) => {
+            const key = `${val.name}|${val.value}`;
+            if (!variationSet.has(key)) {
+              variationSet.add(key);
+              generatedVariations.push({
+                productId: 0,
+                variationType: val.name,
+                variationValue: val.value
+              });
+            }
+          });
+        });
+        
+        // Note: SKU, price, and stock per variant are stored in combinations array
+        // but not sent to API as the current API model doesn't support it
+        console.log('Generated variations from combinations:', generatedVariations);
+        console.log('Combination details (for future use):', enabledCombos.map(c => ({
+          variant: this.getCombinationName(c),
+          sku: c.sku,
+          price: c.price,
+          stock: c.stock
+        })));
+      } else if (this.selectedVariations.length > 0) {
+        // Fallback: create variations from selected options
+        this.selectedVariations.forEach(variation => {
+          const selectedOpts = this.selectedOptions.get(variation.name) || [];
+          if (variation.valueType === 'Dropdown' && selectedOpts.length > 0) {
+            selectedOpts.forEach((optName: string) => {
+              generatedVariations.push({
+                productId: 0,
+                variationType: variation.name,
+                variationValue: optName
+              });
+            });
+          } else if (variation.valueType === 'TextInput') {
             generatedVariations.push({
               productId: 0,
               variationType: variation.name,
-              variationValue: option.name
+              variationValue: variation.options[0]?.name || 'Custom Value'
             });
-          });
-        } else if (variation.valueType === 'TextInput') {
-          // For text input, create a single variation entry
-          generatedVariations.push({
-            productId: 0,
-            variationType: variation.name,
-            variationValue: variation.options[0]?.name || 'Custom Value'
-          });
-        }
-      });
+          }
+        });
+      }
 
       const payload = {
         name: formData.productName,
@@ -765,6 +828,7 @@ export class AddProductComponent implements OnInit {
     const existingIndex = this.selectedVariations.findIndex(v => v.id === variation.id);
     if (existingIndex > -1) {
       this.selectedVariations.splice(existingIndex, 1);
+      this.selectedOptions.delete(variation.name);
       this.toastService.info('Info', `Variation "${variation.name}" removed`);
     } else {
       this.selectedVariations.push({
@@ -775,10 +839,114 @@ export class AddProductComponent implements OnInit {
         mandatory: false,
         selectedValues: [] // For storing user selections
       });
+      // Initialize with all options selected by default
+      this.selectedOptions.set(variation.name, variation.options.map((opt: any) => opt.name));
       this.toastService.success('Success', `Variation "${variation.name}" added`);
     }
     this.updateVariationFormControl();
+    this.generateVariationCombinations();
     // Keep dropdown open for multiple selections
+  }
+
+  // Toggle individual option selection for a variation
+  toggleOptionSelection(variationName: string, optionName: string) {
+    const currentOptions = this.selectedOptions.get(variationName) || [];
+    const index = currentOptions.indexOf(optionName);
+    
+    if (index > -1) {
+      currentOptions.splice(index, 1);
+    } else {
+      currentOptions.push(optionName);
+    }
+    
+    this.selectedOptions.set(variationName, currentOptions);
+    this.generateVariationCombinations();
+  }
+
+  // Check if an option is selected
+  isOptionSelected(variationName: string, optionName: string): boolean {
+    const options = this.selectedOptions.get(variationName) || [];
+    return options.includes(optionName);
+  }
+
+  // Generate all combinations of selected variations
+  generateVariationCombinations() {
+    if (this.selectedVariations.length === 0) {
+      this.variationCombinations = [];
+      return;
+    }
+
+    // Get all selected options for each variation
+    const variationArrays: any[] = [];
+    this.selectedVariations.forEach(variation => {
+      const selectedOpts = this.selectedOptions.get(variation.name) || [];
+      if (selectedOpts.length > 0) {
+        variationArrays.push({
+          name: variation.name,
+          options: selectedOpts
+        });
+      }
+    });
+
+    if (variationArrays.length === 0) {
+      this.variationCombinations = [];
+      return;
+    }
+
+    // Generate cartesian product of all options
+    const combinations = this.cartesianProduct(variationArrays);
+    
+    // Create combination objects with default values
+    this.variationCombinations = combinations.map((combo, index) => {
+      // Check if this combination already exists (preserve user data)
+      const existing = this.variationCombinations.find(c => 
+        JSON.stringify(c.values) === JSON.stringify(combo)
+      );
+      
+      return existing || {
+        id: index + 1,
+        values: combo,
+        sku: '',
+        price: this.productForm.get('price')?.value || '',
+        stock: 0,
+        enabled: true
+      };
+    });
+  }
+
+  // Helper function to generate cartesian product
+  private cartesianProduct(arrays: any[]): any[] {
+    if (arrays.length === 0) return [[]];
+    if (arrays.length === 1) {
+      return arrays[0].options.map((opt: string) => [{ name: arrays[0].name, value: opt }]);
+    }
+
+    const result: any[] = [];
+    const [first, ...rest] = arrays;
+    const restProduct = this.cartesianProduct(rest);
+
+    first.options.forEach((opt: string) => {
+      restProduct.forEach((prod: any) => {
+        result.push([{ name: first.name, value: opt }, ...prod]);
+      });
+    });
+
+    return result;
+  }
+
+  // Get combination display name
+  getCombinationName(combination: any): string {
+    return combination.values.map((v: any) => v.value).join(' / ');
+  }
+
+  // Toggle combination enabled/disabled
+  toggleCombination(index: number) {
+    this.variationCombinations[index].enabled = !this.variationCombinations[index].enabled;
+  }
+
+  // Update combination field
+  updateCombinationField(index: number, field: string, value: any) {
+    this.variationCombinations[index][field] = value;
   }
 
   isVariationSelected(variation: Variation): boolean {
@@ -786,8 +954,11 @@ export class AddProductComponent implements OnInit {
   }
 
   removeSelectedVariation(index: number) {
+    const variation = this.selectedVariations[index];
+    this.selectedOptions.delete(variation.name);
     this.selectedVariations.splice(index, 1);
     this.updateVariationFormControl();
+    this.generateVariationCombinations();
   }
 
   updateVariationMandatory(index: number, event: any) {

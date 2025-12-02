@@ -330,7 +330,7 @@
                     <div class="selected-variations-section" *ngIf="selectedVariations.length > 0 && !universal">
                         <div class="section-header">
                             <h3>Selected Variations</h3>
-                            <p>Configure options for each selected variation</p>
+                            <p>Select which options you want to create for each variation</p>
                         </div>
                         <div class="variations-table-container">
                             <table class="variations-table">
@@ -338,8 +338,7 @@
                                     <tr>
                                         <th class="variation-name-header">Variation Name</th>
                                         <th class="variation-type-header">Type</th>
-                                        <th class="variation-options-header">Available Options</th>
-                                        <th class="mandatory-header">Mandatory</th>
+                                        <th class="variation-options-header">Select Options</th>
                                         <th class="actions-header">Actions</th>
                                     </tr>
                                 </thead>
@@ -357,25 +356,19 @@
                                             </span>
                                         </td>
                                         <td class="variation-options-cell">
-                                            <!-- Dropdown Options -->
-                                            <div *ngIf="variation.valueType === 'Dropdown'" class="options-list">
-                                                <span class="option-chip" *ngFor="let option of variation.options">
-                                                    {{ option.name }}
-                                                </span>
+                                            <!-- Dropdown Options with Checkboxes -->
+                                            <div *ngIf="variation.valueType === 'Dropdown'" class="options-checkbox-list">
+                                                <label class="option-checkbox-item" *ngFor="let option of variation.options">
+                                                    <input type="checkbox" 
+                                                           [checked]="isOptionSelected(variation.name, option.name)"
+                                                           (change)="toggleOptionSelection(variation.name, option.name)">
+                                                    <span class="option-label">{{ option.name }}</span>
+                                                </label>
                                             </div>
                                             <!-- TextInput Info -->
                                             <div *ngIf="variation.valueType === 'TextInput'" class="text-input-info">
                                                 <span class="text-input-label">Free text input</span>
                                             </div>
-                                        </td>
-                                        <td class="mandatory-cell">
-                                            <label class="checkbox-container">
-                                                <input type="checkbox" 
-                                                       [(ngModel)]="variation.mandatory"
-                                                       (change)="updateVariationMandatory(i, $event)"
-                                                       class="mandatory-checkbox">
-                                                <span class="checkmark"></span>
-                                            </label>
                                         </td>
                                         <td class="actions-cell">
                                             <button type="button" 
@@ -385,6 +378,64 @@
                                                 <mat-icon>delete</mat-icon>
                                             </button>
                                         </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Variation Combinations Table (Like Amazon) -->
+                    <div class="combinations-section" *ngIf="variationCombinations.length > 0 && !universal">
+                        <div class="section-header">
+                            <h3>Product Variants</h3>
+                            <p>{{ variationCombinations.length }} variant(s) will be created based on your selections</p>
+                        </div>
+                        <div class="combinations-table-container">
+                            <table class="combinations-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">Enable</th>
+                                        <th>Variant</th>
+                                        <!-- <th style="width: 150px;">SKU</th>
+                                        <th style="width: 120px;">Price</th>
+                                        <th style="width: 100px;">Stock</th> -->
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let combo of variationCombinations; let i = index" 
+                                        [class.disabled-row]="!combo.enabled">
+                                        <td class="checkbox-cell">
+                                            <input type="checkbox" 
+                                                   [(ngModel)]="combo.enabled"
+                                                   [ngModelOptions]="{standalone: true}" />
+                                        </td>
+                                        <td class="variant-name-cell">
+                                            <strong>{{ getCombinationName(combo) }}</strong>
+                                        </td>
+                                        <!-- <td>
+                                            <input type="text" 
+                                                   class="form-control-sm" 
+                                                   [(ngModel)]="combo.sku"
+                                                   [ngModelOptions]="{standalone: true}"
+                                                   placeholder="SKU"
+                                                   [disabled]="!combo.enabled" />
+                                        </td>
+                                        <td>
+                                            <input type="number" 
+                                                   class="form-control-sm" 
+                                                   [(ngModel)]="combo.price"
+                                                   [ngModelOptions]="{standalone: true}"
+                                                   placeholder="Price"
+                                                   [disabled]="!combo.enabled" />
+                                        </td>
+                                        <td>
+                                            <input type="number" 
+                                                   class="form-control-sm" 
+                                                   [(ngModel)]="combo.stock"
+                                                   [ngModelOptions]="{standalone: true}"
+                                                   placeholder="Stock"
+                                                   [disabled]="!combo.enabled" />
+                                        </td> -->
                                     </tr>
                                 </tbody>
                             </table>
