@@ -5,7 +5,6 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
-import { Location } from '@angular/common';
 import { RouteMapComponent } from '../route-map/route-map.component';
 import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 import { LocationService } from 'src/app/services/location.service';
@@ -97,6 +96,7 @@ export class RouteDetailComponent implements OnInit {
   assignedLocations: Customer[] = [];
   allLocations: Customer[] = [];
   driverLocations: Customer[] = [];
+  isLoading = false;
 
   // Approval Modal properties
   showApprovalModal = false;
@@ -121,21 +121,22 @@ export class RouteDetailComponent implements OnInit {
   @ViewChild(RouteMapComponent) routeMapComponent!: RouteMapComponent;
 
   routeDetail: routeDetail[] = [];
-  showRouteDetail = false;
 
   // Route summary properties
-  totalStops = 3;
-  totalDistance = '20 Miles';
-  totalTime = '1.5 Hrs';
-  deliveryDate = 'Oct 30, 2025';
-  driverName = 'John Doe';
-  startPoint = 'Warehouse A';
+  totalStops = 0;
+  totalDistance = '0 Miles';
+  totalTime = '0 Hrs';
+  deliveryDate = '-';
+  driverName = '-';
+  startPoint = '-';
 
   // Properties for received data from create-route
   selectedLocations: any[] = [];
   routeCreationData: any = {};
+
   // View toggle properties
   currentView: 'table' | 'map' = 'map';
+
   // Route status for conditional button display
   routeStatus: string = '';
   isFromCompletedRoute: boolean = false;
@@ -149,50 +150,26 @@ export class RouteDetailComponent implements OnInit {
   recalculateRouteDisabled: boolean = false;
   mapRouteData: any[] = [];
   
-  constructor(private router: Router, private location: Location, private locationService: LocationService, private routeService: RouteService, private toastService: ToastService) { }
+  constructor(private router: Router, private locationService: LocationService, private routeService: RouteService, private toastService: ToastService) { }
 
   ngOnInit(): void {
     // Check if data was passed from navigation using history.state
     const state = history.state;
-    console.log('Navigation state:', state);
     this.routeCreationData = state.routeData || {};
-    const routeData = state.routeData;
-    this.routeStatus = routeData.status || '';
+    this.routeStatus = this.routeCreationData.status || '';
     // Check if data comes from create-route (selectedLocations)
-    if (state.routeData['selectedDriver']) {
+    if (this.routeCreationData['selectedDriver']) {
       this.selectedLocations = state.selectedLocations || [];
-      this.selectedLocations.map(location => location.travelTime = '1 hr');
-      console.log('Received selected locations:', this.selectedLocations);
-      console.log('Received route data:', this.routeCreationData);
-      
-      // Convert selected locations to route detail format
-      this.convertSelectedLocationsToRouteDetail();
-    // } 
-    // // Check if data comes from routes table (routeData)
-    // else if (state && state.routeData) {
-      
-      
+      if (this.selectedLocations.length > 0) {
+        this.totalStops = this.selectedLocations.length;
+      }      
       // Check if we're coming from a completed route
       this.isFromCompletedRoute = this.routeStatus.toLowerCase() === 'completed';
       
       // Check if we're coming from a not started route
       this.isFromNotStartedRoute = this.routeStatus.toLowerCase() === 'not started';
-      
-      console.log('Received route data from routes table:', routeData);
-      console.log('Route status:', this.routeStatus);
-      console.log('Is from completed route:', this.isFromCompletedRoute);
-      console.log('Is from not started route:', this.isFromNotStartedRoute);
-      
-      // Use default data but update with received route info
-      // this.dataSource.data = this.routeDetail;
-      this.updatePagination();
-    } 
-    else {
-      // Fallback to default data if no navigation state
-      console.log('No navigation state found, using default data');
-      // this.dataSource.data = this.routeDetail;
-      this.updatePagination();
     }
+    this.updatePagination();
     this.driverName = this.routeCreationData.selectedDriver || this.routeCreationData.driverName || '';
     this.deliveryDate = this.routeCreationData.selectedDate || this.routeCreationData.shippingDate || new Date().toISOString().slice(0, 10).split('-').reverse().join('-');
     // Initialize button states
@@ -209,45 +186,12 @@ export class RouteDetailComponent implements OnInit {
     this.recalculateRouteDisabled = false;
   }
 
-  convertSelectedLocationsToRouteDetail() {
-    if (this.selectedLocations.length > 0) {
-      const convertedData = this.selectedLocations.map((location, index) => ({
-        stop: `Stop ${index + 1}`,
-        deliveryDate: location.shippingDate || this.routeCreationData.selectedDate || '2023-10-01',
-        locationName: location.locationName,
-        locationInventory: '0 Items', // Default value - could be calculated based on location data
-        shippingInventory: '0 Items',   // Default value - could be calculated based on location data
-        travelTime: location.travelTime || '1 hr',
-        deliveryTime: '12 PM',     // Default value - could be calculated based on location data
-        distance: location.distance || `${(index + 1) * 3 + Math.floor(Math.random() * 5)} Miles`, // Generate realistic distances
-        status: location.status || 'Not Started' // Default status for new routes
-      }));
-      
-      // this.dataSource.data = convertedData;
-      this.updatePagination();
-      
-      // Update route summary based on selected locations
-      this.totalStops = this.selectedLocations.length;
-      this.totalDistance = `${this.selectedLocations.length * 5} Miles`; // Estimated
-      this.totalTime = `${this.selectedLocations.length * 0.5} Hrs`;     // Estimated
-    } else {
-      // this.dataSource.data = this.routeDetail;
-      this.updatePagination();
-    }
-  }
-
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
   }
 
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-  }
-
   openInventoryModal(route: routeDetail) {
-    // Sample product data - in real app, this would come from API
     this.productDetails = [];
     this.modalTitle = 'Inventory Items';
     this.isModalFromLocationPopup = false; // Ensure flag is false for regular modals
@@ -256,7 +200,6 @@ export class RouteDetailComponent implements OnInit {
   }
 
   openShippingModal(route: routeDetail) {
-    // Sample product data for shipping items - in real app, this would come from API
     this.productDetails = route.shippingInventoryData || [];
     this.modalTitle = 'Shipping Items';
     this.isModalFromLocationPopup = false; // Ensure flag is false for regular modals
@@ -323,8 +266,6 @@ export class RouteDetailComponent implements OnInit {
 
   createLocation() {
     // Handle create location logic here
-    console.log('Selected customers:', this.selectedCustomers);
-    const selectedCustomers = this.selectedCustomers;
     this.dataSource.data = []; // Ensure data source is updated
     this.allLocations.filter(x => x.selected).forEach((customer, index) => {
       const newStop: routeDetail = {
@@ -377,35 +318,7 @@ export class RouteDetailComponent implements OnInit {
     event.stopPropagation(); // Prevent row selection toggle
     
     // Sample product data for shipping inventory - in real app, this would come from API based on customer.id
-    this.productDetails = [
-      {
-        productName: 'Ankle Support Wrap',
-        skuCode: 'MD-004',
-        size: 'S',
-        side: 'Universal',
-        colour: 'White',
-        quantity: 5,
-        inStock: 8
-      },
-      {
-        productName: 'Elbow Compression Band',
-        skuCode: 'MD-005',
-        size: 'L',
-        side: 'Right',
-        colour: 'Gray',
-        quantity: 3,
-        inStock: 7
-      },
-      {
-        productName: 'Wrist Stabilizer',
-        skuCode: 'MD-006',
-        size: 'M',
-        side: 'Left',
-        colour: 'Black',
-        quantity: 4,
-        inStock: 12
-      }
-    ];
+    this.productDetails = []
     this.modalTitle = `Shipping Inventory - ${customer.locationName}`;
     this.isModalFromLocationPopup = true; // Set flag for higher z-index
     this.showModal = true;
@@ -449,28 +362,17 @@ export class RouteDetailComponent implements OnInit {
     }
 
     // Call API to create route
+    this.isLoading = true;
     this.routeService.createRoute(payload).subscribe({
       next: (res: any) => {
-        // On success, navigate to route-detail (or routes list) with created info
-        // console.log('Route created successfully', res);
-        // this.router.navigate(['/route-detail'], {
-        //   state: {
-        //     selectedLocations: this.dataSource.data,
-        //     routeData: {
-        //       selectedDate: this.selectedDate,
-        //       selectedDriver: this.selectedDriverName,
-        //       totalLocations: this.dataSource.data.length,
-        //       apiResponse: res
-        //     }
-        //   }
-        // });
-        // Handle route approval logic here
+        this.isLoading = false;
         this.toastService.success('Success', 'Route created successfully');
         this.router.navigate(['/routes']);
         this.closeApprovalModal();
       },
       error: (err: any) => {
         this.toastService.error('Error', 'Failed to create route');
+        this.isLoading = false;
         alert('Failed to create route. Please try again.');
       }
     });
@@ -480,15 +382,6 @@ export class RouteDetailComponent implements OnInit {
     // Handle rejection logic here
     console.log('Route approval rejected');
     this.closeApprovalModal();
-  }
-
-
-  openRouteDetail() {
-    this.showRouteDetail = true;
-  }
-
-  closeRouteDetail() {
-    this.showRouteDetail = false;
   }
 
   // Method to check if action buttons should be shown (only for Draft status)
@@ -512,12 +405,7 @@ export class RouteDetailComponent implements OnInit {
       const nextRoute = currentData[currentIndex];
       const distance = currentRoute.distance || 'N/A';
       return `Distance from ${this.truncateLocation(fromRoute.locationName)} to ${this.truncateLocation(nextRoute.locationName)}: ${distance}`;
-    } 
-    // // For the last row, show it's the final destination
-    // else if (currentIndex === currentData.length - 1) {
-    //   return `Final destination: ${this.truncateLocation(currentRoute.location)} - No further stops`;
-    // }
-    
+    }    
     const distance = currentRoute.distance || 'Unknown distance';
     return `Current location: ${this.truncateLocation(currentRoute.locationName)} - Distance: ${distance}`;
   }
@@ -689,6 +577,7 @@ export class RouteDetailComponent implements OnInit {
     this.updatePagination();
     // Update button states
     this.hasRouteChanges = true;
+    this.totalStops = this.dataSource.data.length;
     this.updateButtonStates();
     
     console.log('Route deleted:', route);
@@ -782,66 +671,13 @@ export class RouteDetailComponent implements OnInit {
                     
                     // Update table data with the calculated distances
                     this.updateTableDataFromStops(stopsWithDistances);
+                    this.isLoading = false;
                   }
-                });
-                // Try to find optimized stops in response
-                // const stopsArray = Array.isArray(optRes?.optimizedStops) ? optRes.optimizedStops
-                //   : Array.isArray(optRes?.routeStops) ? optRes.routeStops
-                //   : Array.isArray(optRes?.stops) ? optRes.stops
-                //   : Array.isArray(optRes) ? optRes : null;
-
-                // if (stopsArray && Array.isArray(stopsArray)) {
-                //   const mapped = stopsArray.map((s: any, i: number) => ({
-                //     stop: `Stop ${i + 1}`,
-                //     deliveryDate: s.deliveryDate || this.deliveryDate || new Date().toISOString().split('T')[0],
-                //     locationName: s.locationName || s.address || s.customerName || `Location ${i + 1}`,
-                //     locationInventory: s.locationInventory || '0 Items',
-                //     locationInventoryData: s.locationInventoryData || s.items || [],
-                //     shippingInventoryData: s.shippingInventoryData || s.items || [],
-                //     shippingInventory: s.shippingInventory || (s.items ? `${s.items.length} Items` : '0 Items'),
-                //     distance: s.distance || s.driveDistance || '0 Miles',
-                //     travelTime: s.travelTime || s.driveTime || '0 hr',
-                //     deliveryTime: s.eta || s.deliveryTime || 'TBD',
-                //     status: this.mapRouteStatusToTableStatus(s.status || s.stage || ''),
-                //     id: s.locationId || s.id || null
-                //   }));
-
-                //   // Update table datasource and pagination
-                //   this.dataSource.data = mapped;
-                //   this.updatePagination();
-
-                //   // Update map component if available
-                //   if (this.routeMapComponent) {
-                //     try {
-                //       this.routeMapComponent.routeStops = mapped.map(m => ({
-                //         locationName: m.locationName,
-                //         eta: m.deliveryTime,
-                //         items: (m.locationInventoryData || []).length,
-                //         status: m.status && m.status.toLowerCase().includes('deliv') ? 'delivered' : 'pending',
-                //         distance: m.distance,
-                //         locationInventory: m.locationInventory,
-                //         shippingInventory: m.shippingInventory,
-                //         id: m.id
-                //       }));
-                //       this.routeMapComponent.routeDataChanged.emit(this.routeMapComponent.routeStops);
-                //     } catch (err) {
-                //       console.warn('Failed to update RouteMapComponent with optimized circuit', err);
-                //     }
-                //   }
-
-                //   this.hasRouteChanges = false;
-                //   this.updateButtonStates();
-                //   this.recalculateRouteDisabled = false;
-                //   this.showCreateRouteButton = true;
-                // } else {
-                //   console.warn('Optimize response did not include stops array:', optRes);
-                //   alert('Optimize returned unexpected response. Check console.');
-                //   this.recalculateRouteDisabled = false;
-                //   this.showRecalculateButton = true;
-                // }
+                });          
               },
               error: (optErr: any) => {
                 console.error('Error optimizing route by id:', optErr);
+                this.isLoading = false;
                 alert('Failed to optimize route. See console for details.');
                 this.recalculateRouteDisabled = false;
                 this.showRecalculateButton = true;
@@ -851,6 +687,7 @@ export class RouteDetailComponent implements OnInit {
           error: (impErr: any) => {
             console.error('Error importing stops to Spoke route:', impErr);
             alert('Failed to import stops into Spoke. See console for details.');
+            this.isLoading = false;
             this.recalculateRouteDisabled = false;
             this.showRecalculateButton = true;
           }
@@ -859,6 +696,7 @@ export class RouteDetailComponent implements OnInit {
       error: (planErr: any) => {
         console.error('Failed to create plan in Spoke:', planErr);
         alert('Failed to create plan in Spoke. See console for details.');
+        this.isLoading = false;
         this.recalculateRouteDisabled = false;
         this.showRecalculateButton = true;
       }
@@ -927,6 +765,7 @@ export class RouteDetailComponent implements OnInit {
     this.syncWithRouteMapData(routeStops);
     // Mark that the route has changed (enables Recalculate) and update button states
     this.hasRouteChanges = true;
+    this.totalStops = this.dataSource.data.length;
     this.updateButtonStates();
   }
 
@@ -962,6 +801,7 @@ export class RouteDetailComponent implements OnInit {
   }
 
   loadLocationsDetails(): void {
+    this.isLoading = true;
     this.locationService.getLocationsDetails().subscribe({
       next: (apiLocations: any[]) => {
         apiLocations.map(loc => loc.locationAddress = loc.addressLine1);
@@ -976,16 +816,11 @@ export class RouteDetailComponent implements OnInit {
         this.driverLocations.map(loc => loc.shippingInventoryData = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData : []);
         this.driverLocations.map(loc => loc.shippingInventory = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData.length + ' Items' : '0 Items');
         this.allLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.id === loc.id) ? true : false);
-        this.recalculateRoute();
-        // this.dataSource.data = this.locations;
-        // const computedOptions = computePageSizeOptions(this.dataSource.data.length);
-        // this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
-        // this.isLoading = false;
+        this.recalculateRoute();        
       },
       error: (error: any) => {
+        this.isLoading = false;
         console.error('Error loading locations:', error);
-        // this.errorMessage = 'Failed to load locations. Please try again.';
-        // this.isLoading = false;
       }
     });
   }

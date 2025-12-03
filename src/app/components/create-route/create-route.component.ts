@@ -161,8 +161,12 @@ export class CreateRouteComponent implements OnInit {
     this.selectedDriverName = this.confirmDriverName;
     this.selectedDate = this.confirmDate;
     
-    if (this.selectedDriverName == '' || this.dataSource.data.length === 0 || this.selectedDate == '' ) {
+    if (this.selectedDriverName == '') {
       alert('Select at least one driver to create a route.');
+      return;
+    }
+    if (this.selectedDate == '' ) {
+      alert('Select a shipping date to create a route.');
       return;
     }
     // Close modal and proceed with route creation

@@ -1,5 +1,5 @@
 import { Component, OnInit, AfterViewInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,7 +7,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
-import { TransferInventoryService } from 'src/app/services/transfer-inventory.service';
 import { LocationService } from 'src/app/services/location.service';
 import * as L from 'leaflet';
 
@@ -90,7 +89,6 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   showShippingInventoryModal = false;
   selectedShippingInventory: ProductDetail[] = [];
   routeStops: RouteStop[] = [];
-  availableCustomers: Customer[] = [];
   private map: any;
 
   constructor(
@@ -108,7 +106,6 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
     });
 
     const state = history.state;
-    console.log('Navigation state:', state);
     this.routeStops = state.selectedLocations || state.routeData?.routeStops || [];
     //Temp Solution to get route data from state
     this.getInventoryobyLocation();
@@ -126,18 +123,8 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
         this.isCompletedRoute = state.routeData['status']?.toLowerCase() === 'completed';
         this.isNotStartedRoute = state.routeData['status']?.toLowerCase() === 'not started';
         this.isNotStartedRoute = this.isNotStartedRoute === false && this.isDraftRoute === false && this.isCompletedRoute === false ? true : this.isNotStartedRoute;
-        console.log('Route status from params:', state.routeData['status']);
-        console.log('Is draft route:', this.isDraftRoute);
-        console.log('Is completed route:', this.isCompletedRoute);
       }
-    // // Get route data from navigation state or route params
-    // const navigation = this.router.getCurrentNavigation();
-    // if (navigation?.extras?.state) {
-    //   this.routeData = navigation.extras.state['routeData'];
-    // }
     
-    // If no data from navigation, get from route params (for direct URL access)
-
     // Check route data status if available
     if (this.routeData?.status) {
       this.isDraftRoute = this.routeData.status.toLowerCase() === 'draft';
@@ -169,21 +156,12 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
 
   getInventoryobyLocation(): void {
     this.routeStops?.forEach((stop: any, index) => {
-      // this.transferInventoryService.getTransferItemsByLocationId(stop.id || 0).subscribe({
-      //   next: (items) => {
-      //     console.log('Inventory items for location', stop.locationName, items);
       const updated = { ...this.routeStops[index], locationInventory: `0 Items`, locationInventoryData: stop?.shippingInventory || [], shippingInventory: `${stop?.shippingInventory?.length || 0} Items` };
       this.routeStops = [
         ...this.routeStops!.slice(0, index),
         updated,
         ...this.routeStops!.slice(index + 1)
-      ];
-      //     console.log(this.routeStops);
-      //   },
-      //   error: (error) => {
-      //     console.error('Error loading location inventory:', error);
-      //   }
-      // });
+      ];     
     });
   }
 
@@ -277,33 +255,20 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
 
   // Product Modal functions for stops
   openStopLocationInventoryModal(stop: RouteStop): void {
-    console.log('Opening location inventory modal for:', stop.locationName);
-    // this.productDetails.data = [
-    //   { productName: 'Cervical Collar', skuCode: 'CC001', size: 'Medium', side: 'Left', colour: 'Beige', quantity: 2, inStock: 15 },
-    //   { productName: 'Knee Brace', skuCode: 'KB002', size: 'Large', side: 'Right', colour: 'Black', quantity: 1, inStock: 8 }
-    // ];
     this.productDetails.data = stop.locationInventoryData || [];
     this.modalTitle = `Location Inventory - ${stop.locationName}`;
     this.showModal = true;
     this.productDisplayedColumns = ['productName', 'skuCode', 'variationType', 'variationValue', 'quantity'];
-    console.log('Modal should be showing:', this.showModal);
   }
 
   openStopShippingInventoryModal(stop: RouteStop): void {
-    console.log('Opening shipping inventory modal for:', stop.locationName);
-    // this.productDetails.data = [
-    //   { productName: 'Ankle Support', skuCode: 'AS003', size: 'Small', side: 'Left', colour: 'Grey', quantity: 3, inStock: 12 },
-    //   { productName: 'Wrist Splint', skuCode: 'WS004', size: 'Medium', side: 'Right', colour: 'Blue', quantity: 2, inStock: 6 }
-    // ];
     this.productDetails.data = stop.locationInventoryData || [];
     this.modalTitle = `Shipping Inventory - ${stop.locationName}`;
     this.showModal = true;
     this.productDisplayedColumns = ['productName', 'skuCode', 'variationType', 'variationValue', 'quantity'];
-    console.log('Modal should be showing:', this.showModal);
   }
 
   closeModal(): void {
-    console.log('Closing modal');
     this.showModal = false;
     this.productDetails.data = [];
     this.modalTitle = '';
@@ -311,13 +276,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
 
   // Modal functions
   openAddStopModal(): void {
-    // Initialize location data similar to route-detail component
-    // this.driverLocations = this.routeStops;
-    this.availableCustomers = this.routeStops;
     this.assignedLocations = this.routeStops;
-    // this.assignedLocations = this.availableCustomers.filter(customer => customer.driverName !== 'Not Assigned');
-    // this.allLocations = this.availableCustomers;
-    
     // Initialize with assigned locations by default
     this.locationViewType = 'assigned';
     this.customers = this.driverLocations;
@@ -328,7 +287,6 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   closeAddStopModal(): void {
     this.showAddStopModal = false;
     // Reset selections when closing modal
-    this.availableCustomers.forEach(customer => customer.selected = false);
     this.selectedCustomers = [];
   }
 
@@ -498,10 +456,6 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
         this.allLocations = apiLocations;
         this.driverLocations.map(loc => loc.selected = this.routeStops.find(stop => stop.id === loc.id) ? true : false);
         this.allLocations.map(loc => loc.selected = this.routeStops.find(stop => stop.id === loc.id) ? true : false);
-        // this.dataSource.data = this.locations;
-        // const computedOptions = computePageSizeOptions(this.dataSource.data.length);
-        // this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
-        // this.isLoading = false;
       },
       error: (error: any) => {
         console.error('Error loading locations:', error);

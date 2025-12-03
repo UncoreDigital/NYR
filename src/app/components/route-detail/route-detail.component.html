@@ -54,34 +54,6 @@
                 </div>
             </div>
 
-            <!-- Route Summary Cards -->
-            <!-- <div class="route-summary-section">
-                <div class="summary-card">
-                    <div class="summary-card-content">
-                        <h3 class="summary-title">TOTAL STOPS</h3>
-                        <p class="summary-value">{{ totalStops }}</p>
-                    </div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-card-content">
-                        <h3 class="summary-title">TOTAL DISTANCE</h3>
-                        <p class="summary-value">{{ totalDistance }}</p>
-                    </div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-card-content">
-                        <h3 class="summary-title">TOTAL TIME (ETA)</h3>
-                        <p class="summary-value">{{ totalTime }}</p>
-                    </div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-card-content">
-                        <h3 class="summary-title">DELIVERY DATE</h3>
-                        <p class="summary-value">{{ deliveryDate }}</p>
-                    </div>
-                </div>
-            </div> -->
-
             <!-- Search Bar -->
             <div class="search-section">
                 <!-- <div class="search-container"> -->
@@ -131,8 +103,11 @@
                 </div>
 
             </div>
-
-            <div class="table-container" *ngIf="currentView === 'table'">
+            <!-- Loader -->
+            <div *ngIf="isLoading" class="loading-container">
+                <mat-spinner diameter="50"></mat-spinner>
+            </div>
+            <div class="table-container" *ngIf="currentView === 'table'">                
                 <table mat-table [dataSource]="dataSource" matSort class="customer-table">
                     <ng-container matColumnDef="stop">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header>STOP</th>
@@ -384,71 +359,6 @@
             <div class="approval-buttons">
                 <button class="approve-btn" (click)="approveRoute()">Yes</button>
                 <button class="reject-btn" (click)="rejectApproval()">No</button>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Route Detail Modal -->
-<div class="modal-overlay" id="distance" *ngIf="showRouteDetail" (click)="closeRouteDetail()">
-    <div class="route-modal" (click)="$event.stopPropagation()">
-
-        <!-- Header -->
-        <div class="route-modal-header">
-            <h3>ROUTE DETAIL</h3>
-            <button class="distanceclose-btn" (click)="closeRouteDetail()">✕</button>
-        </div>
-
-        <!-- Body -->
-        <div class="route-modal-body">
-            <div class="route-steps">
-
-                <!-- Step 1 -->
-                <div class="step">
-                    <div class="step-circle">1</div>
-                    <div class="step-info">
-                        <h4>STOP 1</h4>
-                        <p>Howard University</p>
-                        <p>ETA 10:00 AM</p>
-                    </div>
-                    <span class="distance-tag">13 Miles</span>
-                </div>
-
-                <!-- Step 2 -->
-                <div class="step">
-                    <div class="step-circle">2</div>
-                    <div class="step-info">
-                        <h4>STOP 2</h4>
-                        <p>Bryant Street</p>
-                        <p>ETA 10:30 AM</p>
-                    </div>
-                    <span class="distance-tag">07 Miles</span>
-                </div>
-
-                <!-- Step 3 -->
-                <div class="step">
-                    <div class="step-circle">3</div>
-                    <div class="step-info">
-                        <h4>STOP 3</h4>
-                        <p>District Vet</p>
-                        <p>ETA 11:40 AM</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Stats Section -->
-            <div class="route-stats">
-                <div class="stat-card">
-                    <h5>TOTAL STOP</h5>
-                    <p>3</p>
-                </div>
-                <div class="stat-card">
-                    <h5>TOTAL DISTANCE</h5>
-                    <p>20 Miles</p>
-                </div>
-                <div class="stat-card">
-                    <h5>TOTAL TRAVEL TIME</h5>
-                    <p>1.5 Hrs</p>
-                </div>
             </div>
         </div>
     </div>
