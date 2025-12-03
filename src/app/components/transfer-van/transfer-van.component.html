@@ -229,61 +229,54 @@
                     </div>
 
                     <!-- Product Variations Section (Manual Mode) -->
-                    <div class="variation-section" *ngIf="selectedTransferOption === 'manual' && selectedProduct && allVariations.length > 0">
-                        <h3>Product Variations - Available at Warehouse</h3>
+                    <div class="variation-section" *ngIf="selectedTransferOption === 'manual' && selectedProduct && variationCombinations.length > 0">
+                        <h3>Product Variations</h3>
                         
                         <!-- Search Bar -->
                         <div class="search-container">
                             <mat-icon class="search-icon">search</mat-icon>
-                            <input type="text" placeholder="Search variations..." class="search-input" 
+                            <input type="text" placeholder="Search variants..." class="search-input" 
                                    [(ngModel)]="variationSearchTerm" [ngModelOptions]="{standalone: true}" 
                                    (keyup)="applyVariationFilter($event)">
                         </div>
 
-                        <!-- Variation Table -->
-                        <div class="variation-table-container">
-                            <table class="variation-table">
-                                <thead>
-                                    <tr>
-                                        <th>VARIATION TYPE</th>
-                                        <th>VARIATION VALUE</th>
-                                        <th>AVAILABLE QTY</th>
-                                        <th>TRANSFER QTY</th>
-                                        <th>ACTION</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr *ngFor="let variation of filteredVariations">
-                                        <td>{{variation.variationType}}</td>
-                                        <td>{{variation.variationValue}}</td>
-                                        <td><span class="available-quantity">{{variation.availableQuantity}}</span></td>
-                                        <td>
-                                            <input type="number" 
-                                                   class="variation-value-input" 
-                                                   [(ngModel)]="variation.transferQuantity" 
-                                                   [ngModelOptions]="{standalone: true}"
-                                                   placeholder="0"
-                                                   min="0"
-                                                   [max]="variation.availableQuantity">
-                                        </td>
-                                        <td>
-                                            <button type="button" 
-                                                    class="btn-add-variation" 
-                                                    [class.btn-added]="isVariationInCart(variation)"
-                                                    [disabled]="!variation.transferQuantity || variation.transferQuantity <= 0 || variation.transferQuantity > variation.availableQuantity"
-                                                    (click)="addVariationToCart(variation)">
-                                                {{isVariationInCart(variation) ? 'Added' : 'Add'}}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr *ngIf="filteredVariations.length === 0" class="empty-row">
-                                        <td colspan="5">
-                                            <mat-icon>search_off</mat-icon>
-                                            <div>No variations found</div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <!-- Simple Variations Table -->
+                        <div class="simple-variations-table">
+                            <div class="table-header-row">
+                                <div class="table-cell variant-cell">VARIANT</div>
+                                <div class="table-cell quantity-cell">QUANTITY</div>
+                                <div class="table-cell action-cell">ACTION</div>
+                            </div>
+                            <div class="table-body">
+                                <div class="table-row" *ngFor="let combo of filteredCombinations">
+                                    <div class="table-cell variant-cell">
+                                        <strong>{{combo.displayName}}</strong>
+                                    </div>
+                                    <div class="table-cell quantity-cell">
+                                        <input type="number" 
+                                               class="qty-input" 
+                                               [(ngModel)]="combo.transferQuantity" 
+                                               [ngModelOptions]="{standalone: true}"
+                                               placeholder="0"
+                                               min="0"
+                                               [max]="combo.availableQuantity" />
+                                    </div>
+                                    <div class="table-cell action-cell">
+                                        <button type="button" 
+                                                class="btn-add-simple" 
+                                                (click)="addSingleCombinationToCart(combo)"
+                                                [disabled]="!combo.transferQuantity || combo.transferQuantity <= 0">
+                                            Add
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="filteredCombinations.length === 0 && variationCombinations.length > 0" class="empty-row">
+                                <div colspan="3">
+                                    <mat-icon>search_off</mat-icon>
+                                    <div>No variations found</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

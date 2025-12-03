@@ -155,9 +155,9 @@
                         </div>
                         
                         <!-- Search Bar -->
-                        <div class="search-container" *ngIf="allVariations.length > 0">
+                        <div class="search-container" *ngIf="variationCombinations.length > 0">
                             <mat-icon class="search-icon">search</mat-icon>
-                            <input type="text" placeholder="Search variations..." class="search-input" 
+                            <input type="text" placeholder="Search variants..." class="search-input" 
                                    [(ngModel)]="searchTerm" [ngModelOptions]="{standalone: true}" 
                                    (keyup)="applyFilter($event)">
                         </div>
@@ -168,52 +168,56 @@
                             <p>This product has no variations available.</p>
                         </div>
 
-                        <!-- Variation Table -->
-                        <div class="variation-table-container" *ngIf="allVariations.length > 0">
-                            <table class="variation-table">
-                                <thead>
-                                    <tr>
-                                        <th>VARIATION TYPE</th>
-                                        <th>VARIATION VALUE</th>
-                                        <th *ngIf="isEditMode">CURRENT QTY</th>
-                                        <th>{{isEditMode ? 'ADD QUANTITY' : 'QUANTITY'}}</th>
-                                        <th>ACTION</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr *ngFor="let variation of filteredVariations; let i = index">
-                                        <td>{{variation.name}}</td>
-                                        <td>{{variation.value}}</td>
-                                        <td *ngIf="isEditMode">
-                                            <span class="current-quantity">{{variation.currentQuantity || 0}}</span>
-                                        </td>
-                                        <td>
-                                            <input type="number" 
-                                                   class="variation-value-input" 
-                                                   [(ngModel)]="variation.quantity" 
-                                                   [ngModelOptions]="{standalone: true}"
-                                                   [placeholder]="isEditMode ? 'Add qty' : '0'"
-                                                   min="0"
-                                                   (input)="updateVariationQuantity(variation)">
-                                        </td>
-                                        <td>
-                                            <button type="button" 
-                                                    class="btn-add-variation" 
-                                                    [class.btn-added]="isVariationInCart(variation)"
-                                                    [disabled]="!variation.quantity || variation.quantity <= 0"
-                                                    (click)="addVariationToCart(variation)">
-                                                {{isVariationInCart(variation) ? 'Added' : 'Add'}}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr *ngIf="filteredVariations.length === 0 && allVariations.length > 0" class="empty-row">
-                                        <td [attr.colspan]="isEditMode ? 5 : 4">
-                                            <mat-icon>search_off</mat-icon>
-                                            <div>No variations found</div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <!-- Variation Combinations Table (Amazon Style) -->
+                        <div class="p-20" *ngIf="variationCombinations.length > 0">
+                            <!-- <div class="combinations-header">
+                                <h4>{{variationCombinations.length}} variant(s) available</h4>
+                                <p>Specify quantities for variants you want to add to inventory</p>
+                            </div> -->
+                            <div class="variation-table-container">
+                                <table class="variation-table">
+                                    <thead>
+                                        <tr>
+                                            <th>VARIANT</th>
+                                            <th *ngIf="isEditMode" style="width: 120px;">CURRENT QTY</th>
+                                            <th style="width: 150px;">{{isEditMode ? 'ADD QUANTITY' : 'QUANTITY'}}</th>
+                                            <th style="width: 100px;">ACTION</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let combo of filteredCombinations; let i = index">
+                                            <td class="variant-name-cell">
+                                                <strong>{{combo.displayName}}</strong>
+                                            </td>
+                                            <td *ngIf="isEditMode">
+                                                <span class="current-quantity-badge">{{combo.currentQuantity || 0}}</span>
+                                            </td>
+                                            <td>
+                                                <input type="number" 
+                                                       class="form-control-sm" 
+                                                       [(ngModel)]="combo.quantity"
+                                                       [ngModelOptions]="{standalone: true}"
+                                                       [placeholder]="isEditMode ? 'Add qty' : '0'"
+                                                       min="0" />
+                                            </td>
+                                            <td>
+                                                <button type="button" 
+                                                        class="btn-add-row" 
+                                                        (click)="addSingleCombinationToCart(combo)"
+                                                        [disabled]="!combo.quantity || combo.quantity <= 0">
+                                                    Add
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr *ngIf="filteredCombinations.length === 0 && variationCombinations.length > 0" class="empty-row">
+                                            <td [attr.colspan]="isEditMode ? 4 : 3" style="text-align: center; padding: 20px; color: #666;">
+                                                <mat-icon style="font-size: 32px; width: 32px; height: 32px; margin-bottom: 8px;">search_off</mat-icon>
+                                                <div>No variants found matching your search</div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         <!-- Universal Product (No Variations) -->
@@ -240,9 +244,15 @@
 
                     <!-- Inventory Cart -->
                     <div class="inventory-cart-section" *ngIf="inventoryCart.length > 0">
-                        <h4>{{isEditMode ? 'Inventory to Update' : 'Inventory to Add'}}</h4>
-                        <div class="cart-table-container">
-                            <table class="cart-table">
+                        <div class="cart-header">
+                            <h4>{{isEditMode ? 'Inventory to Update' : 'Inventory to Add'}}</h4>
+                            <!-- <div class="cart-summary">
+                                <span class="cart-count">{{inventoryCart.length}} variant(s)</span>
+                                <span class="cart-total">Total Qty: {{getTotalCartQuantity()}}</span>
+                            </div> -->
+                        </div>
+                        <div class="variation-table-container">
+                            <table class="variation-table">
                                 <thead>
                                     <tr>
                                         <th>VARIATION</th>
@@ -252,11 +262,20 @@
                                 </thead>
                                 <tbody>
                                     <tr *ngFor="let item of inventoryCart; let i = index">
-                                        <td>
-                                            <span *ngIf="item.variationName && item.variationValue">
+                                        <td class="variant-display-cell">
+                                            <!-- Combination variant (e.g., "Cotton / Small") -->
+                                            <span *ngIf="item.variationName && !item.variationValue" class="variant-combination">
+                                                <mat-icon class="variant-icon">category</mat-icon>
+                                                {{item.variationName}}
+                                            </span>
+                                            <!-- Single variation (e.g., "Color - Black") -->
+                                            <span *ngIf="item.variationName && item.variationValue" class="variant-single">
+                                                <mat-icon class="variant-icon">label</mat-icon>
                                                 {{item.variationName}} - {{item.variationValue}}
                                             </span>
-                                            <span *ngIf="!item.variationName">
+                                            <!-- Universal product -->
+                                            <span *ngIf="!item.variationName" class="variant-universal">
+                                                <mat-icon class="variant-icon">inventory</mat-icon>
                                                 Universal Product
                                             </span>
                                         </td>
@@ -269,7 +288,7 @@
                                                    (input)="updateCartItemQuantity(i, item.quantity)">
                                         </td>
                                         <td>
-                                            <button type="button" class="btn-remove" (click)="removeFromCart(i)">
+                                            <button type="button" class="btn-remove" (click)="removeFromCart(i)" title="Remove from cart">
                                                 <mat-icon>delete</mat-icon>
                                             </button>
                                         </td>

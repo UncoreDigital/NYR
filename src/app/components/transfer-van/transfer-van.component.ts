@@ -54,6 +54,11 @@ export class TransferVanComponent implements OnInit {
   filteredVariations: any[] = [];
   transferCart: any[] = [];
   
+  // Variation combinations
+  variationCombinations: any[] = [];
+  filteredCombinations: any[] = [];
+  groupedVariations: Map<string, string[]> = new Map();
+  
   // Loading states
   isLoading = false;
   isSaving = false;
@@ -207,6 +212,110 @@ export class TransferVanComponent implements OnInit {
     }));
     
     this.filteredVariations = [...this.allVariations];
+    this.generateVariationCombinations();
+  }
+
+  generateVariationCombinations(): void {
+    this.groupedVariations.clear();
+    
+    this.allVariations.forEach(v => {
+      if (!this.groupedVariations.has(v.variationType)) {
+        this.groupedVariations.set(v.variationType, []);
+      }
+      this.groupedVariations.get(v.variationType)!.push(v.variationValue);
+    });
+    
+    const variationTypes = Array.from(this.groupedVariations.keys());
+    const variationValues = variationTypes.map(type => this.groupedVariations.get(type)!);
+    
+    if (variationTypes.length === 0) {
+      this.variationCombinations = [];
+      this.filteredCombinations = [];
+      return;
+    }
+    
+    const combinations = this.cartesianProduct(variationTypes, variationValues);
+    
+    this.variationCombinations = combinations.map((combo, index) => {
+      const displayName = combo.map(c => c.value).join(' / ');
+      const values = combo.map(c => {
+        const variation = this.allVariations.find(v => v.variationType === c.type && v.variationValue === c.value);
+        return {
+          type: displayName || c.type,
+          value: c.value,
+          variationId: variation?.variationId,
+          availableQuantity: variation?.availableQuantity || 0
+        };
+      });
+      
+      const availableQty = Math.min(...values.map(v => v.availableQuantity));
+      
+      return {
+        id: index + 1,
+        displayName,
+        values,
+        availableQuantity: availableQty,
+        transferQuantity: 0
+      };
+    });
+    
+    this.filteredCombinations = [...this.variationCombinations];
+  }
+
+  private cartesianProduct(types: string[], values: string[][]): { type: string; value: string }[][] {
+    if (types.length === 0) return [[]];
+    if (types.length === 1) {
+      return values[0].map(v => [{ type: types[0], value: v }]);
+    }
+
+    const result: { type: string; value: string }[][] = [];
+    const [firstType, ...restTypes] = types;
+    const [firstValues, ...restValues] = values;
+    const restProduct = this.cartesianProduct(restTypes, restValues);
+
+    firstValues.forEach(val => {
+      restProduct.forEach(prod => {
+        result.push([{ type: firstType, value: val }, ...prod]);
+      });
+    });
+
+    return result;
+  }
+
+  addSingleCombinationToCart(combo: any): void {
+    if (!combo.transferQuantity || combo.transferQuantity <= 0) {
+      return;
+    }
+
+    if (combo.transferQuantity > combo.availableQuantity) {
+      this.toastService.error('Error', `Quantity cannot exceed available quantity (${combo.availableQuantity})`);
+      return;
+    }
+
+    const existingItemIndex = this.transferCart.findIndex(item => 
+      item.displayName === combo.displayName
+    );
+    
+    if (existingItemIndex > -1) {
+      this.transferCart[existingItemIndex].quantity += combo.transferQuantity;
+      this.toastService.success('Success', 'Quantity updated in cart');
+    } else {
+      this.transferCart.push({
+        productId: this.selectedProduct.id,
+        productName: this.selectedProduct.name,
+        displayName: combo.displayName,
+        values: combo.values,
+        quantity: combo.transferQuantity,
+        availableQuantity: combo.availableQuantity
+      });
+      this.toastService.success('Success', 'Added to cart');
+    }
+    
+    combo.transferQuantity = 0;
+  }
+
+  getTotalCartQuantity(): number {
+    return this.transferCart.reduce((total, item) => total + (item.quantity || 0), 0);
   }
   
   applyVariationFilter(event: any): void {

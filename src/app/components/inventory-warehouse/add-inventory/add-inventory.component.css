@@ -803,3 +803,56 @@
   margin-bottom: 16px;
   opacity: 0.5;
 }
+
+/* Row-wise Add Button */
+.btn-add-row {
+  padding: 6px 16px;
+  background-color: #02C3B4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 70px;
+}
+
+.btn-add-row:hover:not(:disabled) {
+  background-color: #01a89a;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(2, 195, 180, 0.3);
+}
+
+.btn-add-row:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-add-row:disabled {
+  background-color: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.variation-table td:last-child {
+  text-align: center;
+}
+
+/* Empty search results */
+.empty-row td {
+  text-align: center;
+  padding: 30px 20px;
+  color: #666;
+}
+
+.empty-row mat-icon {
+  display: block;
+  margin: 0 auto 8px;
+  color: #999;
+}
+
+.empty-row div {
+  font-size: 14px;
+  color: #666;
+}

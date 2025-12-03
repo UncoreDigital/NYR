@@ -846,6 +846,7 @@ export class RouteDetailComponent implements OnInit {
             alert('Failed to import stops into Spoke. See console for details.');
             this.recalculateRouteDisabled = false;
             this.showRecalculateButton = true;
+            this.updateButtonStates();
           }
         });
       },

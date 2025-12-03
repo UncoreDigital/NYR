@@ -18,6 +18,14 @@ export interface Variation {
   inventoryId?: number; // Warehouse inventory ID for updates
 }
 
+export interface VariationCombination {
+  id: number;
+  displayName: string; // e.g., "Cotton / Small"
+  values: { name: string; value: string; variationId?: number }[];
+  quantity: number;
+  currentQuantity?: number;
+}
+
 export interface InventoryCartItem {
   variationId?: number;
   variationName?: string;
@@ -39,6 +47,11 @@ export class AddInventoryComponent implements OnInit {
   allVariations: Variation[] = [];
   filteredVariations: Variation[] = [];
   searchTerm: string = '';
+  
+  // Variation combinations (like Amazon style)
+  variationCombinations: VariationCombination[] = [];
+  filteredCombinations: VariationCombination[] = [];
+  groupedVariations: Map<string, string[]> = new Map();
   
   // Available product variations for the selected product
   productVariations: ProductVariation[] = [];
@@ -240,6 +253,22 @@ export class AddInventoryComponent implements OnInit {
     
     this.filteredVariations = [...this.allVariations];
     
+    // Generate combinations with current quantities
+    this.generateVariationCombinations();
+    
+    // Map current quantities to combinations
+    this.variationCombinations.forEach(combo => {
+      // Find matching inventory items for this combination
+      let totalCurrentQty = 0;
+      combo.values.forEach(val => {
+        const variation = this.allVariations.find(v => v.name === val.name && v.value === val.value);
+        if (variation && variation.currentQuantity) {
+          totalCurrentQty = Math.max(totalCurrentQty, variation.currentQuantity);
+        }
+      });
+      combo.currentQuantity = totalCurrentQty;
+    });
+    
     // Don't clear cart in edit mode - we want to preserve the state
     if (!this.isEditMode) {
       this.clearInventoryData();
@@ -261,10 +290,79 @@ export class AddInventoryComponent implements OnInit {
     
     this.filteredVariations = [...this.allVariations];
     
+    // Generate combinations
+    this.generateVariationCombinations();
+    
     // Clear cart and universal product when product changes (only in add mode)
     if (!this.isEditMode) {
       this.clearInventoryData();
     }
+  }
+
+  generateVariationCombinations(): void {
+    // Group variations by type
+    this.groupedVariations.clear();
+    
+    this.allVariations.forEach(v => {
+      if (!this.groupedVariations.has(v.name)) {
+        this.groupedVariations.set(v.name, []);
+      }
+      this.groupedVariations.get(v.name)!.push(v.value);
+    });
+    
+    // Generate cartesian product of all variation values
+    const variationTypes = Array.from(this.groupedVariations.keys());
+    const variationValues = variationTypes.map(type => this.groupedVariations.get(type)!);
+    
+    if (variationTypes.length === 0) {
+      this.variationCombinations = [];
+      return;
+    }
+    
+    const combinations = this.cartesianProduct(variationTypes, variationValues);
+    
+    this.variationCombinations = combinations.map((combo, index) => {
+      const displayName = combo.map(c => c.value).join(' / ');
+      const values = combo.map(c => {
+        const variation = this.allVariations.find(v => v.name === c.type && v.value === c.value);
+        return {
+          name: c.type,
+          value: c.value,
+          variationId: variation?.id
+        };
+      });
+      
+      return {
+        id: index + 1,
+        displayName,
+        values,
+        quantity: 0,
+        currentQuantity: 0
+      };
+    });
+    
+    // Initialize filtered combinations with all combinations
+    this.filteredCombinations = [...this.variationCombinations];
+  }
+
+  private cartesianProduct(types: string[], values: string[][]): { type: string; value: string }[][] {
+    if (types.length === 0) return [[]];
+    if (types.length === 1) {
+      return values[0].map(v => [{ type: types[0], value: v }]);
+    }
+
+    const result: { type: string; value: string }[][] = [];
+    const [firstType, ...restTypes] = types;
+    const [firstValues, ...restValues] = values;
+    const restProduct = this.cartesianProduct(restTypes, restValues);
+
+    firstValues.forEach(val => {
+      restProduct.forEach(prod => {
+        result.push([{ type: firstType, value: val }, ...prod]);
+      });
+    });
+
+    return result;
   }
 
   clearProductVariations(): void {
@@ -282,9 +380,16 @@ export class AddInventoryComponent implements OnInit {
 
   applyFilter(event: any): void {
     const filterValue = event.target.value.toLowerCase();
+    
+    // Filter individual variations (for old table view if used)
     this.filteredVariations = this.allVariations.filter(variation =>
       variation.name.toLowerCase().includes(filterValue) ||
       variation.value.toLowerCase().includes(filterValue)
+    );
+    
+    // Filter combinations (for new combination view)
+    this.filteredCombinations = this.variationCombinations.filter(combo =>
+      combo.displayName.toLowerCase().includes(filterValue)
     );
   }
 
@@ -294,32 +399,148 @@ export class AddInventoryComponent implements OnInit {
   }
 
   addVariationToCart(variation: Variation): void {
-    if (variation.quantity && variation.quantity > 0 && !this.isVariationInCart(variation)) {
-      const cartItem: InventoryCartItem = {
-        variationId: variation.id,
-        variationName: variation.name,
-        variationValue: variation.value,
-        quantity: variation.quantity,
-        isUniversal: false,
-        inventoryId: variation.inventoryId // Include inventory ID for updates
-      };
+    if (variation.quantity && variation.quantity > 0) {
+      // Check if this variation already exists in cart
+      const existingItemIndex = this.inventoryCart.findIndex(item => 
+        item.variationId === variation.id
+      );
       
-      this.inventoryCart.push(cartItem);
+      if (existingItemIndex > -1) {
+        // Variation exists, add to existing quantity
+        this.inventoryCart[existingItemIndex].quantity += variation.quantity;
+        this.toastService.success('Success', 'Quantity updated in cart');
+      } else {
+        // New variation, add to cart
+        const cartItem: InventoryCartItem = {
+          variationId: variation.id,
+          variationName: variation.name,
+          variationValue: variation.value,
+          quantity: variation.quantity,
+          isUniversal: false,
+          inventoryId: variation.inventoryId // Include inventory ID for updates
+        };
+        
+        this.inventoryCart.push(cartItem);
+        this.toastService.success('Success', 'Added to cart');
+      }
       
       // Reset the variation quantity after adding to cart
       variation.quantity = 0;
     }
   }
 
-  addUniversalProductToCart(): void {
-    if (this.universalProductQuantity > 0 && !this.universalProductInCart) {
+  addSingleCombinationToCart(combo: VariationCombination): void {
+    if (!combo.quantity || combo.quantity <= 0) {
+      return;
+    }
+
+    // Check if this variant already exists in cart
+    const existingItemIndex = this.inventoryCart.findIndex(item => 
+      item.variationName === combo.displayName && !item.variationValue
+    );
+    
+    if (existingItemIndex > -1) {
+      // Variant exists, add to existing quantity
+      this.inventoryCart[existingItemIndex].quantity += combo.quantity;
+      this.toastService.success('Success', 'Quantity updated in cart');
+    } else {
+      // New variant, add to cart
       const cartItem: InventoryCartItem = {
-        quantity: this.universalProductQuantity,
-        isUniversal: true
+        variationName: combo.displayName,
+        variationValue: '', // Not used for combinations
+        quantity: combo.quantity,
+        isUniversal: false
       };
       
+      // Store the first variation ID (or handle multiple IDs if API supports it)
+      if (combo.values.length > 0 && combo.values[0].variationId) {
+        cartItem.variationId = combo.values[0].variationId;
+      }
+      
       this.inventoryCart.push(cartItem);
-      this.universalProductInCart = true;
+      this.toastService.success('Success', 'Added to cart');
+    }
+    
+    // Reset quantity after adding
+    combo.quantity = 0;
+  }
+
+  addSelectedCombinationsToCart(): void {
+    const combosWithQuantity = this.variationCombinations.filter(c => c.quantity > 0);
+    let addedCount = 0;
+    let updatedCount = 0;
+    
+    combosWithQuantity.forEach(combo => {
+      // Check if this variant already exists in cart
+      const existingItemIndex = this.inventoryCart.findIndex(item => 
+        item.variationName === combo.displayName && !item.variationValue
+      );
+      
+      if (existingItemIndex > -1) {
+        // Variant exists, add to existing quantity
+        this.inventoryCart[existingItemIndex].quantity += combo.quantity;
+        updatedCount++;
+      } else {
+        // New variant, add to cart
+        const cartItem: InventoryCartItem = {
+          variationName: combo.displayName,
+          variationValue: '', // Not used for combinations
+          quantity: combo.quantity,
+          isUniversal: false
+        };
+        
+        // Store the first variation ID (or handle multiple IDs if API supports it)
+        if (combo.values.length > 0 && combo.values[0].variationId) {
+          cartItem.variationId = combo.values[0].variationId;
+        }
+        
+        this.inventoryCart.push(cartItem);
+        addedCount++;
+      }
+      
+      // Reset quantity after adding
+      combo.quantity = 0;
+    });
+    
+    // Show appropriate success message
+    if (addedCount > 0 && updatedCount > 0) {
+      this.toastService.success('Success', `${addedCount} variant(s) added, ${updatedCount} variant(s) updated in cart`);
+    } else if (addedCount > 0) {
+      this.toastService.success('Success', `${addedCount} variant(s) added to cart`);
+    } else if (updatedCount > 0) {
+      this.toastService.success('Success', `${updatedCount} variant(s) updated in cart`);
+    }
+  }
+
+  hasCombinationsWithQuantity(): boolean {
+    return this.variationCombinations.some(c => c.quantity > 0);
+  }
+
+  getTotalCartQuantity(): number {
+    return this.inventoryCart.reduce((total, item) => total + (item.quantity || 0), 0);
+  }
+
+  addUniversalProductToCart(): void {
+    if (this.universalProductQuantity > 0) {
+      // Check if universal product already exists in cart
+      const existingItemIndex = this.inventoryCart.findIndex(item => item.isUniversal);
+      
+      if (existingItemIndex > -1) {
+        // Universal product exists, add to existing quantity
+        this.inventoryCart[existingItemIndex].quantity += this.universalProductQuantity;
+        this.toastService.success('Success', 'Quantity updated in cart');
+      } else {
+        // New universal product, add to cart
+        const cartItem: InventoryCartItem = {
+          quantity: this.universalProductQuantity,
+          isUniversal: true
+        };
+        
+        this.inventoryCart.push(cartItem);
+        this.universalProductInCart = true;
+        this.toastService.success('Success', 'Added to cart');
+      }
+      
       this.universalProductQuantity = 0;
     }
   }
