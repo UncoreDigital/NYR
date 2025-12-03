@@ -116,7 +116,6 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
           totalStops: state.routeData['totalLocations'],
           shippingDate: state.routeData['selectedDate'],
           driverid: state.routeData['selectedDriverId'],
-          // status: params['status']
         };
         // Check if this is a draft route
         this.isDraftRoute = state.routeData['status']?.toLowerCase() === 'draft';
@@ -134,20 +133,6 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
 
     // Update route stops status based on route completion status
     this.updateRouteStopsStatus();
-
-    // Fallback data if no route data is available
-    if (!this.routeData) {
-      this.routeData = {
-        driverName: 'James Miller',
-        totalStops: 3,
-        shippingDate: '20/06/2025',
-        status: 'Draft', // Set to Draft for testing
-        startPoint: 'Warehouse 1',
-        distance: '5.1 miles'
-      };
-      // Set isDraftRoute for fallback data
-      this.isDraftRoute = true;
-    }
 
     // Initialize customer data for location modal
     this.initializeCustomers();
@@ -302,10 +287,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   // Location modal inventory handlers (similar to route-detail)
   openLocationInventoryModal(customer: Customer, event: Event) {
     event.stopPropagation(); // Prevent row selection toggle
-    this.selectedLocationInventory = [
-      { productName: 'Cervical Collar', skuCode: 'CC001', size: 'Medium', side: 'Left', colour: 'Beige', quantity: 2, inStock: 15 },
-      { productName: 'Knee Brace', skuCode: 'KB002', size: 'Large', side: 'Right', colour: 'Black', quantity: 1, inStock: 8 }
-    ];
+    this.selectedLocationInventory = [];
     this.modalTitle = `Location Inventory - ${customer.locationName}`;
     this.showLocationInventoryModal = true;
     this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
@@ -318,10 +300,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
 
   openLocationShippingModal(customer: Customer, event: Event) {
     event.stopPropagation(); // Prevent row selection toggle
-    this.selectedShippingInventory = [
-      { productName: 'Ankle Support', skuCode: 'AS003', size: 'Small', side: 'Left', colour: 'Grey', quantity: 3, inStock: 12 },
-      { productName: 'Wrist Splint', skuCode: 'WS004', size: 'Medium', side: 'Right', colour: 'Blue', quantity: 2, inStock: 6 }
-    ];
+    this.selectedShippingInventory = [];
     this.modalTitle = `Shipping Inventory - ${customer.locationName}`;
     this.showShippingInventoryModal = true;
     this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
@@ -345,25 +324,6 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
     } else {
       this.customers = this.allLocations;
     }
-  }
-
-  // Remove old methods that are no longer needed
-  toggleAllCustomers(event: any): void {
-    // This method is no longer used with the new location modal design
-  }
-
-  areAllCustomersSelected(): boolean {
-    // This method is no longer used with the new location modal design
-    return false;
-  }
-
-  isSomeCustomersSelected(): boolean {
-    // This method is no longer used with the new location modal design
-    return false;
-  }
-
-  onCustomerSelectionChange(): void {
-    // This method is no longer used with the new location modal design
   }
 
   addSelectedCustomersToStops(): void {
@@ -419,12 +379,6 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
       }
     }
   }
-
-  // Check if delete is allowed (only for draft routes)
-  canDeleteStop(): boolean {
-    return this.isDraftRoute;
-  }
-
   // Update route stops status based on route completion status
   updateRouteStopsStatus(): void {
     if (this.isCompletedRoute) {
@@ -459,8 +413,6 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
       },
       error: (error: any) => {
         console.error('Error loading locations:', error);
-        // this.errorMessage = 'Failed to load locations. Please try again.';
-        // this.isLoading = false;
       }
     });
   }
