@@ -48,9 +48,8 @@ export class TransferLocationComponent implements OnInit {
   products: any[] = [];
   warehouses: any[] = [];
   warehouseInventory: any[] = [];
-  productVariations: any[] = [];
-  allVariations: any[] = [];
-  filteredVariations: any[] = [];
+  allVariants: any[] = [];
+  filteredVariants: any[] = [];
   transferCart: any[] = [];
   
   // Loading states
@@ -185,61 +184,65 @@ export class TransferLocationComponent implements OnInit {
     });
   }
   
-  loadProductVariations(productId: number): void {
-    // Load all variations for the selected product
-    this.productService.getProductById(productId).subscribe({
-      next: (product) => {
-        if (product.variations && product.variations.length > 0) {
-          this.allVariations = product.variations.map(variation => ({
-            id: variation.id,
-            variationId: variation.id,
-            variationType: variation.variationType || 'N/A',
-            variationValue: variation.variationValue || 'N/A',
-            requestQuantity: 0
-          }));
-        } else {
-          this.allVariations = [];
-        }
-        this.filteredVariations = [...this.allVariations];
+  loadProductVariants(productId: number): void {
+    // Load product variants with attributes from API
+    this.productService.getProductVariantsWithAttributes(productId).subscribe({
+      next: (variants) => {
+        this.allVariants = variants.map(v => ({
+          id: v.id,
+          variantName: v.variantName,
+          sku: v.sku,
+          price: v.price,
+          requestQuantity: 0,
+          attributes: v.attributes.map(a => ({
+            variationName: a.variationName,
+            variationOptionName: a.variationOptionName
+          }))
+        }));
+        
+        this.filteredVariants = [...this.allVariants];
       },
       error: (error) => {
-        console.error('Error loading product variations:', error);
-        this.toastService.error('Error', 'Failed to load product variations');
-        this.allVariations = [];
-        this.filteredVariations = [];
+        console.error('Error loading product variants:', error);
+        this.toastService.error('Error', 'Failed to load product variants');
+        this.allVariants = [];
+        this.filteredVariants = [];
       }
     });
   }
   
-  applyVariationFilter(event: any): void {
+  applyVariantFilter(event: any): void {
     const filterValue = event.target.value.toLowerCase();
-    this.filteredVariations = this.allVariations.filter(variation =>
-      variation.variationType.toLowerCase().includes(filterValue) ||
-      variation.variationValue.toLowerCase().includes(filterValue)
+    this.filteredVariants = this.allVariants.filter(variant =>
+      variant.variantName.toLowerCase().includes(filterValue) ||
+      variant.attributes.some((a: any) => 
+        a.variationName.toLowerCase().includes(filterValue) ||
+        a.variationOptionName.toLowerCase().includes(filterValue)
+      )
     );
   }
   
-  addVariationToCart(variation: any): void {
-    if (variation.requestQuantity && variation.requestQuantity > 0) {
-      const existingIndex = this.transferCart.findIndex(item => item.variationId === variation.variationId);
+  addVariantToCart(variant: any): void {
+    if (variant.requestQuantity && variant.requestQuantity > 0) {
+      const existingIndex = this.transferCart.findIndex(item => item.variantId === variant.id);
       
       if (existingIndex >= 0) {
         // Update existing cart item
-        this.transferCart[existingIndex].quantity = variation.requestQuantity;
+        this.transferCart[existingIndex].quantity = variant.requestQuantity;
       } else {
         // Add new cart item
         this.transferCart.push({
           productId: this.selectedProduct.id,
           productName: this.selectedProduct.name,
-          variationId: variation.variationId,
-          variationType: variation.variationType,
-          variationValue: variation.variationValue,
-          quantity: variation.requestQuantity
+          variantId: variant.id,
+          variantName: variant.variantName,
+          sku: variant.sku,
+          quantity: variant.requestQuantity
         });
       }
       
       // Reset request quantity
-      variation.requestQuantity = 0;
+      variant.requestQuantity = 0;
       this.toastService.success('Added', 'Item added to request cart');
     }
   }  
@@ -259,8 +262,8 @@ export class TransferLocationComponent implements OnInit {
     }
   }
   
-  isVariationInCart(variation: any): boolean {
-    return this.transferCart.some(item => item.variationId === variation.variationId);
+  isVariantInCart(variant: any): boolean {
+    return this.transferCart.some(item => item.variantId === variant.id);
   }
 
   onSubmit() {
@@ -283,7 +286,7 @@ export class TransferLocationComponent implements OnInit {
     // Prepare items from request cart
     const items = this.transferCart.map(item => ({
       productId: item.productId,
-      productVariationId: item.variationId,
+      productVariantId: item.variantId,
       quantity: item.quantity
     }));
     
@@ -393,8 +396,8 @@ export class TransferLocationComponent implements OnInit {
     this.vanForm.patchValue({ warehouse: '' });
     this.showWarehouseDropdown = false;
     this.products = [];
-    this.allVariations = [];
-    this.filteredVariations = [];
+    this.allVariants = [];
+    this.filteredVariants = [];
     this.transferCart = [];
   }
   
@@ -455,8 +458,8 @@ export class TransferLocationComponent implements OnInit {
     this.vanForm.patchValue({ product: product.value });
     this.showProductDropdown = false;
     
-    // Load variations for the product
-    this.loadProductVariations(product.id);
+    // Load variants for the product
+    this.loadProductVariants(product.id);
   }
   
   hideCustomerDropdown() {
@@ -496,7 +499,7 @@ export class TransferLocationComponent implements OnInit {
     this.productSearchTerm = '';
     this.vanForm.patchValue({ product: '' });
     this.showProductDropdown = false;
-    this.allVariations = [];
-    this.filteredVariations = [];
+    this.allVariants = [];
+    this.filteredVariants = [];
   }
 }

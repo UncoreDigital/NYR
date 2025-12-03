@@ -1,12 +1,23 @@
-export interface ProductVariation {
+export interface ProductVariantAttribute {
   id: number;
-  productId: number;
-  variationType: string;
-  variationValue: string;
-  createdAt: string;
-  isActive: boolean;
+  variationId: number;
+  variationName: string;
+  variationOptionId: number;
+  variationOptionName: string;
+  variationOptionValue?: string;
 }
 
+export interface ProductVariant {
+  id: number;
+  productId: number;
+  variantName: string;
+  sku?: string;
+  price?: number;
+  isEnabled: boolean;
+  attributes: ProductVariantAttribute[];
+}
+
+// Temporary interface for supplies component (to be updated)
 export interface ProductVariationDetail {
   id: number;
   productId: number | string;
@@ -41,7 +52,7 @@ export interface ProductApiModel {
   isUniversal: boolean;
   createdAt: string;
   isActive: boolean;
-  variations: ProductVariation[];
+  variants: ProductVariant[];
 }
 
 export interface Product {

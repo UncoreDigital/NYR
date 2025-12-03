@@ -6,6 +6,7 @@ import { LocationService } from '../../services/location.service';
 import { WarehouseService } from '../../services/warehouse.service';
 import { WarehouseInventoryService } from '../../services/warehouse-inventory.service';
 import { VanInventoryService } from '../../services/van-inventory.service';
+import { ProductService } from '../../services/product.service';
 import { ToastService } from '../../services/toast.service';
 
 @Component({
@@ -50,8 +51,8 @@ export class TransferVanComponent implements OnInit {
   locations: any[] = [];
   products: any[] = [];
   warehouseInventoryItems: any[] = [];
-  allVariations: any[] = [];
-  filteredVariations: any[] = [];
+  allVariants: any[] = [];
+  filteredVariants: any[] = [];
   transferCart: any[] = [];
   
   // Loading states
@@ -74,6 +75,7 @@ export class TransferVanComponent implements OnInit {
     private warehouseInventoryService: WarehouseInventoryService,
     private locationService: LocationService,
     private vanInventoryService: VanInventoryService,
+    private productService: ProductService,
     private toastService: ToastService
   ) {
     this.selectedTransferOption = 'manual';
@@ -191,57 +193,80 @@ export class TransferVanComponent implements OnInit {
     });
   }
   
-  loadProductVariations(productId: number): void {
-    // Get all inventory items for this product from the selected warehouse
-    const productInventory = this.warehouseInventoryItems.filter(item => item.productId === productId);
-    
-    // Map to variations with available quantity
-    this.allVariations = productInventory.map(item => ({
-      id: item.productVariationId,
-      variationId: item.productVariationId,
-      variationType: item.variationType || 'N/A',
-      variationValue: item.variationValue || 'N/A',
-      availableQuantity: item.quantity,
-      transferQuantity: 0,
-      inventoryId: item.id
-    }));
-    
-    this.filteredVariations = [...this.allVariations];
+  loadProductVariants(productId: number): void {
+    // Load product variants with attributes from API
+    this.productService.getProductVariantsWithAttributes(productId).subscribe({
+      next: (variants) => {
+        // Get variants that exist in warehouse inventory
+        const warehouseVariantIds = this.warehouseInventoryItems
+          .filter(item => item.productId === productId && item.productVariantId)
+          .map(item => item.productVariantId);
+        
+        this.allVariants = variants
+          .filter(v => warehouseVariantIds.includes(v.id))
+          .map(v => {
+            const inventoryItem = this.warehouseInventoryItems
+              .find(item => item.productVariantId === v.id);
+            
+            return {
+              id: v.id,
+              variantName: v.variantName,
+              sku: v.sku,
+              availableQuantity: inventoryItem?.quantity || 0,
+              transferQuantity: 0,
+              inventoryId: inventoryItem?.id,
+              attributes: v.attributes.map(a => ({
+                variationName: a.variationName,
+                variationOptionName: a.variationOptionName
+              }))
+            };
+          });
+        
+        this.filteredVariants = [...this.allVariants];
+      },
+      error: (error) => {
+        console.error('Error loading product variants:', error);
+        this.toastService.error('Error', 'Failed to load product variants');
+      }
+    });
   }
   
-  applyVariationFilter(event: any): void {
+  applyVariantFilter(event: any): void {
     const filterValue = event.target.value.toLowerCase();
-    this.filteredVariations = this.allVariations.filter(variation =>
-      variation.variationType.toLowerCase().includes(filterValue) ||
-      variation.variationValue.toLowerCase().includes(filterValue)
+    this.filteredVariants = this.allVariants.filter(variant =>
+      variant.variantName.toLowerCase().includes(filterValue) ||
+      variant.attributes.some((a: any) => 
+        a.variationName.toLowerCase().includes(filterValue) ||
+        a.variationOptionName.toLowerCase().includes(filterValue)
+      )
     );
   }
   
-  addVariationToCart(variation: any): void {
-    if (variation.transferQuantity && variation.transferQuantity > 0 && variation.transferQuantity <= variation.availableQuantity) {
-      const existingIndex = this.transferCart.findIndex(item => item.variationId === variation.variationId);
+  addVariantToCart(variant: any): void {
+    if (variant.transferQuantity && variant.transferQuantity > 0 && variant.transferQuantity <= variant.availableQuantity) {
+      const existingIndex = this.transferCart.findIndex(item => item.variantId === variant.id);
       
       if (existingIndex >= 0) {
         // Update existing cart item
-        this.transferCart[existingIndex].quantity = variation.transferQuantity;
+        this.transferCart[existingIndex].quantity = variant.transferQuantity;
       } else {
         // Add new cart item
         this.transferCart.push({
           productId: this.selectedProduct.id,
           productName: this.selectedProduct.name,
-          variationId: variation.variationId,
-          variationType: variation.variationType,
-          variationValue: variation.variationValue,
-          quantity: variation.transferQuantity,
-          availableQuantity: variation.availableQuantity
+          variantId: variant.id,
+          variantName: variant.variantName,
+          sku: variant.sku,
+          quantity: variant.transferQuantity,
+          availableQuantity: variant.availableQuantity
         });
       }
       
       // Reset transfer quantity
-      variation.transferQuantity = 0;
+      variant.transferQuantity = 0;
       this.toastService.success('Added', 'Item added to transfer cart');
-    } else if (variation.transferQuantity > variation.availableQuantity) {
-      this.toastService.error('Error', `Quantity cannot exceed available quantity (${variation.availableQuantity})`);
+    } else if (variant.transferQuantity > variant.availableQuantity) {
+      this.toastService.error('Error', `Quantity cannot exceed available quantity (${variant.availableQuantity})`);
     }
   }
   
@@ -260,8 +285,8 @@ export class TransferVanComponent implements OnInit {
     }
   }
   
-  isVariationInCart(variation: any): boolean {
-    return this.transferCart.some(item => item.variationId === variation.variationId);
+  isVariantInCart(variant: any): boolean {
+    return this.transferCart.some(item => item.variantId === variant.id);
   }
 
   onSubmit() {
@@ -284,7 +309,7 @@ export class TransferVanComponent implements OnInit {
     // Prepare items from transfer cart
     const items = this.transferCart.map(item => ({
       productId: item.productId,
-      productVariationId: item.variationId,
+      productVariantId: item.variantId,
       quantity: item.quantity
     }));
     
@@ -326,8 +351,8 @@ export class TransferVanComponent implements OnInit {
     this.locationSearchTerm = '';
     this.productSearchTerm = '';
     this.transferCart = [];
-    this.allVariations = [];
-    this.filteredVariations = [];
+    this.allVariants = [];
+    this.filteredVariants = [];
     this.router.navigate(['/invans']);
   }
 
@@ -428,8 +453,8 @@ export class TransferVanComponent implements OnInit {
     this.selectedProduct = null;
     this.productSearchTerm = '';
     this.products = [];
-    this.allVariations = [];
-    this.filteredVariations = [];
+    this.allVariants = [];
+    this.filteredVariants = [];
     this.transferCart = [];
     
     // Load inventory for selected warehouse
@@ -449,8 +474,8 @@ export class TransferVanComponent implements OnInit {
     this.vanForm.patchValue({ product: product.value });
     this.showProductDropdown = false;
     
-    // Load variations from warehouse inventory
-    this.loadProductVariations(product.id);
+    // Load variants from API
+    this.loadProductVariants(product.id);
   }
   
   hideVanDropdown() {
@@ -490,8 +515,8 @@ export class TransferVanComponent implements OnInit {
     this.vanForm.patchValue({ warehouse: '' });
     this.showWarehouseDropdown = false;
     this.products = [];
-    this.allVariations = [];
-    this.filteredVariations = [];
+    this.allVariants = [];
+    this.filteredVariants = [];
     this.transferCart = [];
   }
   
@@ -507,8 +532,8 @@ export class TransferVanComponent implements OnInit {
     this.productSearchTerm = '';
     this.vanForm.patchValue({ product: '' });
     this.showProductDropdown = false;
-    this.allVariations = [];
-    this.filteredVariations = [];
+    this.allVariants = [];
+    this.filteredVariants = [];
   }
 }
 

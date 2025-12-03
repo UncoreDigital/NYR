@@ -12,7 +12,7 @@ export interface TransferInventoryItemResponse {
   productId: number;
   productName: string;
   skuCode: string;
-  productVariationId?: number;
+  productVariantId?: number;
   variationType?: string;
   variationValue?: string;
   quantity: number;
@@ -40,6 +40,6 @@ export interface CreateTransferInventoryRequest {
 
 export interface CreateTransferInventoryItemRequest {
   productId: number;
-  productVariationId?: number;
+  productVariantId?: number;
   quantity: number;
 }
