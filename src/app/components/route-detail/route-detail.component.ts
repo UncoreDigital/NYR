@@ -11,6 +11,7 @@ import { RouteMapComponent } from '../route-map/route-map.component';
 import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 import { LocationService } from 'src/app/services/location.service';
 import { RouteService } from 'src/app/services/route.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 export interface routeDetail {
   stop: string;
@@ -28,6 +29,8 @@ export interface routeDetail {
   status?: string;
   id?: number;
   fullAddress?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface ProductDetail {
@@ -147,7 +150,7 @@ export class RouteDetailComponent implements OnInit {
   recalculateRouteDisabled: boolean = false;
   mapRouteData: any[] = [];
   
-  constructor(private router: Router, private location: Location, private locationService: LocationService, private routeService: RouteService) { }
+  constructor(private router: Router, private location: Location, private locationService: LocationService, private routeService: RouteService, private toastService: ToastService) { }
 
   ngOnInit(): void {
     // Check if data was passed from navigation using history.state
@@ -436,6 +439,8 @@ export class RouteDetailComponent implements OnInit {
         notes: '',
         restockRequestId: route?.type?.toLowerCase() != "followuprequest" ? route.requestId : 0,
         followupRequestId: route?.type?.toLowerCase() == "followuprequest" ? route.requestId : 0,
+        latitude: route ? route.latitude : 0,
+        longitude: route ? route.longitude : 0,
       });
     });
     const payload: any = {
@@ -461,11 +466,12 @@ export class RouteDetailComponent implements OnInit {
         //   }
         // });
         // Handle route approval logic here
+        this.toastService.success('Success', 'Route created successfully');
         this.router.navigate(['/routes']);
         this.closeApprovalModal();
       },
       error: (err: any) => {
-        console.error('Error creating route:', err);
+        this.toastService.error('Error', 'Failed to create route');
         alert('Failed to create route. Please try again.');
       }
     });
@@ -593,7 +599,9 @@ export class RouteDetailComponent implements OnInit {
         deliveryTime: 'TBD',
         status: 'Pending',
         id: matchedLocation?.id,
-        fullAddress: `${stop.address?.addressLineOne}, ${stop.address?.addressLineTwo}`
+        fullAddress: `${stop.address?.addressLineOne}, ${stop.address?.addressLineTwo}`,
+        latitude: stop.address.latitude,
+        longitude: stop.address.longitude
       };
     });
 
@@ -904,6 +912,8 @@ export class RouteDetailComponent implements OnInit {
         fullAddress: stop.fullAddress || '',
         type: stop.type || '',
         requestId: stop.requestId || null,
+        latitude: this.dataSource?.data?.find(d => d.id === stop.id)?.latitude || 0,
+        longitude: this.dataSource?.data?.find(d => d.id === stop.id)?.longitude || 0
       }));
       
       // Update the data source for the table

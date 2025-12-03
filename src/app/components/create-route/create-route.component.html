@@ -131,6 +131,7 @@
                     </label>
                     <mat-select class="form-input" [(value)]="confirmDriverName" 
                                 style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <mat-option value="">Select Driver</mat-option>
                         <mat-option *ngFor="let driver of getFilteredDrivers()" [value]="driver.name">
                             {{driver.name}}
                         </mat-option>
