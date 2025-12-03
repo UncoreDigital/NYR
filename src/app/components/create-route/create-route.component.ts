@@ -51,27 +51,16 @@ export class CreateRouteComponent implements OnInit {
 
   createRoutes: CreateRoutes[] = [];
   selectedDate: string = new Date().toISOString().split('T')[0];
-  selectedDriver: string = '';
   showCreateModal: boolean = false;
   
   // Confirmation modal properties
   showConfirmModal: boolean = false;
   confirmDriverName: string = '';
   confirmDate: string = '';
-
-  // Driver dropdown properties
-  driverSearchTerm: string = '';
-  showDriverDropdown: boolean = false;
-  selectedDriverObj: any = null;
   selectedDriverName: any = "";
-  selectedWarehouseName: string = '';
-  searchTerm: string = '';
 
   // Driver data array (populated from API)
   driverOptions: Array<{ id?: number; value: string; name: string }> = [];
-
-  // Unique warehouse names for filter
-  warehouseNames: string[] = [];
 
   constructor(private router: Router, private userService: UserService, private locationService: LocationService,
     private transferService: TransferService
@@ -132,7 +121,6 @@ export class CreateRouteComponent implements OnInit {
     let filterValue = '';
     if (event) {
       filterValue = (event.target as HTMLInputElement).value;
-      this.searchTerm = filterValue;
     } else {
       filterValue = this.selectedDriverName || '';
     }
@@ -145,7 +133,7 @@ export class CreateRouteComponent implements OnInit {
     let filteredData = [...this.createRoutes];
 
     // Apply warehouse name filter and search term filter
-    if (this.selectedDriverName || this.searchTerm) {
+    if (this.selectedDriverName) {
       // Filter by selected driver name (if any) and by the search term across multiple fields
       filteredData = filteredData.filter(x => x.driverName == this.selectedDriverName);
       if (this.selectedDate != "") {
@@ -158,12 +146,6 @@ export class CreateRouteComponent implements OnInit {
   }
 
   createRoute() {
-    // Check if any data is available before proceeding
-    // if (this.selectedDriverName == '' || this.dataSource.data.length === 0) {
-    //   alert('Select at least one driver to create a route.');
-    //   return;
-    // }
-    
     // Open confirmation modal with current driver and date pre-selected
     this.confirmDriverName = this.selectedDriverName;
     this.confirmDate = this.selectedDate;
@@ -186,9 +168,6 @@ export class CreateRouteComponent implements OnInit {
     // Close modal and proceed with route creation
     this.closeConfirmModal();
     this.saveRoute();
-  }
-
-  viewMap(route: CreateRoutes) {
   }
 
   // Status methods
@@ -217,10 +196,6 @@ export class CreateRouteComponent implements OnInit {
     return classMap[status] || 'status-default';
   }
 
-  getAvailableCount(): number {
-    return this.dataSource.data.length;
-  }
-
   saveRoute() {
     // Navigate to route-detail with all available locations data
     this.router.navigate(['/route-detail'], {
@@ -240,46 +215,7 @@ export class CreateRouteComponent implements OnInit {
     this.showCreateModal = false;
   }
 
-  // Driver dropdown methods
-  getFilteredDrivers() {
-    if (!this.driverSearchTerm.trim()) {
-      return this.driverOptions;
-    }
-    return this.driverOptions.filter(driver =>
-      driver.name.toLowerCase().includes(this.driverSearchTerm.toLowerCase())
-    );
-  }
-
-  filterDrivers() {
-    // Automatically show dropdown when user starts typing
-    if (!this.showDriverDropdown) {
-      this.showDriverDropdown = true;
-    }
-  }
-
-  selectDriver(driver: any) {
-    this.selectedDriverObj = driver;
-    this.selectedDriver = driver.id;
-    this.driverSearchTerm = driver.name;
-    this.showDriverDropdown = false;
-  }
-
-  hideDriverDropdown() {
-    setTimeout(() => {
-      this.showDriverDropdown = false;
-    }, 150);
-  }
-
-  clearDriver() {
-    this.selectedDriver = '';
-    this.selectedDriverObj = null;
-    this.driverSearchTerm = '';
-    this.showDriverDropdown = false;
-  }
-
   resetFilters() {
-    this.selectedWarehouseName = '';
-    this.searchTerm = '';
     this.selectedDriverName = '';
     this.selectedDate = '';
     // Reset data to original state
@@ -288,16 +224,7 @@ export class CreateRouteComponent implements OnInit {
     this.dataSource.filter = '';
   }
 
-  getUniqueWarehouseNames(): string[] {
-    return this.warehouseNames;
-  }
-
-  onWarehouseNameFilterChange() {
-    this.selectedWarehouseName = this.selectedDriverName;
-    this.applyFilter();
-  }
-
-  onDateFilterChange() {
+  onFilterChange() {
     this.applyFilter();
   }
 

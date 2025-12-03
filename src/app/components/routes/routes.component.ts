@@ -115,12 +115,6 @@ export class RoutesComponent implements OnInit {
     this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
   }
 
-  /**
-   * Compute paginator pageSizeOptions as multiples of 25.
-   * It returns [25,50,75,...] up to the nearest multiple that covers the total
-   * and at least up to 100 for a reasonable default.
-   */
-  // paginator options are provided by the shared utility in src/app/utils/paginator-utils.ts
 
   onDriverFilterChange() {
     this.applyFilters();

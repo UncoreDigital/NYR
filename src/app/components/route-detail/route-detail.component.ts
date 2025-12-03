@@ -1,9 +1,8 @@
 // NOTE :- 
 // Show Status Column when we click on Map from Route screen (If status is not completed then in all other case show the status in next screen)
-
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';

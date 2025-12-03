@@ -25,14 +25,14 @@
                         </button>
                         <div class="dropdown-divider"></div>
                         <mat-select class="select-filter" placeholder="Driver Name" [(value)]="selectedDriverName"
-                            (selectionChange)="onWarehouseNameFilterChange()">
+                            (selectionChange)="onFilterChange()">
                             <mat-option class="select-option" value="">All Drivers</mat-option>
-                            <mat-option class="select-option" *ngFor="let driver of getFilteredDrivers()"
+                            <mat-option class="select-option" *ngFor="let driver of driverOptions"
                                 [value]="driver.name">{{driver.name}}</mat-option>
                         </mat-select>
                         <div class="dropdown-divider"></div>
                         <input type="date" class="date-input" placeholder="Select Date" style="border: none;"
-                            [(ngModel)]="selectedDate" (change)="onDateFilterChange()">
+                            [(ngModel)]="selectedDate" (change)="onFilterChange()">
                     </div>
                     <button class="reset-filter-btn" (click)="resetFilters()">
                         <mat-icon>refresh</mat-icon>
@@ -131,8 +131,7 @@
                     </label>
                     <mat-select class="form-input" [(value)]="confirmDriverName" 
                                 style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                        <mat-option value="">Select Driver</mat-option>
-                        <mat-option *ngFor="let driver of getFilteredDrivers()" [value]="driver.name">
+                        <mat-option *ngFor="let driver of driverOptions" [value]="driver.name">
                             {{driver.name}}
                         </mat-option>
                     </mat-select>
