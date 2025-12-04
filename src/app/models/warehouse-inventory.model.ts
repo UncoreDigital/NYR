@@ -36,8 +36,11 @@ export interface WarehouseInventoryDetailResponse {
   id: number;
   productName: string;
   productSKU: string;
-  variationType: string;
-  variationValue: string;
+  variantName?: string;
+  variantSku?: string;
+  // Legacy fields (deprecated)
+  variationType?: string;
+  variationValue?: string;
   variationSKU?: string;
   quantity: number;
   notes?: string;

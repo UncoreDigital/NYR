@@ -13,6 +13,8 @@ export interface VanInventoryItemResponse {
   productName: string;
   skuCode: string;
   productVariantId?: number;
+  variantName?: string;
+  variantSku?: string;
   variationType?: string;
   variationValue?: string;
   quantity: number;
