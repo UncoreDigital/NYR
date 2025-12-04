@@ -17,43 +17,41 @@
                 <mat-icon class="breadcrumb-separator text-gray-400">chevron_right</mat-icon>
 
                 <span class="breadcrumb-item text-gray-800 font-semibold active">
-                    {{isEditMode ? 'Edit' : 'Add'}} Inventory
+                    Add Inventory
                 </span>
             </div>
 
             <!-- Page Header -->
             <div class="page-header">
-                <h1>{{isEditMode ? 'Edit' : 'Add'}} Inventory</h1>
+                <h1>Add Inventory</h1>
             </div>
 
             <div class="table-container">
                 <form [formGroup]="inventoryForm" class="user-form" (ngSubmit)="onSubmit()">
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Select Warehouse <span *ngIf="isEditMode" style="color: #666; font-size: 12px;">(Locked)</span></label>
+                            <label>Select Warehouse</label>
                             <div class="custom-select-container">
                                 <div class="search-wrapper">
-                                    <mat-icon class="search-icon" *ngIf="!isEditMode">search</mat-icon>
-                                    <mat-icon class="search-icon" *ngIf="isEditMode">lock</mat-icon>
+                                    <mat-icon class="search-icon">search</mat-icon>
                                     <input type="text" 
                                            class="search-input" 
                                            [(ngModel)]="warehouseSearchTerm" 
                                            [ngModelOptions]="{standalone: true}"
-                                           [placeholder]="isEditMode ? 'Warehouse (locked for editing)' : 'Search and select warehouse...'"
-                                           (focus)="!isEditMode && (showWarehouseDropdown = true)"
+                                           placeholder="Search and select warehouse..."
+                                           (focus)="showWarehouseDropdown = true"
                                            (blur)="hideWarehouseDropdown()"
                                            (input)="filterWarehouses()"
-                                           [disabled]="isEditMode"
-                                           [readonly]="isEditMode">
+                                           >
                                     <button type="button" 
                                             class="clear-button" 
-                                            *ngIf="selectedWarehouse && !isEditMode"
+                                            *ngIf="selectedWarehouse"
                                             (click)="clearWarehouse()"
                                             title="Clear selection">
                                         <mat-icon>close</mat-icon>
                                     </button>
                                 </div>
-                                <div class="dropdown-list" *ngIf="showWarehouseDropdown && !isEditMode && getFilteredWarehouses().length > 0">
+                                <div class="dropdown-list" *ngIf="showWarehouseDropdown && getFilteredWarehouses().length > 0">
                                     <div class="dropdown-item" 
                                          *ngFor="let warehouse of getFilteredWarehouses()"
                                          (mousedown)="selectWarehouse(warehouse)"
@@ -61,17 +59,13 @@
                                         {{warehouse.name}}
                                     </div>
                                 </div>
-                                <div class="dropdown-list" *ngIf="showWarehouseDropdown && !isEditMode && getFilteredWarehouses().length === 0">
+                                <div class="dropdown-list" *ngIf="showWarehouseDropdown && getFilteredWarehouses().length === 0">
                                     <div class="dropdown-item no-results">No warehouses found</div>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Select Product 
-                                <span *ngIf="isEditMode && warehouseProducts.length > 0" style="color: #1976d2; font-size: 12px;">
-                                    ({{warehouseProducts.length}} product{{warehouseProducts.length > 1 ? 's' : ''}} in warehouse)
-                                </span>
-                            </label>
+                            <label>Select Product</label>
                             <div class="custom-select-container">
                                 <div class="search-wrapper">
                                     <mat-icon class="search-icon">search</mat-icon>
@@ -79,13 +73,13 @@
                                            class="search-input" 
                                            [(ngModel)]="productSearchTerm" 
                                            [ngModelOptions]="{standalone: true}"
-                                           [placeholder]="isEditMode ? 'Search products in this warehouse...' : 'Search and select product...'"
+                                           placeholder="Search and select product..."
                                            (focus)="showProductDropdown = true"
                                            (blur)="hideProductDropdown()"
                                            (input)="filterProducts()">
                                     <button type="button" 
                                             class="clear-button" 
-                                            *ngIf="selectedProduct && !isEditMode"
+                                            *ngIf="selectedProduct"
                                             (click)="clearProduct()"
                                             title="Clear selection">
                                         <mat-icon>close</mat-icon>
@@ -101,7 +95,7 @@
                                 </div>
                                 <div class="dropdown-list" *ngIf="showProductDropdown && getFilteredProducts().length === 0">
                                     <div class="dropdown-item no-results">
-                                        {{isEditMode ? 'No products found in this warehouse' : 'No products found'}}
+                                        No products found
                                     </div>
                                 </div>
                             </div>
@@ -111,7 +105,7 @@
 
 
                     <!-- Warehouse Products List (Edit Mode Only) -->
-                    <div class="warehouse-products-section" *ngIf="isEditMode && warehouseProducts.length > 0 && !selectedProduct">
+                    <!-- <div class="warehouse-products-section" *ngIf="warehouseProducts.length > 0 && !selectedProduct">
                         <h3>Products in this Warehouse</h3>
                         <p class="section-description">Select a product to add more inventory</p>
                         <div class="products-grid">
@@ -128,16 +122,13 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Product Selection Message -->
-                    <div class="variation-section" *ngIf="!selectedProduct && (!isEditMode || warehouseProducts.length === 0)">
+                    <div class="variation-section" *ngIf="!selectedProduct">
                         <div class="no-product-message">
                             <mat-icon>info</mat-icon>
-                            <p *ngIf="!isEditMode">Please select a product to view its variations.</p>
-                            <p *ngIf="isEditMode && warehouseProducts.length === 0">
-                                This warehouse has no products yet. Please go back and add inventory first.
-                            </p>
+                            <p>Please select a product to view its variations.</p>
                         </div>
                     </div>
 
@@ -147,7 +138,7 @@
                             <h3>Product Variations</h3>
                             <button type="button" 
                                     class="btn-change-product" 
-                                    *ngIf="isEditMode && warehouseProducts.length > 1"
+                                    *ngIf="warehouseProducts.length > 1"
                                     (click)="changeProduct()">
                                 <mat-icon>swap_horiz</mat-icon>
                                 Change Product
@@ -175,8 +166,8 @@
                                     <tr>
                                         <th>VARIANT NAME</th>
                                         <th>SKU</th>
-                                        <th *ngIf="isEditMode">CURRENT QTY</th>
-                                        <th>{{isEditMode ? 'ADD QUANTITY' : 'QUANTITY'}}</th>
+                                        <th>CURRENT QTY</th>
+                                        <th>QUANTITY</th>
                                         <th>ACTION</th>
                                     </tr>
                                 </thead>
@@ -191,7 +182,7 @@
                                             </div>
                                         </td>
                                         <td>{{variant.sku || '-'}}</td>
-                                        <td *ngIf="isEditMode">
+                                        <td>
                                             <span class="current-quantity">{{variant.currentQuantity || 0}}</span>
                                         </td>
                                         <td>
@@ -199,7 +190,7 @@
                                                    class="variation-value-input" 
                                                    [(ngModel)]="variant.quantity" 
                                                    [ngModelOptions]="{standalone: true}"
-                                                   [placeholder]="isEditMode ? 'Add qty' : '0'"
+                                                   placeholder="0"
                                                    min="0"
                                                    (input)="updateVariantQuantity(variant)">
                                         </td>
@@ -214,7 +205,7 @@
                                         </td>
                                     </tr>
                                     <tr *ngIf="filteredVariants.length === 0 && allVariants.length > 0" class="empty-row">
-                                        <td [attr.colspan]="isEditMode ? 5 : 4">
+                                        <td [attr.colspan]="5">
                                             <mat-icon>search_off</mat-icon>
                                             <div>No variants found</div>
                                         </td>
@@ -247,13 +238,13 @@
 
                     <!-- Inventory Cart -->
                     <div class="inventory-cart-section" *ngIf="inventoryCart.length > 0">
-                        <h4>{{isEditMode ? 'Inventory to Update' : 'Inventory to Add'}}</h4>
+                        <h4>Inventory to Add</h4>
                         <div class="cart-table-container">
                             <table class="cart-table">
                                 <thead>
                                     <tr>
                                         <th>VARIANT</th>
-                                        <th>{{isEditMode ? 'QUANTITY TO ADD' : 'QUANTITY'}}</th>
+                                        <th>QUANTITY</th>
                                         <th>ACTION</th>
                                     </tr>
                                 </thead>
@@ -289,7 +280,7 @@
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary" 
                                 [disabled]="!selectedWarehouse || !selectedProduct || inventoryCart.length === 0">
-                            {{isEditMode ? 'Update' : 'Add'}} Inventory
+                            Add Inventory
                         </button>
                         <button type="reset" class="btn btn-outline" (click)="onCancel()">Cancel</button>
                     </div>

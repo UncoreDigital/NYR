@@ -5,7 +5,7 @@ import { WarehouseInventoryService } from '../../../services/warehouse-inventory
 import { WarehouseService } from '../../../services/warehouse.service';
 import { ProductService, ProductVariantDto } from '../../../services/product.service';
 import { ToastService } from '../../../services/toast.service';
-import { AddInventoryRequest, AddBulkInventoryRequest, BulkInventoryItem, WarehouseInventoryResponse } from '../../../models/warehouse-inventory.model';
+import { AddBulkInventoryRequest, BulkInventoryItem, WarehouseInventoryResponse } from '../../../models/warehouse-inventory.model';
 import { WarehouseResponse } from '../../../models/warehouse.model';
 import { ProductApiModel } from '../../../models/product.model';
 
@@ -69,7 +69,6 @@ export class AddInventoryComponent implements OnInit {
   loading = false;
   
   // Edit mode
-  isEditMode = false;
   warehouseId: number | null = null;
   warehouseInventoryItems: WarehouseInventoryResponse[] = [];
   warehouseProducts: ProductApiModel[] = []; // Products that exist in this warehouse
@@ -93,7 +92,6 @@ export class AddInventoryComponent implements OnInit {
     // Check if we're in edit mode first
     this.route.params.subscribe(params => {
       if (params['id']) {
-        this.isEditMode = true;
         this.warehouseId = +params['id'];
       }
     });
@@ -107,11 +105,6 @@ export class AddInventoryComponent implements OnInit {
     this.warehouseService.getWarehouses().subscribe({
       next: (warehouses) => {
         this.warehouses = warehouses;
-        
-        // If in edit mode, load the warehouse after warehouses list is loaded
-        if (this.isEditMode && this.warehouseId) {
-          this.loadWarehouseForEdit(this.warehouseId);
-        }
       },
       error: (error) => {
         console.error('Error loading warehouses:', error);
@@ -125,9 +118,7 @@ export class AddInventoryComponent implements OnInit {
         this.products = products;
         
         // If in edit mode and warehouse is already loaded, load existing inventory
-        if (this.isEditMode && this.selectedWarehouse) {
-          this.loadExistingInventory(this.selectedWarehouse.id);
-        }
+        this.loadExistingInventory(this?.selectedWarehouse?.id || 0);
       },
       error: (error) => {
         console.error('Error loading products:', error);
@@ -249,9 +240,7 @@ export class AddInventoryComponent implements OnInit {
         this.filteredVariants = [...this.allVariants];
         
         // Don't clear cart in edit mode - we want to preserve the state
-        if (!this.isEditMode) {
-          this.clearInventoryData();
-        }
+        this.clearInventoryData();
       },
       error: (error) => {
         console.error('Error loading product variants:', error);
@@ -267,25 +256,27 @@ export class AddInventoryComponent implements OnInit {
         this.productVariants = variants;
         
         // Convert ProductVariantDto to Variant interface for the UI
-        this.allVariants = variants.map(v => ({
-          id: v.id,
-          variantName: v.variantName,
-          sku: v.sku,
-          price: v.price,
-          quantity: 0,
-          currentQuantity: 0,
-          attributes: v.attributes.map(a => ({
-            variationName: a.variationName,
-            variationOptionName: a.variationOptionName
-          }))
-        }));
+        this.allVariants = variants.map(v => {
+          // Find existing inventory for this variant
+          const existingInventory = this.warehouseInventoryItems.find(item => item.productVariantId === v.id);
+          return {
+            id: v.id,
+            variantName: v.variantName,
+            sku: v.sku,
+            price: v.price,
+            quantity: 0,
+            currentQuantity: 0,
+            attributes: v.attributes.map(a => ({
+              variationName: a.variationName,
+              variationOptionName: a.variationOptionName
+            }))
+          };
+        });
         
         this.filteredVariants = [...this.allVariants];
         
         // Clear cart when product changes (only in add mode)
-        if (!this.isEditMode) {
-          this.clearInventoryData();
-        }
+        this.clearInventoryData();
       },
       error: (error) => {
         console.error('Error loading product variants:', error);
@@ -388,7 +379,7 @@ export class AddInventoryComponent implements OnInit {
   
   getFilteredProducts() {
     // In edit mode, only show products that exist in this warehouse
-    const productsToFilter = this.isEditMode ? this.warehouseProducts : this.products;
+    const productsToFilter = this.products;
     
     if (!this.productSearchTerm) {
       return productsToFilter;
@@ -407,6 +398,9 @@ export class AddInventoryComponent implements OnInit {
   }
   
   selectWarehouse(warehouse: WarehouseResponse) {
+    this.warehouseId = warehouse.id;
+    this.clearProduct();
+    this.loadExistingInventory(this.warehouseId);
     this.selectedWarehouse = warehouse;
     this.warehouseSearchTerm = warehouse.name;
     this.inventoryForm.patchValue({ warehouseName: warehouse.id });
@@ -419,13 +413,7 @@ export class AddInventoryComponent implements OnInit {
     this.inventoryForm.patchValue({ prodcut: product.id });
     this.showProductDropdown = false;
     
-    // In edit mode, load with existing inventory data
-    if (this.isEditMode && this.warehouseInventoryItems.length > 0) {
-      this.selectProductForEdit(product, this.warehouseInventoryItems);
-    } else {
-      // Load variants for the selected product (add mode)
-      this.loadProductVariants(product);
-    }
+    this.selectProductForEdit(product, this.warehouseInventoryItems);
   }
   
   hideWarehouseDropdown() {
@@ -448,11 +436,6 @@ export class AddInventoryComponent implements OnInit {
   }
   
   clearProduct() {
-    // Don't allow clearing product in edit mode
-    if (this.isEditMode) {
-      return;
-    }
-    
     this.selectedProduct = null;
     this.productSearchTerm = '';
     this.inventoryForm.patchValue({ prodcut: '' });
@@ -481,8 +464,8 @@ export class AddInventoryComponent implements OnInit {
         inventoryItems: bulkInventoryItems
       };
 
-      const actionText = this.isEditMode ? 'Updating' : 'Adding';
-      const successText = this.isEditMode ? 'updated' : 'added';
+      const actionText = 'Adding';
+      const successText = 'added';
       
       this.toastService.info('Saving', `${actionText} inventory...`);
 
