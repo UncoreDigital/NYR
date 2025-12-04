@@ -120,9 +120,10 @@ export class SidebarComponent implements OnInit {
     // Check inventory items first
     const activeInventoryItem = this.inventoryItems.find(item => 
       currentUrl.includes(item.route) || 
-      (item.route === '/warehouse' && (currentUrl.includes('/warehouse') || currentUrl.includes('/add-inventory'))) ||
-      (item.route === '/inlocation' && currentUrl.includes('/tolocation') && !currentUrl.includes('?from')) || // Transfer to location is part of locations
-      (item.route === '/invans' && !currentUrl.includes('?from') && currentUrl.includes('/tovan')) // Transfer to van is part of vans
+      (item.route === '/inwarehouse' && (currentUrl.includes('/warehouse') || currentUrl.includes('/add-inventory') || currentUrl.includes('?context=warehouse') 
+      || currentUrl.includes('/inventory-detail?context=warehouse'))) ||
+      (item.route === '/inlocation' && (currentUrl.includes('/tolocation') && !currentUrl.includes('?from') || currentUrl.includes('/inventory-detail?context=location'))) || // Transfer to location is part of locations
+      (item.route === '/invans' && (!currentUrl.includes('?from') && currentUrl.includes('/tovan') || currentUrl.includes('/inventory-detail?context=van'))) // Transfer to van is part of vans
     );
 
     if (activeInventoryItem) {
