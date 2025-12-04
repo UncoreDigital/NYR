@@ -9,9 +9,9 @@ export interface WarehouseInventoryResponse {
   productId: number;
   productName: string;
   productSKU: string;
-  productVariationId: number;
-  variationType: string;
-  variationValue: string;
+  productVariantId?: number;
+  variationType?: string;
+  variationValue?: string;
   variationSKU?: string;
   quantity: number;
   notes?: string;
@@ -36,8 +36,11 @@ export interface WarehouseInventoryDetailResponse {
   id: number;
   productName: string;
   productSKU: string;
-  variationType: string;
-  variationValue: string;
+  variantName?: string;
+  variantSku?: string;
+  // Legacy fields (deprecated)
+  variationType?: string;
+  variationValue?: string;
   variationSKU?: string;
   quantity: number;
   notes?: string;
@@ -48,13 +51,13 @@ export interface WarehouseInventoryDetailResponse {
 export interface AddInventoryRequest {
   warehouseId: number;
   productId: number;
-  productVariationId: number;
+  productVariantId?: number;
   quantity: number;
   notes?: string;
 }
 
 export interface BulkInventoryItem {
-  productVariationId: number;
+  productVariantId?: number;
   quantity: number;
   notes?: string;
 }
@@ -70,13 +73,4 @@ export interface UpdateInventoryRequest {
   notes?: string;
 }
 
-export interface ProductVariationResponse {
-  id: number;
-  productId: number;
-  variationType: string;
-  variationValue: string;
-  sku?: string;
-  priceAdjustment?: number;
-  stockQuantity?: number;
-  isActive: boolean;
-}
+

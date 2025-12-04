@@ -257,36 +257,35 @@ export class SuppliesComponent implements OnInit {
     const variationTypeData: ProductVariationTypeData[] = [];
     
     products.forEach(product => {
-      if (product.variations && product.variations.length > 0) {
+      if (product.variants && product.variants.length > 0) {
         // Create product variation type data for table
         const productVariationTypeEntry: ProductVariationTypeData = {
           productId: product.id,
           productName: product.name,
-          variations: product.variations.map(variation => ({
+          variations: product.variants.map((variant: any) => ({
             productName: product.name,
-            variationType: variation.variationType,
-            variationValue: variation.variationValue,
-            id: variation.id,
+            variationType: variant.variantName || 'N/A',
+            variationValue: variant.sku || 'N/A',
+            id: variant.id,
             quantity: 0 // Initialize quantity to 0
           }))
         };
         variationTypeData.push(productVariationTypeEntry);
 
-        product.variations.forEach(variation => {
+        product.variants.forEach((variant: any) => {
           // Create a variation detail object
           const variationDetail: ProductVariationDetail = {
-            id: variation.id,
+            id: variant.id,
             productId: product.id,
             productName: product.name,
-            size: this.extractVariationByType(product.variations, 'Size') || 'N/A',
-            side: this.extractVariationByType(product.variations, 'Side') || 'Universal',
-            colour: this.extractVariationByType(product.variations, 'Color') || 
-                   this.extractVariationByType(product.variations, 'Colour') || 'N/A',
+            size: 'N/A', // TODO: Extract from variant attributes
+            side: 'Universal', // TODO: Extract from variant attributes
+            colour: 'N/A', // TODO: Extract from variant attributes
             inStock: Math.floor(Math.random() * 100), // Random stock for demo
             quantity: 0,
             status: 'available',
-            variationType: variation.variationType,
-            variationValue: variation.variationValue
+            variationType: variant.variantName || 'N/A',
+            variationValue: variant.sku || 'N/A'
           };
           extractedVariations.push(variationDetail);
         });
@@ -341,35 +340,9 @@ export class SuppliesComponent implements OnInit {
 
   loadProductVariations() {
     this.loadingVariations = true;
-    this.productService.getAllProductVariations().subscribe({
-      next: (variations: any[]) => {
-        // Transform API variations to match our interface
-        this.allProductVariations = variations.map(variation => ({
-          id: variation.id,
-          productId: variation.productId,
-          productName: variation.productName || 'Unknown Product',
-          size: variation.size || 'N/A',
-          side: variation.side || 'Universal',
-          colour: variation.colour || variation.color || 'N/A',
-          inStock: variation.inStock || 0,
-          quantity: 0, // Default quantity for selection
-          status: variation.status || 'available',
-          variationType: variation.variationType,
-          variationValue: variation.variationValue
-        }));
-        
-        // Initialize filtered variations
-        this.productVariations = [...this.allProductVariations];
-        this.loadingVariations = false;
-        console.log('Product variations loaded successfully:', variations.length);
-      },
-      error: (error) => {
-        console.error('Error loading product variations:', error);
-        this.loadingVariations = false;
-        // Keep the mock data if API fails
-        console.log('Using fallback variation data');
-      }
-    });
+    // TODO: Update to use new variant system - temporarily disabled
+    this.loadingVariations = false;
+    console.log('Product variations loading disabled - needs variant system update');
   }
 
   onSubmit() {
@@ -624,7 +597,7 @@ export class SuppliesComponent implements OnInit {
     
     // Create an array of observables for each selected product
     const variationRequests = this.selectedProductsList.map(productId => 
-      this.productService.getProductVariations(parseInt(productId))
+      this.productService.getProductVariants(parseInt(productId))
     );
     
     // Execute all requests simultaneously

@@ -3,25 +3,26 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { WarehouseInventoryService } from '../../../services/warehouse-inventory.service';
 import { WarehouseService } from '../../../services/warehouse.service';
-import { ProductService } from '../../../services/product.service';
+import { ProductService, ProductVariantDto } from '../../../services/product.service';
 import { ToastService } from '../../../services/toast.service';
 import { AddInventoryRequest, AddBulkInventoryRequest, BulkInventoryItem, WarehouseInventoryResponse } from '../../../models/warehouse-inventory.model';
 import { WarehouseResponse } from '../../../models/warehouse.model';
-import { ProductApiModel, ProductVariation } from '../../../models/product.model';
+import { ProductApiModel } from '../../../models/product.model';
 
-export interface Variation {
-  id?: number;
-  name: string;
-  value: string;
+export interface Variant {
+  id: number;
+  variantName: string;
+  sku?: string;
+  price?: number;
   quantity?: number;
   currentQuantity?: number; // Existing quantity in warehouse
   inventoryId?: number; // Warehouse inventory ID for updates
+  attributes: { variationName: string; variationOptionName: string }[];
 }
 
 export interface InventoryCartItem {
-  variationId?: number;
-  variationName?: string;
-  variationValue?: string;
+  variantId?: number;
+  variantName?: string;
   quantity: number;
   isUniversal?: boolean;
   inventoryId?: number; // For tracking existing inventory items
@@ -35,15 +36,15 @@ export interface InventoryCartItem {
 export class AddInventoryComponent implements OnInit {
   inventoryForm: FormGroup;
   
-  // Product variations from selected product
-  allVariations: Variation[] = [];
-  filteredVariations: Variation[] = [];
+  // Product variants from selected product
+  allVariants: Variant[] = [];
+  filteredVariants: Variant[] = [];
   searchTerm: string = '';
   
-  // Available product variations for the selected product
-  productVariations: ProductVariation[] = [];
+  // Available product variants for the selected product
+  productVariants: ProductVariantDto[] = [];
   
-  // Inventory cart for managing multiple variations with quantities
+  // Inventory cart for managing multiple variants with quantities
   inventoryCart: InventoryCartItem[] = [];
   
   // Universal product quantity (for products without variations)
@@ -220,57 +221,85 @@ export class AddInventoryComponent implements OnInit {
     this.productSearchTerm = product.name;
     this.inventoryForm.patchValue({ prodcut: product.id });
     
-    // Load variations from the selected product
-    this.productVariations = product.variations || [];
-    
-    // Convert ProductVariation to Variation interface and map existing quantities
-    this.allVariations = this.productVariations.map(pv => {
-      // Find existing inventory for this variation
-      const existingInventory = inventoryItems.find(item => item.productVariationId === pv.id);
-      
-      return {
-        id: pv.id,
-        name: pv.variationType,
-        value: pv.variationValue,
-        quantity: 0, // New quantity to add
-        currentQuantity: existingInventory ? existingInventory.quantity : 0,
-        inventoryId: existingInventory ? existingInventory.id : undefined
-      };
+    // Load variants from the API with attributes
+    this.productService.getProductVariantsWithAttributes(product.id).subscribe({
+      next: (variants) => {
+        this.productVariants = variants;
+        
+        // Convert ProductVariantDto to Variant interface and map existing quantities
+        this.allVariants = variants.map(v => {
+          // Find existing inventory for this variant
+          const existingInventory = inventoryItems.find(item => item.productVariantId === v.id);
+          
+          return {
+            id: v.id,
+            variantName: v.variantName,
+            sku: v.sku,
+            price: v.price,
+            quantity: 0, // New quantity to add
+            currentQuantity: existingInventory ? existingInventory.quantity : 0,
+            inventoryId: existingInventory ? existingInventory.id : undefined,
+            attributes: v.attributes.map(a => ({
+              variationName: a.variationName,
+              variationOptionName: a.variationOptionName
+            }))
+          };
+        });
+        
+        this.filteredVariants = [...this.allVariants];
+        
+        // Don't clear cart in edit mode - we want to preserve the state
+        if (!this.isEditMode) {
+          this.clearInventoryData();
+        }
+      },
+      error: (error) => {
+        console.error('Error loading product variants:', error);
+        this.toastService.error('Error', 'Failed to load product variants');
+      }
     });
-    
-    this.filteredVariations = [...this.allVariations];
-    
-    // Don't clear cart in edit mode - we want to preserve the state
-    if (!this.isEditMode) {
-      this.clearInventoryData();
-    }
   }
 
-  loadProductVariations(product: ProductApiModel): void {
-    // Load variations from the selected product
-    this.productVariations = product.variations || [];
-    
-    // Convert ProductVariation to Variation interface for the UI
-    this.allVariations = this.productVariations.map(pv => ({
-      id: pv.id,
-      name: pv.variationType,
-      value: pv.variationValue,
-      quantity: 0,
-      currentQuantity: 0
-    }));
-    
-    this.filteredVariations = [...this.allVariations];
-    
-    // Clear cart and universal product when product changes (only in add mode)
-    if (!this.isEditMode) {
-      this.clearInventoryData();
-    }
+  loadProductVariants(product: ProductApiModel): void {
+    // Load variants from the API with attributes
+    this.productService.getProductVariantsWithAttributes(product.id).subscribe({
+      next: (variants) => {
+        this.productVariants = variants;
+        
+        // Convert ProductVariantDto to Variant interface for the UI
+        this.allVariants = variants.map(v => ({
+          id: v.id,
+          variantName: v.variantName,
+          sku: v.sku,
+          price: v.price,
+          quantity: 0,
+          currentQuantity: 0,
+          attributes: v.attributes.map(a => ({
+            variationName: a.variationName,
+            variationOptionName: a.variationOptionName
+          }))
+        }));
+        
+        this.filteredVariants = [...this.allVariants];
+        
+        // Clear cart when product changes (only in add mode)
+        if (!this.isEditMode) {
+          this.clearInventoryData();
+        }
+      },
+      error: (error) => {
+        console.error('Error loading product variants:', error);
+        this.toastService.error('Error', 'Failed to load product variants');
+        this.allVariants = [];
+        this.filteredVariants = [];
+      }
+    });
   }
 
-  clearProductVariations(): void {
-    this.productVariations = [];
-    this.allVariations = [];
-    this.filteredVariations = [];
+  clearProductVariants(): void {
+    this.productVariants = [];
+    this.allVariants = [];
+    this.filteredVariants = [];
     this.clearInventoryData();
   }
 
@@ -282,32 +311,34 @@ export class AddInventoryComponent implements OnInit {
 
   applyFilter(event: any): void {
     const filterValue = event.target.value.toLowerCase();
-    this.filteredVariations = this.allVariations.filter(variation =>
-      variation.name.toLowerCase().includes(filterValue) ||
-      variation.value.toLowerCase().includes(filterValue)
+    this.filteredVariants = this.allVariants.filter(variant =>
+      variant.variantName.toLowerCase().includes(filterValue) ||
+      variant.attributes.some(a => 
+        a.variationName.toLowerCase().includes(filterValue) ||
+        a.variationOptionName.toLowerCase().includes(filterValue)
+      )
     );
   }
 
-  updateVariationQuantity(variation: Variation): void {
-    // Update quantity in the variation object
+  updateVariantQuantity(variant: Variant): void {
+    // Update quantity in the variant object
     // This is handled by ngModel binding
   }
 
-  addVariationToCart(variation: Variation): void {
-    if (variation.quantity && variation.quantity > 0 && !this.isVariationInCart(variation)) {
+  addVariantToCart(variant: Variant): void {
+    if (variant.quantity && variant.quantity > 0 && !this.isVariantInCart(variant)) {
       const cartItem: InventoryCartItem = {
-        variationId: variation.id,
-        variationName: variation.name,
-        variationValue: variation.value,
-        quantity: variation.quantity,
+        variantId: variant.id,
+        variantName: variant.variantName,
+        quantity: variant.quantity,
         isUniversal: false,
-        inventoryId: variation.inventoryId // Include inventory ID for updates
+        inventoryId: variant.inventoryId // Include inventory ID for updates
       };
       
       this.inventoryCart.push(cartItem);
       
-      // Reset the variation quantity after adding to cart
-      variation.quantity = 0;
+      // Reset the variant quantity after adding to cart
+      variant.quantity = 0;
     }
   }
 
@@ -324,9 +355,9 @@ export class AddInventoryComponent implements OnInit {
     }
   }
 
-  isVariationInCart(variation: Variation): boolean {
+  isVariantInCart(variant: Variant): boolean {
     return this.inventoryCart.some(item => 
-      item.variationId === variation.id
+      item.variantId === variant.id
     );
   }
 
@@ -392,8 +423,8 @@ export class AddInventoryComponent implements OnInit {
     if (this.isEditMode && this.warehouseInventoryItems.length > 0) {
       this.selectProductForEdit(product, this.warehouseInventoryItems);
     } else {
-      // Load variations for the selected product (add mode)
-      this.loadProductVariations(product);
+      // Load variants for the selected product (add mode)
+      this.loadProductVariants(product);
     }
   }
   
@@ -427,8 +458,8 @@ export class AddInventoryComponent implements OnInit {
     this.inventoryForm.patchValue({ prodcut: '' });
     this.showProductDropdown = false;
     
-    // Clear variations and inventory data when product is cleared
-    this.clearProductVariations();
+    // Clear variants and inventory data when product is cleared
+    this.clearProductVariants();
   }
 
   onSubmit(): void {
@@ -437,11 +468,11 @@ export class AddInventoryComponent implements OnInit {
       
       // Prepare bulk inventory request
       const bulkInventoryItems: BulkInventoryItem[] = this.inventoryCart.map(item => ({
-        productVariationId: item.variationId || 0, // Use 0 for universal products or handle differently based on API requirements
+        productVariantId: item.variantId, // Use ProductVariantId (nullable for universal products)
         quantity: item.quantity,
         notes: item.isUniversal 
-          ? 'Universal product - no variations' 
-          : `Variation: ${item.variationName} - ${item.variationValue}`
+          ? 'Universal product - no variants' 
+          : `Variant: ${item.variantName}`
       }));
 
       const addBulkInventoryRequest: AddBulkInventoryRequest = {
@@ -479,7 +510,7 @@ export class AddInventoryComponent implements OnInit {
     // Clear current product selection and cart
     this.selectedProduct = null;
     this.productSearchTerm = '';
-    this.clearProductVariations();
+    this.clearProductVariants();
     this.inventoryCart = [];
   }
 

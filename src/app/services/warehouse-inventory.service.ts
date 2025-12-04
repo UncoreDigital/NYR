@@ -64,8 +64,8 @@ export class WarehouseInventoryService {
     return this.http.get<WarehouseInventoryResponse[]>(`${this.API_URL}/WarehouseInventory/product/${productId}`);
   }
 
-  // Check if inventory exists for specific warehouse and product variation
-  checkInventoryExists(warehouseId: number, productVariationId: number): Observable<boolean> {
-    return this.http.get<boolean>(`${this.API_URL}/WarehouseInventory/exists?warehouseId=${warehouseId}&productVariationId=${productVariationId}`);
+  // Check if inventory exists for specific warehouse and product variant
+  checkInventoryExists(warehouseId: number, productVariantId: number): Observable<boolean> {
+    return this.http.get<boolean>(`${this.API_URL}/WarehouseInventory/exists?warehouseId=${warehouseId}&productVariationId=${productVariantId}`);
   }
 }

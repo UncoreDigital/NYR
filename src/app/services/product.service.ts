@@ -36,11 +36,43 @@ export class ProductService {
     return this.http.post<{ imageUrl: string }>(`${this.API_URL}/Products/upload-image`, formData);
   }
 
-  getProductVariations(productId: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.API_URL}/Products/${productId}/variations`);
+  getProductVariants(productId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/ProductVariants/product/${productId}`);
   }
 
-  getAllProductVariations(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.API_URL}/Products/variations`);
+  getProductVariantsWithAttributes(productId: number): Observable<ProductVariantDto[]> {
+    return this.http.get<ProductVariantDto[]>(`${this.API_URL}/ProductVariants/product/${productId}`);
   }
+
+  getProductVariantsWithInventory(productId: number): Observable<any> {
+    return this.http.get<any>(`${this.API_URL}/ProductInventory/product/${productId}/variants-with-inventory`);
+  }
+
+  updateProductVariant(variantId: number, payload: any): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/ProductVariants/${variantId}`, payload);
+  }
+
+  deleteProductVariant(variantId: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/ProductVariants/${variantId}`);
+  }
+}
+
+// DTOs for ProductVariant
+export interface ProductVariantDto {
+  id: number;
+  productId: number;
+  variantName: string;
+  sku?: string;
+  price?: number;
+  isEnabled: boolean;
+  attributes: ProductVariantAttributeDto[];
+}
+
+export interface ProductVariantAttributeDto {
+  id: number;
+  variationId: number;
+  variationName: string;
+  variationOptionId: number;
+  variationOptionName: string;
+  variationOptionValue?: string;
 }

@@ -12,9 +12,8 @@ import { RestockRequestService } from '../../services/restock-request.service';
 export interface inventoryLocation {
   productName: string,
   skucode: string,
-  variationType: string,
-  variationValue: string,
-  //colour: string,
+  variantName: string,
+  variantSku: string,
   quantity: number,
 }
 
@@ -24,7 +23,7 @@ export interface inventoryLocation {
   styleUrl: './inventory-detail.component.css'
 })
 export class InventoryDetailComponent implements OnInit {
-  displayedColumns: string[] = ['productName', 'skucode', 'variationType', 'variationValue', 'quantity'];
+  displayedColumns: string[] = ['productName', 'skucode', 'variantName', 'variantSku', 'quantity'];
   dataSource = new MatTableDataSource<inventoryLocation>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -117,8 +116,8 @@ export class InventoryDetailComponent implements OnInit {
           this.inventoryLocation = items.map(item => ({
             productName: item.productName,
             skucode: item.skuCode || '',
-            variationType: item.variationType || 'N/A',
-            variationValue: item.variationValue || 'N/A',
+            variantName: item.variantName || 'Universal Product',
+            variantSku: item.variantSku || '-',
             quantity: item.quantity
           }));
           this.dataSource.data = this.inventoryLocation;
@@ -139,8 +138,8 @@ export class InventoryDetailComponent implements OnInit {
             request.items.map(item => ({
               productName: item.productName,
               skucode: item.skuCode || '',
-              variationType: item.variationType || 'N/A',
-              variationValue: item.variationValue || 'N/A',
+              variantName: item.variantName || 'Universal Product',
+              variantSku: item.variantSku || '-',
               quantity: item.quantity
             }))
           );
@@ -161,8 +160,8 @@ export class InventoryDetailComponent implements OnInit {
           this.inventoryLocation = inventoryDetails.map(item => ({
             productName: item.productName,
             skucode: item.productSKU,
-            variationType: item.variationType,
-            variationValue: item.variationValue,
+            variantName: item.variantName || 'Universal Product',
+            variantSku: item.variantSku || '-',
             quantity: item.quantity
           }));
           this.dataSource.data = this.inventoryLocation;

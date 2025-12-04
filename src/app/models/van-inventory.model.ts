@@ -12,9 +12,11 @@ export interface VanInventoryItemResponse {
   productId: number;
   productName: string;
   skuCode: string;
-  productVariationId: number;
-  variationType: string;
-  variationValue: string;
+  productVariantId?: number;
+  variantName?: string;
+  variantSku?: string;
+  variationType?: string;
+  variationValue?: string;
   quantity: number;
 }
 
@@ -66,6 +68,6 @@ export interface CreateVanInventoryRequest {
 
 export interface CreateVanInventoryItemRequest {
   productId: number;
-  productVariationId: number;
+  productVariantId?: number;
   quantity: number;
 }

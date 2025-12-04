@@ -32,7 +32,9 @@ export interface RestockRequestItemResponse {
   productId: number;
   productName: string;
   skuCode?: string;
-  productVariationId?: number;
+  productVariantId?: number;
+  variantName?: string;
+  variantSku?: string;
   variationType?: string;
   variationValue?: string;
   quantity: number;
@@ -46,7 +48,7 @@ export interface CreateRestockRequestRequest {
 
 export interface CreateRestockRequestItemRequest {
   productId: number;
-  productVariationId?: number;
+  productVariantId?: number;
   quantity: number;
 }
 
