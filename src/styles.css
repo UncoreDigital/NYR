@@ -1008,3 +1008,24 @@ input[type="time"]:disabled {
   color: #666;
   font-size: 1rem;
 }
+
+/* Info Icon */
+.page-header h1 {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.info-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: #02C3B4;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  margin-top: 2px;
+}
+
+.info-icon:hover {
+  color: #02C3B4;
+}

@@ -753,7 +753,7 @@
 
 /* Distance Cell Styling */
 .distance-cell {
-  cursor: help;
+  cursor: pointer;
   display: inline-block;
   padding: 4px 8px;
   border-radius: 4px;
