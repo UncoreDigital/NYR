@@ -130,7 +130,9 @@
                         Select Driver:
                     </label>
                     <mat-select class="form-input" [(value)]="confirmDriverName" 
+                                placeholder="Select Driver"
                                 style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <mat-option value="Select Driver" disabled>Select Driver</mat-option>
                         <mat-option *ngFor="let driver of driverOptions" [value]="driver.name">
                             {{driver.name}}
                         </mat-option>

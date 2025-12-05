@@ -147,8 +147,11 @@ export class CreateRouteComponent implements OnInit {
 
   createRoute() {
     // Open confirmation modal with current driver and date pre-selected
-    this.confirmDriverName = this.selectedDriverName;
-    this.confirmDate = this.selectedDate;
+    // Set confirmDate to tomorrow's date
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    this.confirmDate = tomorrow.toISOString().split('T')[0];
+    
     this.showConfirmModal = true;
   }
 
