@@ -58,6 +58,7 @@ export class CreateRouteComponent implements OnInit {
   confirmDriverName: string = '';
   confirmDate: string = '';
   selectedDriverName: any = "";
+  confirmErrorMessage: string = '';
 
   // Driver data array (populated from API)
   driverOptions: Array<{ id?: number; value: string; name: string }> = [];
@@ -152,24 +153,31 @@ export class CreateRouteComponent implements OnInit {
     tomorrow.setDate(tomorrow.getDate() + 1);
     this.confirmDate = tomorrow.toISOString().split('T')[0];
     
+    // Reset error message
+    this.confirmErrorMessage = '';
+    
     this.showConfirmModal = true;
   }
 
   closeConfirmModal() {
     this.showConfirmModal = false;
+    this.confirmErrorMessage = '';
   }
 
   confirmAndSaveRoute() {
+    // Reset error message
+    this.confirmErrorMessage = '';
+    
     // Update the selected driver name and date with confirmed values
     this.selectedDriverName = this.confirmDriverName;
     this.selectedDate = this.confirmDate;
     
-    if (this.selectedDriverName == '') {
-      alert('Select at least one driver to create a route.');
+    if (this.selectedDriverName == '' || this.selectedDriverName == 'Select Driver') {
+      this.confirmErrorMessage = 'Select at least one driver to create a route.';
       return;
     }
     if (this.selectedDate == '' ) {
-      alert('Select a shipping date to create a route.');
+      this.confirmErrorMessage = 'Select a shipping date to create a route.';
       return;
     }
     // Close modal and proceed with route creation
@@ -238,5 +246,10 @@ export class CreateRouteComponent implements OnInit {
   updatePagination() {
     const computedOptions = computePageSizeOptions(this.dataSource.data.length);
     this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
+  }
+
+  onConfirmDriverChange() {
+    // Clear error message when driver is selected
+    this.confirmErrorMessage = '';
   }
 }
