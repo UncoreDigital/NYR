@@ -84,7 +84,7 @@
                         matTooltipPosition="above"
                         [matTooltipShowDelay]="300"
                         [matTooltipHideDelay]="300"
-                        (click)="transferDetail(getStatusIcon(transfer.status))">
+                        (click)="transferDetail(transfer)">
                 {{ getStatusIcon(transfer.status) }}
               </mat-icon>
             </td>

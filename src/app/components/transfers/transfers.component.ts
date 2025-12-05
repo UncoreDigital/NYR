@@ -112,7 +112,8 @@ export class TransfersComponent implements OnInit {
           deliveryDate: transfer.deliveryDate ? this.formatDate(transfer.deliveryDate) : 
                        (transfer.requestDate ? this.formatDate(transfer.requestDate) : '-'),
           driver: transfer.driverName || '-',
-          status: this.mapStatusFromApi(transfer.status)
+          status: this.mapStatusFromApi(transfer.status),
+          shippingInventory: transfer.shippingInventory || []
         }));
         
         this.filteredTransfers = [...this.transfers];
@@ -302,9 +303,11 @@ export class TransfersComponent implements OnInit {
     this.clearLocation();
   }
 
-  transferDetail(iconName: string) {
-    if (iconName === 'visibility') {
-      this.router.navigate(['/transferDetail']);
+  transferDetail(transfer: Transfers) {
+    if (this.getStatusIcon(transfer.status) === 'visibility') {
+      this.router.navigate(['/transferDetail'], {
+        state: { transfer: transfer }
+      });
     }
   }
 
