@@ -19,6 +19,7 @@ export interface UserResponse {
   createdAt: string;
   isActive: boolean;
   driverAvailabilities?: DriverAvailability[];
+  warehouseId?: number | null;
 }
 
 export interface User {
@@ -35,6 +36,7 @@ export interface User {
   locationName: string | null;
   createdAt?: string;
   isActive?: boolean;
+  warehouseId?: number | null;
 }
 
 export interface LoginRequest {
@@ -67,6 +69,7 @@ export interface CreateUserRequest {
   roleId: number;
   customerId: number | null;
   locationId: number | null;
+  warehouseId: number | null;
 }
 
 export interface UpdateUserRequest {
@@ -82,4 +85,5 @@ export interface UpdateUserRequest {
   customerId: number | null;
   locationId: number | null;
   isActive: boolean;
+  warehouseId: number | null;
 }

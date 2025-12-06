@@ -111,7 +111,8 @@ export class ProfileComponent implements OnInit {
         roleId: this.user.roleId || 0,
         customerId: this.user.customerId && this.user.customerId > 0 ? this.user.customerId : null,
         locationId: this.user.locationId && this.user.locationId > 0 ? this.user.locationId : null,
-        isActive: this.user.isActive ?? true
+        isActive: this.user.isActive ?? true,
+        warehouseId: this.user.warehouseId ?? null
       };
 
       this.userService.updateUser(this.user.id, updatedData).subscribe({

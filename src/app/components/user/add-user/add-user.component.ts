@@ -246,7 +246,7 @@ export class AddUserComponent implements OnInit {
       zipCode: user.zipCode || '',
       password: '', // Don't populate password for security
       homeAddress: '', // These fields might not be in the API response
-      startingPoint: this.warehouses.find(c => c.id === user.customerId)?.name || ''
+      startingPoint: this.warehouses.find(c => c.id === user.warehouseId)?.name || ''
     });
     
     // Set starting point selection if available
@@ -356,9 +356,10 @@ export class AddUserComponent implements OnInit {
           state: formValue.state,
           zipCode: formValue.zipCode,
           roleId: formValue.roleId,
-          customerId: formValue.roleId === 4 ? this.selectedStartingPoint?.warehouseData?.id : (formValue.customerId || 0),
+          customerId: formValue.customerId || null,
           locationId: formValue.roleId === 4 ? null : (formValue.locationId || 0),
-          isActive: this.currentUser?.isActive ?? true
+          isActive: this.currentUser?.isActive ?? true,
+          warehouseId: formValue.roleId === 4 ? this.selectedStartingPoint?.warehouseData?.id : 0,
         };
 
         this.userService.updateUser(this.userId, updateData).subscribe({
@@ -390,8 +391,9 @@ export class AddUserComponent implements OnInit {
           zipCode: formValue.zipCode,
           password: formValue.password,
           roleId: formValue.roleId,
-          customerId: formValue.roleId === 4 ? this.selectedStartingPoint?.warehouseData?.id : (formValue.customerId || 0),
-          locationId: formValue.roleId === 4 ? null : (formValue.locationId || 0)
+          customerId: formValue.customerId || null,
+          locationId: formValue.roleId === 4 ? null : (formValue.locationId || 0),
+          warehouseId: formValue.roleId === 4 ? this.selectedStartingPoint?.warehouseData?.id : 0,
         };
 
         this.userService.createUser(userData).subscribe({
