@@ -26,11 +26,13 @@ export class TransferDetailComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   transferDetail: TransferDetail[] = [];
+  transferAllDetail: any;
 
   constructor() { }
 
   ngOnInit(): void {
     const transfer = history.state.transfer;
+    this.transferAllDetail = transfer;
     this.transferDetail = transfer.shippingInventory || [];
     this.dataSource.data = this.transferDetail;
   }
