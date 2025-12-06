@@ -90,7 +90,8 @@ export class CreateRouteComponent implements OnInit {
           driverId: loc.driverId,
           shippingInventory: loc.shippingInventory,
           type: loc.type,
-          requestId: loc.id
+          requestId: loc.id,
+          locationInventory: loc.locationInventory,
         }));
         this.dataSource.data = [...this.createRoutes];
         this.updatePagination();

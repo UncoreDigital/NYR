@@ -192,11 +192,11 @@ export class RouteDetailComponent implements OnInit {
   }
 
   openInventoryModal(route: routeDetail) {
-    this.productDetails = [];
+    this.productDetails = route.locationInventoryData || [];
     this.modalTitle = 'Inventory Items';
     this.isModalFromLocationPopup = false; // Ensure flag is false for regular modals
     this.showModal = true;
-    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity'];
+    this.productDisplayedColumns = ['productName', 'skuCode', 'variantName', 'quantity'];
   }
 
   openShippingModal(route: routeDetail) {
@@ -204,7 +204,8 @@ export class RouteDetailComponent implements OnInit {
     this.modalTitle = 'Shipping Items';
     this.isModalFromLocationPopup = false; // Ensure flag is false for regular modals
     this.showModal = true;
-    this.productDisplayedColumns = ['productName', 'skuCode', 'variationType', 'variationValue', 'quantity', 'inStock'];
+  // this.productDisplayedColumns = ['productName', 'skuCode', 'variantName', 'quantity', 'inStock'];
+  this.productDisplayedColumns = ['productName', 'skuCode', 'variantName', 'quantity'];
   }
 
   closeModal() {
@@ -746,8 +747,8 @@ export class RouteDetailComponent implements OnInit {
         deliveryDate: new Date().toISOString().split('T')[0], // Current date
         locationName: stop.locationName,
         locationInventory: stop.locationInventory || '0 Items',
-        locationInventoryData: [],
-        shippingInventoryData: stop.locationInventoryData || [],
+        locationInventoryData: stop.locationInventoryData || [],
+        shippingInventoryData: stop.shippingInventoryData || [],
         shippingInventory: stop.shippingInventory || '0 Items',
         distance: stop.distance || '0 Miles',
         travelTime: '1 hr', // Default travel time
@@ -816,6 +817,8 @@ export class RouteDetailComponent implements OnInit {
         apiLocations.map(loc => loc.driverName = loc.userName);
         apiLocations.map(x => x.shippingInventoryData = x.transferItems);
         apiLocations.map(x => x.shippingInventory = `${x.transferItems.length} Items`);
+        apiLocations.map(x => x.locationInventory = `${x.locationInventory?.length || 0} Items`);
+        apiLocations.map(x => x.locationInventoryData = x.locationInventory || []);
         apiLocations.map(x => x.fullAddress = `${x.addressLine1}, ${x.addressLine2}, ${x.state} ${x.zipCode}`);
 
         this.driverLocations = apiLocations.filter(x => x.userName == this.routeCreationData.selectedDriver);

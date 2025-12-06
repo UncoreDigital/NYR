@@ -141,7 +141,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
 
   getInventoryobyLocation(): void {
     this.routeStops?.forEach((stop: any, index) => {
-      const updated = { ...this.routeStops[index], locationInventory: `0 Items`, locationInventoryData: stop?.shippingInventory || [], shippingInventory: `${stop?.shippingInventory?.length || 0} Items` };
+      const updated = { ...this.routeStops[index], locationInventory: `${stop?.locationInventory?.length || 0} Items`, locationInventoryData: stop?.locationInventory || [], shippingInventoryData: stop?.shippingInventory, shippingInventory: `${stop?.shippingInventory?.length || 0} Items` };
       this.routeStops = [
         ...this.routeStops!.slice(0, index),
         updated,
@@ -243,14 +243,14 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
     this.productDetails.data = stop.locationInventoryData || [];
     this.modalTitle = `Location Inventory - ${stop.locationName}`;
     this.showModal = true;
-    this.productDisplayedColumns = ['productName', 'skuCode', 'variationType', 'variationValue', 'quantity'];
+    this.productDisplayedColumns = ['productName', 'skuCode', 'variantName', 'quantity'];
   }
 
   openStopShippingInventoryModal(stop: RouteStop): void {
-    this.productDetails.data = stop.locationInventoryData || [];
+    this.productDetails.data = stop.shippingInventoryData || [];
     this.modalTitle = `Shipping Inventory - ${stop.locationName}`;
     this.showModal = true;
-    this.productDisplayedColumns = ['productName', 'skuCode', 'variationType', 'variationValue', 'quantity'];
+    this.productDisplayedColumns = ['productName', 'skuCode', 'variantName', 'quantity'];
   }
 
   closeModal(): void {
