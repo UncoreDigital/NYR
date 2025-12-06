@@ -334,6 +334,10 @@ export class RouteDetailComponent implements OnInit {
   }
 
   approveRoute() {
+    this.saveRoute("Not Started");
+  }
+
+  saveRoute(statusType: string) {
     // If map view is active, ensure latest route data from map is synced before approving
     if (this.currentView === 'map' && this.routeMapComponent) {
       this.syncWithRouteMapData(this.routeMapComponent.routeStops);
@@ -356,19 +360,30 @@ export class RouteDetailComponent implements OnInit {
       });
     });
     const payload: any = {
-      userId: this.routeCreationData.selectedDriverId || 0,
+      userId: this.routeCreationData.selectedDriverId || this.routeCreationData.driverId || 0,
       deliveryDate: new Date(this.deliveryDate).toISOString(),
-      routeStops: routes,
+      status: statusType,
+      routeStops: routes
     }
 
     // Call API to create route
     this.isLoading = true;
-    this.routeService.createRoute(payload).subscribe({
+    this.routeService.createRoute((this.routeCreationData.id || 0), payload).subscribe({
       next: (res: any) => {
         this.isLoading = false;
         this.toastService.success('Success', 'Route created successfully');
         this.router.navigate(['/routes']);
         this.closeApprovalModal();
+        // if (statusType === 'Draft') {
+        //   // Navigate to create route or perform route creation logic
+        //   this.router.navigate(['/create-route'], { 
+        //     state: { 
+        //       routeData: this.routeCreationData,
+        //       selectedLocations: this.dataSource.data 
+        //     } 
+        //   });
+        //   console.log('Create route clicked');
+        // }
       },
       error: (err: any) => {
         this.toastService.error('Error', 'Failed to create route');
@@ -704,14 +719,7 @@ export class RouteDetailComponent implements OnInit {
   }
 
   createRoute() {
-    // Navigate to create route or perform route creation logic
-    this.router.navigate(['/create-route'], { 
-      state: { 
-        routeData: this.routeCreationData,
-        selectedLocations: this.dataSource.data 
-      } 
-    });
-    console.log('Create route clicked');
+    this.saveRoute("Draft");
   }
 
   private updateButtonStates() {
@@ -816,7 +824,7 @@ export class RouteDetailComponent implements OnInit {
         this.driverLocations.map(loc => loc.shippingInventoryData = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData : []);
         this.driverLocations.map(loc => loc.shippingInventory = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData.length + ' Items' : '0 Items');
         this.allLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.id === loc.id) ? true : false);
-        this.recalculateRoute();        
+        this.recalculateRoute();
       },
       error: (error: any) => {
         this.isLoading = false;

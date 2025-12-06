@@ -11,8 +11,17 @@ export class RouteService {
 
   constructor(private http: HttpClient) {}
 
-  createRoute(payload: any): Observable<any> {
+  createRoute(id:number, payload: any): Observable<any> {
+    if (id > 0) {
+      return this.updateRoute(id, payload);
+    }
     return this.http.post<any>(`${this.API_URL}/Routes`, payload);
+  }
+
+  updateRoute(id:number, payload: any): Observable<any> {
+    payload.isActive = true;
+    payload.routeStops = [];
+    return this.http.put<any>(`${this.API_URL}/Routes/${id}`, payload);
   }
   
   getRoutes(driverId?: number): Observable<any[]> {

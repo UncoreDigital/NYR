@@ -11,6 +11,7 @@ export interface Routes {
   totalStops: string;
   shippingDate: string;
   status: string;
+  driverId?: string | number;
 }
 
 @Component({
@@ -60,7 +61,9 @@ export class RoutesComponent implements OnInit {
           totalStops: (r.routeStops?.length || 0).toString(),
           shippingDate: r.deliveryDate ? new Date(r.deliveryDate).toISOString().slice(0, 10).split('-').reverse().join('-') : '',
           status: r.status ?? r.routeStatus ?? '',
-          routeStops: r.routeStops || []
+          routeStops: r.routeStops || [],
+          id: r.id || '',
+          driverId: r.userId || ''
         }));
         this.filteredRoutes = [...this.routes];
         this.applyFilters();
@@ -148,7 +151,8 @@ export class RoutesComponent implements OnInit {
         totalStops: route.totalStops,
         shippingDate: route.shippingDate,
         status: route.status,
-        routeStops: (route as any).routeStops || []
+        routeStops: (route as any).routeStops || [],
+        selectedDriverId: route.driverId || 0
       }
     });
   }

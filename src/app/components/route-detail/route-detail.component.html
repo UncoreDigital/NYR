@@ -46,9 +46,9 @@
                         class="btn btn-secondary mr-15"
                         [disabled]="!(shouldShowActionButtons() && showRecalculateButton)"
                         (click)="recalculateRoute()">Recalculate Route</button>
-                    <!-- <button *ngIf="shouldShowActionButtons() && showCreateRouteButton" 
-                        class="btn btn-success mr-15"
-                        (click)="createRoute()">Create Route</button> -->
+                    <button *ngIf="routeStatus.toLowerCase() == ''" 
+                        class="btn btn-primary mr-15"
+                        (click)="createRoute()">Create Route</button>
                     <button *ngIf="shouldShowActionButtons()" class="btn btn-primary" (click)="openLocationModal()">Add
                         Location Address</button>
                 </div>
