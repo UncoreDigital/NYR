@@ -214,6 +214,11 @@ export class CreateRouteComponent implements OnInit {
 
   saveRoute() {
     // Navigate to route-detail with all available locations data
+    this.dataSource.data = this.dataSource.data.map((loc: any) => ({
+      ...loc,
+      locationId: loc.id,
+      restockRequestId: loc.requestId
+    }));
     this.router.navigate(['/route-detail'], {
       state: {
         selectedLocations: this.dataSource.data,

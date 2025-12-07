@@ -158,8 +158,8 @@ export class RouteDetailComponent implements OnInit {
     this.routeCreationData = state.routeData || {};
     this.routeStatus = this.routeCreationData.status || '';
     // Check if data comes from create-route (selectedLocations)
-    if (this.routeCreationData['selectedDriver']) {
-      this.selectedLocations = state.selectedLocations || [];
+    if (this.routeCreationData['selectedDriver'] || this.routeCreationData.driverName.driverName != "") {
+      this.selectedLocations = state.selectedLocations || this.routeCreationData.routeStops || [];
       if (this.selectedLocations.length > 0) {
         this.totalStops = this.selectedLocations.length;
       }      
@@ -345,7 +345,7 @@ export class RouteDetailComponent implements OnInit {
     }
     let routes: any[] = [];
     this.dataSource.data.forEach((route: any) => {
-      let matchedData: any = this.allLocations.find(loc => route.id == loc.id);
+      let matchedData: any = this.allLocations.find(loc => route.locationId == loc.id);
       let address = matchedData ? matchedData.addressLine1 + ', ' + matchedData.addressLine2 + ', ' + matchedData.state + ' ' + matchedData.zipCode : '';
       routes.push({
         locationId: route.id,
@@ -746,6 +746,9 @@ export class RouteDetailComponent implements OnInit {
         stop: `Stop ${index + 1}`,
         deliveryDate: new Date().toISOString().split('T')[0], // Current date
         locationName: stop.locationName,
+        locationId: stop.locationId,
+        customerId: stop.customerId,
+        customerName: stop.customerName,
         locationInventory: stop.locationInventory || '0 Items',
         locationInventoryData: stop.locationInventoryData || [],
         shippingInventoryData: stop.shippingInventoryData || [],
@@ -823,11 +826,12 @@ export class RouteDetailComponent implements OnInit {
 
         this.driverLocations = apiLocations.filter(x => x.userName == this.routeCreationData.selectedDriver);
         this.allLocations = apiLocations;
-        this.driverLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.id === loc.id) ? true : false);
+        this.driverLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.locationId === loc.id) ? true : false);
         this.driverLocations.map(loc => loc.shippingInventoryData = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData : []);
         this.driverLocations.map(loc => loc.shippingInventory = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData.length + ' Items' : '0 Items');
-        this.allLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.id === loc.id) ? true : false);
-        this.recalculateRoute();
+        this.allLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.locationId === loc.id) ? true : false);
+        // this.recalculateRoute();
+        this.isLoading =false;
       },
       error: (error: any) => {
         this.isLoading = false;
