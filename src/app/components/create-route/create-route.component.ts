@@ -10,7 +10,8 @@ import { LocationService } from 'src/app/services/location.service';
 import { TransferResponse, TransferService } from 'src/app/services/transfer.service';
 
 export interface CreateRoutes {
-  id: number;
+  id?: number;
+  locationId?: number;
   locationName: string;
   locationAddress?: string;
   driverName: string;
@@ -78,7 +79,8 @@ export class CreateRouteComponent implements OnInit {
       next: (response: TransferResponse[]) => {
         // Map LocationResponse to CreateRoutes model
         this.createRoutes = response.filter(x => ['restock requested', 'followup requested'].includes(x.status?.toLowerCase())).map(loc => ({
-          id: loc.locationId || 0,
+          id: loc.id || 0,
+          locationId: loc.locationId || 0,
           shippingDate: loc.requestDate || '',
           locationName: loc.locationName,
           locationAddress:  loc.locationAddress,

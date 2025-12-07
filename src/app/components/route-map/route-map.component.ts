@@ -118,6 +118,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
           totalStops: state.routeData['totalLocations'],
           shippingDate: state.routeData['selectedDate'],
           driverid: state.routeData['selectedDriverId'],
+          routeStatus: state.routeData['status'] || ''
         };
         // Check if this is a draft route
         this.isDraftRoute = state.routeData['status']?.toLowerCase() === 'draft';
@@ -331,15 +332,20 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   addSelectedCustomersToStops(): void {
     const selectedCustomers = this.selectedCustomers;
     
-    selectedCustomers.forEach((customer, index) => {
-      const newStop: RouteStop = {
+    selectedCustomers.forEach((customer: any, index) => {
+      const newStop: any = {
+        locationId: customer.id,
         locationName: customer.locationName,
+        customerId: customer.customerId,
+        customerName: customer.customerName,
         eta: this.generateNextETA(),
         items: Math.floor(Math.random() * 5) + 1, // Random number of items between 1-5
         status: 'pending',
         distance: '0 Miles', // Will be calculated
         locationInventory: customer.locationInventory,
-        shippingInventory: customer.shippingInventory
+        locationInventoryData: customer.locationInventoryData || [],
+        shippingInventory: customer.shippingInventory,
+        shippingInventoryData: customer.shippingInventoryData || []
       };
       
       this.routeStops.push(newStop);

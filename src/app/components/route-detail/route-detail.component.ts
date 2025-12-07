@@ -345,10 +345,10 @@ export class RouteDetailComponent implements OnInit {
     }
     let routes: any[] = [];
     this.dataSource.data.forEach((route: any) => {
-      let matchedData: any = this.allLocations.find(loc => route.id == loc.id);
+      let matchedData: any = this.allLocations.find(loc => route.locationId == loc.id);
       let address = matchedData ? matchedData.addressLine1 + ', ' + matchedData.addressLine2 + ', ' + matchedData.state + ' ' + matchedData.zipCode : '';
       routes.push({
-        locationId: route.id,
+        locationId: route.locationId,
         stopOrder: Number(route.stop.replace('Stop ', '').trim()),
         address: address,
         customerId: matchedData ? matchedData.customerId : '',
@@ -746,6 +746,9 @@ export class RouteDetailComponent implements OnInit {
         stop: `Stop ${index + 1}`,
         deliveryDate: new Date().toISOString().split('T')[0], // Current date
         locationName: stop.locationName,
+        locationId: stop.locationId,
+        customerId: stop.customerId,
+        customerName: stop.customerName,
         locationInventory: stop.locationInventory || '0 Items',
         locationInventoryData: stop.locationInventoryData || [],
         shippingInventoryData: stop.shippingInventoryData || [],
@@ -754,10 +757,10 @@ export class RouteDetailComponent implements OnInit {
         travelTime: '1 hr', // Default travel time
         deliveryTime: stop.eta || 'N/A',
         status: this.mapRouteStatusToTableStatus(stop.status),
-        id: stop.id,
+        id: stop.id || null,
         fullAddress: stop.fullAddress || '',
         type: stop.type || '',
-        requestId: stop.requestId || null,
+        requestId: stop.requestId || stop.restockRequestId || null,
         latitude: this.dataSource?.data?.find(d => d.id === stop.id)?.latitude || 0,
         longitude: this.dataSource?.data?.find(d => d.id === stop.id)?.longitude || 0
       }));
@@ -823,11 +826,12 @@ export class RouteDetailComponent implements OnInit {
 
         this.driverLocations = apiLocations.filter(x => x.userName == this.routeCreationData.selectedDriver);
         this.allLocations = apiLocations;
-        this.driverLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.id === loc.id) ? true : false);
-        this.driverLocations.map(loc => loc.shippingInventoryData = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData : []);
-        this.driverLocations.map(loc => loc.shippingInventory = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData.length + ' Items' : '0 Items');
-        this.allLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.id === loc.id) ? true : false);
-        this.recalculateRoute();
+        this.driverLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.locationId === loc.id) ? true : false);
+        this.driverLocations.map(loc => loc.shippingInventoryData = apiLocations.find(stop => stop.locationId === loc.id) ? apiLocations.find(stop => stop.locationId === loc.id).shippingInventoryData : []);
+        this.driverLocations.map(loc => loc.shippingInventory = apiLocations.find(stop => stop.locationId === loc.id) ? apiLocations.find(stop => stop.locationId === loc.id).shippingInventoryData.length + ' Items' : '0 Items');
+        this.allLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.locationId === loc.id) ? true : false);
+        // this.recalculateRoute();
+        this.isLoading = false;
       },
       error: (error: any) => {
         this.isLoading = false;
