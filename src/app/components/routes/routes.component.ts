@@ -48,10 +48,12 @@ export class RoutesComponent implements OnInit {
   searchTerm = '';
   // Paginator page size options (computed based on data length)
   pageSizeOptions: number[] = [25, 50, 75, 100];
+  isLoading: boolean = false;
 
   constructor(private router: Router, private routeService: RouteService) { }
 
   ngOnInit(): void {
+    this.isLoading = true;
     // Load routes from API. If API fails, keep an empty list to allow local filters to work.
     this.routeService.getRoutes().subscribe({
       next: (res: any[]) => {
@@ -67,12 +69,14 @@ export class RoutesComponent implements OnInit {
         }));
         this.filteredRoutes = [...this.routes];
         this.applyFilters();
+        this.isLoading = false;
       },
       error: (err) => {
         console.error('Failed to load routes from API:', err);
         // fallback: keep routes empty so UI remains functional
         this.filteredRoutes = [...this.routes];
         this.applyFilters();
+        this.isLoading = false;
       }
     });
   }

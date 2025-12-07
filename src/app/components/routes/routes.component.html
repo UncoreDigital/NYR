@@ -48,6 +48,10 @@
                 </div>
             </div>
 
+            <!-- Loader -->
+            <div *ngIf="isLoading" class="loading-container">
+                <mat-spinner diameter="50"></mat-spinner>
+            </div>
             <!-- Van Table -->
             <div class="table-container">
                 <table mat-table [dataSource]="dataSource" matSort class="customer-table">
