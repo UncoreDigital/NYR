@@ -88,7 +88,7 @@
                                             </span>
                                         </div>
                                         <!-- Delete button only shown for draft routes -->
-                                        <button *ngIf="isDraftRoute || isNotStartedRoute" 
+                                        <button *ngIf="isDraftRoute" 
                                                 class="delete-stop-btn" 
                                                 (click)="deleteStop(i)"
                                                 matTooltip="Delete Stop"
@@ -101,6 +101,7 @@
                                     <div class="stop-location">{{ stop.locationName }}</div>
                                     <div class="stop-meta-row">
                                         <div class="stop-eta">ETA {{ stop.eta }}</div>
+                                        <div class="stop-otp" *ngIf="stop.deliveryOTP">OTP: {{ stop.deliveryOTP }}</div>
                                         <div class="stop-distance" *ngIf="stop.distance">{{ stop.distance }}</div>
                                     </div>
                                     <div class="stop-inventory-row">

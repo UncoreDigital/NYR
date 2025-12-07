@@ -13,6 +13,7 @@ import * as L from 'leaflet';
 export interface RouteStop {
   locationName: string;
   eta: string;
+  otp?: string;
   items?: number;
   status: 'delivered' | 'in-progress' | 'not-delivered' | 'pending' | 'In Progress' | 'Not Delivered';
   distance?: string;
@@ -21,6 +22,7 @@ export interface RouteStop {
   shippingInventory?: string;
   shippingInventoryData?: any[];
   id?: number;
+  deliveryOTP?: string;
 }
 
 export interface Customer {

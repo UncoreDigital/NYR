@@ -211,6 +211,16 @@
   font-size: 13px;
 }
 
+.stop-otp {
+  color: #02C3B4;
+  font-size: 13px;
+  font-weight: 500;
+  background: #ecfdf5;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #ecfdf5;
+}
+
 .stop-distance {
   color: #02c3b4;
   font-size: 13px;
