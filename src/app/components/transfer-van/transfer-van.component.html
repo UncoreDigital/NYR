@@ -235,12 +235,17 @@
                     <div class="variation-section" *ngIf="selectedTransferOption === 'manual' && selectedProduct && allVariants.length > 0">
                         <h3>Product Variants - Available at Warehouse</h3>
                         
-                        <!-- Search Bar -->
-                        <div class="search-container">
-                            <mat-icon class="search-icon">search</mat-icon>
-                            <input type="text" placeholder="Search variants..." class="search-input" 
+                        <!-- Combined Header with Search and Scanner Icon -->
+                        <div class="section-header-combined" *ngIf="allVariants.length > 0">
+                            <div class="search-container">
+                                <mat-icon class="search-icon">search</mat-icon>
+                                <input type="text" placeholder="Search variants..." class="search-input" 
                                    [(ngModel)]="variationSearchTerm" [ngModelOptions]="{standalone: true}" 
                                    (keyup)="applyVariantFilter($event)">
+                            </div>
+                            <div class="scanner-icon-container">
+                                <mat-icon>qr_code_scanner</mat-icon>
+                            </div>
                         </div>
 
                         <!-- Variant Table -->

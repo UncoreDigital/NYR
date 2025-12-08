@@ -137,23 +137,17 @@
 
                     <!-- Variation Selection Section -->
                     <div class="variation-section" *ngIf="selectedProduct">
-                        <div class="section-header">
-                            <h3>Product Variations</h3>
-                            <button type="button" 
-                                    class="btn-change-product" 
-                                    *ngIf="warehouseProducts.length > 1"
-                                    (click)="changeProduct()">
-                                <mat-icon>swap_horiz</mat-icon>
-                                Change Product
-                            </button>
-                        </div>
-                        
-                        <!-- Search Bar -->
-                        <div class="search-container" *ngIf="allVariants.length > 0">
-                            <mat-icon class="search-icon">search</mat-icon>
-                            <input type="text" placeholder="Search variants..." class="search-input" 
-                                   [(ngModel)]="searchTerm" [ngModelOptions]="{standalone: true}" 
-                                   (keyup)="applyFilter($event)">
+                        <!-- Combined Header with Scanner Icon and Search -->
+                        <div class="section-header-combined" *ngIf="allVariants.length > 0">
+                            <div class="search-container">
+                                <mat-icon class="search-icon">search</mat-icon>
+                                <input type="text" placeholder="Search variants..." class="search-input" 
+                                       [(ngModel)]="searchTerm" [ngModelOptions]="{standalone: true}" 
+                                       (keyup)="applyFilter($event)">
+                            </div>
+                            <div class="scanner-icon-container">
+                                <mat-icon>qr_code_scanner</mat-icon>
+                            </div>
                         </div>
 
                         <!-- No Variants Message -->
