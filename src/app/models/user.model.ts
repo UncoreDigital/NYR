@@ -20,6 +20,7 @@ export interface UserResponse {
   isActive: boolean;
   driverAvailabilities?: DriverAvailability[];
   warehouseId?: number | null;
+  warehouseName?: string | '';
 }
 
 export interface User {

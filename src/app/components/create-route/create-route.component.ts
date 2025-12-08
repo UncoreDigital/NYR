@@ -61,7 +61,7 @@ export class CreateRouteComponent implements OnInit {
   confirmErrorMessage: string = '';
 
   // Driver data array (populated from API)
-  driverOptions: Array<{ id?: number; value: string; name: string }> = [];
+  driverOptions: Array<{ id?: number; value: string; name: string; warehouseName?: string }> = [];
 
   constructor(private router: Router, private userService: UserService, private locationService: LocationService,
     private transferService: TransferService
@@ -108,7 +108,7 @@ export class CreateRouteComponent implements OnInit {
   loadDrivers(): void {
     this.userService.getDrivers().subscribe({
       next: (users: UserResponse[]) => {
-        this.driverOptions = users.map(u => ({ id: u.id, value: u.name, name: u.name }));
+        this.driverOptions = users.map(u => ({ id: u.id, value: u.name, name: u.name, warehouseName: u.warehouseName }));
         // auto-select first driver
         this.selectedDriverName = this.driverOptions?.[0].value;
         this.applyFilter();
@@ -226,7 +226,8 @@ export class CreateRouteComponent implements OnInit {
           selectedDate: this.selectedDate,
           selectedDriver: this.selectedDriverName,
           totalLocations: this.dataSource.data.length,
-          selectedDriverId: this.driverOptions.find(d => d.value === this.selectedDriverName)?.id
+          selectedDriverId: this.driverOptions.find(d => d.value === this.selectedDriverName)?.id,
+          startPoint: this.driverOptions.find(d => d.value === this.selectedDriverName)?.warehouseName || ''
         }
       }
     });
