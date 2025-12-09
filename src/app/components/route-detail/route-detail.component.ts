@@ -158,9 +158,9 @@ export class RouteDetailComponent implements OnInit {
     this.routeCreationData = state.routeData || {};
     this.routeStatus = this.routeCreationData.status || '';
     // Check if data comes from create-route (selectedLocations)
-    if (this.routeCreationData['selectedDriver'] || this.routeCreationData.driverName.driverName != "") {
-      this.selectedLocations = state.selectedLocations || this.routeCreationData.routeStops || [];
-      this.startPoint = this.routeCreationData.startPoint || '';
+    if (this.routeCreationData['selectedDriver'] || this.routeCreationData.driverName != "") {
+      this.prepareLocationData(state.selectedLocations || state.routeData.routeStops);
+      this.startPoint = this.routeCreationData?.startPoint || '';
       if (this.selectedLocations.length > 0) {
         this.totalStops = this.selectedLocations.length;
       }      
@@ -176,6 +176,46 @@ export class RouteDetailComponent implements OnInit {
     // Initialize button states
     this.initializeButtonStates();
     this.loadLocationsDetails();
+  }
+
+  prepareLocationData(selectedLocations: any) {
+    const locationData: any[] = [];
+
+    //Prepare Location data 
+    selectedLocations?.forEach((loc: any, index: number) => {
+      let shippingInventory = loc.shippingInventory;
+      shippingInventory.map((x: any) => x.restockRequestId = loc.restockRequestId || loc.requestId);
+      shippingInventory.map((x: any) => x.routeStopId = loc.id || 0);
+
+      // Check if location already exists in locationData
+      const existingLocation = locationData.find(l => l.locationId === loc.locationId && l.type == loc.type);
+
+      if (existingLocation) {
+        // Location exists, only add shipping inventory
+        existingLocation.shippingInventory = [
+          ...(existingLocation.shippingInventory || []),
+          ...shippingInventory
+        ];
+      } else {
+        // Location doesn't exist, add new entry
+        locationData.push({
+          stop: `Stop ${locationData.length + 1}`,
+          driverId: loc.driverId,
+          driverName: loc.driverName,
+          locationAddress: loc.locationAddress,
+          locationId: loc.locationId,
+          locationInventory: loc.locationInventory,
+          locationName: loc.locationName,
+          status: loc.status,
+          userId: loc.userId,
+          userName: loc.userName,
+          shippingInventory: shippingInventory,
+          type: loc.type
+        });
+      }
+    });
+    this.selectedLocations = locationData;
+    //End
   }
 
   private initializeButtonStates() {
@@ -270,7 +310,7 @@ export class RouteDetailComponent implements OnInit {
     // Handle create location logic here
     this.dataSource.data = []; // Ensure data source is updated
     this.allLocations.filter(x => x.selected).forEach((customer, index) => {
-      const newStop: routeDetail = {
+      const newStop: any = {
         stop: `Stop ${this.dataSource.data.length + index + 1}`,
         deliveryDate: new Date().toISOString().split('T')[0],
         locationName: customer.locationName,
@@ -282,6 +322,7 @@ export class RouteDetailComponent implements OnInit {
         travelTime: '0 hr', // Will be calculated
         deliveryTime: 'TBD',
         id: customer.id,
+        locationId: customer.id,
         fullAddress: customer.fullAddress
       };
           
@@ -346,19 +387,27 @@ export class RouteDetailComponent implements OnInit {
     }
     let routes: any[] = [];
     this.dataSource.data.forEach((route: any) => {
+      // Get distinct restockRequestIds
+      let restockIds = [...new Set(route?.shippingInventoryData.map((x: any) => x.restockRequestId))];
+      
       let matchedData: any = this.allLocations.find(loc => route.locationId == loc.id);
       let address = matchedData ? matchedData.addressLine1 + ', ' + matchedData.addressLine2 + ', ' + matchedData.state + ' ' + matchedData.zipCode : '';
-      routes.push({
-        locationId: route.id,
-        stopOrder: Number(route.stop.replace('Stop ', '').trim()),
-        address: address,
-        customerId: matchedData ? matchedData.customerId : '',
-        contactPhone: matchedData ? (matchedData?.contactPhone ? matchedData.contactPhone : (matchedData.locationPhone || '')) : '',
-        notes: '',
-        restockRequestId: route?.type?.toLowerCase() != "followuprequest" ? route.requestId : 0,
-        followupRequestId: route?.type?.toLowerCase() == "followuprequest" ? route.requestId : 0,
-        latitude: route ? route.latitude : 0,
-        longitude: route ? route.longitude : 0,
+      
+      // Loop through each distinct restockRequestId and create a route entry
+      restockIds.forEach((restockId: any) => {
+        routes.push({
+          id: route?.shippingInventoryData.filter((x: any) => x.restockRequestId == restockId)?.[0]?.routeStopId || 0,
+          locationId: route.locationId,
+          stopOrder: Number(route.stop.replace('Stop ', '').trim()),
+          address: address,
+          customerId: matchedData ? matchedData.customerId : '',
+          contactPhone: matchedData ? (matchedData?.contactPhone ? matchedData.contactPhone : (matchedData.locationPhone || '')) : '',
+          notes: '',
+          restockRequestId: route?.type?.toLowerCase() != "followuprequest" ? restockId : 0,
+          followupRequestId: route?.type?.toLowerCase() == "followuprequest" ? restockId : 0,
+          latitude: route ? route.latitude : 0,
+          longitude: route ? route.longitude : 0,
+        });
       });
     });
     const payload: any = {
@@ -590,7 +639,7 @@ export class RouteDetailComponent implements OnInit {
     const updatedData = currentData.filter(r => r.stop !== route.stop);
     this.dataSource.data = updatedData;
     this.driverLocations.map(loc => loc.selected = this.dataSource.data.find(stop => stop.id === loc.id) ? true : false);
-    this.allLocations.map(loc => loc.selected = this.dataSource.data.find(stop => stop.id === loc.id) ? true : false);
+    this.allLocations.map(loc => loc.selected = this.dataSource.data.find((stop: any) => stop.locationId === loc.id) ? true : false);
     this.updatePagination();
     // Update button states
     this.hasRouteChanges = true;
@@ -832,7 +881,7 @@ export class RouteDetailComponent implements OnInit {
         this.driverLocations.map(loc => loc.shippingInventory = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData.length + ' Items' : '0 Items');
         this.allLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.locationId === loc.id) ? true : false);
         this.recalculateRoute();
-        // this.isLoading = false;
+        this.isLoading = false;
       },
       error: (error: any) => {
         this.isLoading = false;

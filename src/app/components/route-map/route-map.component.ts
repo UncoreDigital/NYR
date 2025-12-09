@@ -108,7 +108,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
     });
 
     const state = history.state;
-    this.routeStops = state.selectedLocations || state.routeData?.routeStops || [];
+    this.prepareLocationData(state.selectedLocations || state.routeData?.routeStops || [])
     //Temp Solution to get route data from state
     this.getInventoryobyLocation();
 
@@ -140,6 +140,46 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
     // Initialize customer data for location modal
     this.initializeCustomers();
     this.loadLocationsDetails();
+  }
+
+  prepareLocationData(selectedLocations: any) {
+      const locationData: any[] = [];
+      //Prepare Location data 
+      selectedLocations.forEach((loc: any, index: number) => {
+        let shippingInventory = loc.shippingInventory;
+        shippingInventory.map((x: any) => x.restockRequestId = loc.restockRequestId || loc.requestId);
+        shippingInventory.map((x: any) => x.routeStopId = loc.id || 0);
+        
+        // Check if location already exists in locationData
+        const existingLocation = locationData.find(l => l.locationId === loc.locationId && l.type == loc.type);
+        
+        if (existingLocation) {
+          // Location exists, only add shipping inventory
+          existingLocation.shippingInventory = [
+            ...(existingLocation.shippingInventory || []),
+            ...shippingInventory
+          ];
+        } else {
+          // Location doesn't exist, add new entry
+          locationData.push({
+            id: loc.id,
+            stop: `Stop ${locationData.length + 1}`,
+            driverId: loc.driverId,
+            driverName: loc.driverName,
+            locationAddress: loc.locationAddress,
+            locationId: loc.locationId,
+            locationInventory: loc.locationInventory,
+            locationName: loc.locationName,
+            status: loc.status,
+            userId: loc.userId,
+            userName: loc.userName,
+            shippingInventory: shippingInventory,
+            type: loc.type
+          });
+        }
+      });
+      //End
+      this.routeStops = locationData;
   }
 
   getInventoryobyLocation(): void {
@@ -379,7 +419,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
       if (confirmed) {
         this.routeStops.splice(index, 1);
         this.driverLocations.map(loc => loc.selected = this.routeStops.find(stop => stop.id === loc.id) ? true : false);
-        this.allLocations.map(loc => loc.selected = this.routeStops.find(stop => stop.id === loc.id) ? true : false);
+        this.allLocations.map(loc => loc.selected = this.routeStops.find((stop: any) => stop?.locationId === loc.id) ? true : false);
         console.log('Stop deleted, remaining stops:', this.routeStops.length);
         
         // Emit the updated route data

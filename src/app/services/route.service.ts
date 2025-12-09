@@ -20,7 +20,7 @@ export class RouteService {
 
   updateRoute(id:number, payload: any): Observable<any> {
     payload.isActive = true;
-    payload.routeStops = [];
+    // payload.routeStops = [];
     return this.http.put<any>(`${this.API_URL}/Routes/${id}`, payload);
   }
   

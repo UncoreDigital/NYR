@@ -219,13 +219,15 @@ export class CreateRouteComponent implements OnInit {
       locationId: loc.id,
       restockRequestId: loc.requestId
     }));
+    let selectedLocations: any = this.dataSource.data;
+    selectedLocations.map((x: any) => x.id = undefined);
     this.router.navigate(['/route-detail'], {
       state: {
-        selectedLocations: this.dataSource.data,
+        selectedLocations: selectedLocations,
         routeData: {
           selectedDate: this.selectedDate,
           selectedDriver: this.selectedDriverName,
-          totalLocations: this.dataSource.data.length,
+          totalLocations: selectedLocations.length,
           selectedDriverId: this.driverOptions.find(d => d.value === this.selectedDriverName)?.id,
           startPoint: this.driverOptions.find(d => d.value === this.selectedDriverName)?.warehouseName || ''
         }

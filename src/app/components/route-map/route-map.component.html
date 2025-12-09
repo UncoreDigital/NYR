@@ -88,7 +88,7 @@
                                             </span>
                                         </div>
                                         <!-- Delete button only shown for draft routes -->
-                                        <button *ngIf="routeData.routeStatus == ''" 
+                                        <button *ngIf="routeData.routeStatus == '' || isDraftRoute" 
                                                 class="delete-stop-btn" 
                                                 (click)="deleteStop(i)"
                                                 matTooltip="Delete Stop"

@@ -146,14 +146,15 @@ export class RoutesComponent implements OnInit {
     this.applyFilters();
   }
 
-  viewMap(route: Routes) {
+  viewMap(route: any) {
+    route.routeStops.map((x: any) => x.type = x.followupRequestId == null ? "restockrequest" : "followupRequestId" )
     // Navigate to route detail page with route data
     this.router.navigate(['/route-detail'], {
       state: { routeData: route },
       queryParams: {
-        driverName: route.driverName,
-        totalStops: route.totalStops,
-        shippingDate: route.shippingDate,
+        selectedDriver: route.driverName,
+        totalLocations: route.totalStops,
+        selectedDate: route.shippingDate,
         status: route.status,
         routeStops: (route as any).routeStops || [],
         selectedDriverId: route.driverId || 0
