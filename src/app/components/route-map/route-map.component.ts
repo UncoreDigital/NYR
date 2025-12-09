@@ -414,9 +414,9 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   deleteStop(index: number): void {
     if ((this.isDraftRoute || this.isNotStartedRoute) && this.routeStops.length > index) {
       const stopLocation = this.routeStops[index].locationName;
-      const confirmed = confirm(`Are you sure you want to delete "${stopLocation}" from this route?`);
+      // const confirmed = confirm(`Are you sure you want to delete "${stopLocation}" from this route?`);
       
-      if (confirmed) {
+      // if (confirmed) {
         this.routeStops.splice(index, 1);
         this.driverLocations.map(loc => loc.selected = this.routeStops.find(stop => stop.id === loc.id) ? true : false);
         this.allLocations.map(loc => loc.selected = this.routeStops.find((stop: any) => stop?.locationId === loc.id) ? true : false);
@@ -424,7 +424,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
         
         // Emit the updated route data
         this.routeDataChanged.emit(this.routeStops);
-      }
+      // }
     }
   }
   // Update route stops status based on route completion status
