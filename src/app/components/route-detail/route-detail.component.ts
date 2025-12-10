@@ -870,8 +870,8 @@ export class RouteDetailComponent implements OnInit {
         apiLocations.map(loc => loc.driverName = loc.userName);
         apiLocations.map(x => x.shippingInventoryData = x.transferItems);
         apiLocations.map(x => x.shippingInventory = `${x.transferItems.length} Items`);
-        apiLocations.map(x => x.locationInventory = `${x.locationInventory?.length || 0} Items`);
-        apiLocations.map(x => x.locationInventoryData = x.locationInventory || []);
+        apiLocations.map(x => x.locationInventory = `${x.locationInventoryData?.length || 0} Items`);
+        apiLocations.map(x => x.locationInventoryData = x.locationInventoryData || []);
         apiLocations.map(x => x.fullAddress = `${x.addressLine1}, ${x.addressLine2}, ${x.state} ${x.zipCode}`);
 
         this.driverLocations = apiLocations.filter(x => x.userName == this.routeCreationData.selectedDriver);

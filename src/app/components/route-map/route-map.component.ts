@@ -454,6 +454,8 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
         apiLocations.map(loc => loc.driverName = loc.userName);
         apiLocations.map(x => x.shippingInventoryData = x.transferItems);
         apiLocations.map(x => x.shippingInventory = `${x.transferItems.length} Items`);
+        apiLocations.map(x => x.locationInventoryData = x.locationInventoryData || []);
+        apiLocations.map(x => x.locationInventory = `${x.locationInventoryData.length} Items`);
         this.driverLocations = apiLocations.filter(x => x.userName == this.routeData.driverName);
         this.allLocations = apiLocations;
         this.driverLocations.map(loc => loc.selected = this.routeStops.find((stop:any) => stop.locationId === loc.id) ? true : false);
