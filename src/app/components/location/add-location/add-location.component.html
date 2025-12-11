@@ -149,7 +149,7 @@
                             <input formControlName="email" type="text" placeholder="Enter Email" />
                         </div>
                         <div class="form-group">
-                            <label>Driver</label>
+                            <label>Driver*</label>
                             <div class="custom-select-container">
                                 <div class="search-wrapper" (click)="showDriverDropdown = true">
                                     <mat-icon class="search-icon">search</mat-icon>
@@ -189,11 +189,13 @@
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group full-width">
+                        <div class="form-group">
                             <label>Comments</label>
                             <input formControlName="comments" type="email" placeholder="Enter Comments" />
-                            <!-- <textarea formControlName="comments" placeholder="Enter Comments" rows="4">
-                            </textarea> -->
+                        </div>
+                        <div class="form-group">
+                            <label>FollowUp Days</label>
+                            <input formControlName="followUpDays" type="number" placeholder="Enter FollowUp Days" />
                         </div>
                     </div>
                     <div class="form-actions">

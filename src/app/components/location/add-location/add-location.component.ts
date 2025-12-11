@@ -46,7 +46,7 @@ export class AddLocationComponent implements OnInit {
     private toastService: ToastService
   ) {
     this.locationForm = this.fb.group({
-      userId: [''],
+      userId: ['', Validators.required],
       customerId: ['', Validators.required],
       locationName: ['', Validators.required],
       contactPerson: [''],
@@ -61,6 +61,7 @@ export class AddLocationComponent implements OnInit {
       faxNumber: [''],
       email: [''],
       comments: [''],
+      followUpDays: ['']
     });
   }
 
@@ -133,7 +134,8 @@ export class AddLocationComponent implements OnInit {
       faxNumber: location.faxNumber,
       email: location.email,
       comments: location.comments,
-      userId: location.userId || ''
+      userId: location.userId || '',
+      followUpDays: location.followUpDays || 0
     });
     this.driverSearchTerm = location.userName || '';
     // Set selected customer for dropdown
@@ -172,11 +174,16 @@ export class AddLocationComponent implements OnInit {
         locationPhone: formValue.locationPhone,
         mobilePhone: formValue.mobilePhone,
         faxNumber: formValue.faxNumber,
-        email: formValue.email,
+        email: formValue?.email?.trim() == "" ? formValue?.email?.trim() : null,
         comments: formValue.comments,
-        userId: formValue.userId
+        userId: formValue.userId,
+        followUpDays: formValue?.followUpDays || 0
       };
-
+      if (locationData?.followUpDays && locationData?.followUpDays > 60) {
+        this.toastService.error('Error', 'Add follow-up days restriction: must be under 60 days');
+        this.isSaving = false;
+        return;
+      }
       if (this.isEditMode && this.locationId) {
         // Update existing location
         const updateData = { ...locationData, isActive: this.currentLocation?.isActive ?? true };

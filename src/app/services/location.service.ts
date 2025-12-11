@@ -35,4 +35,8 @@ export class LocationService {
   deleteLocation(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/Locations/${id}`);
   }
+
+  followUpNeeded() {
+    return this.http.get<any>(`${this.API_URL}/Locations/follow-up-needed`);
+  }
 }

@@ -19,6 +19,7 @@ export interface LocationResponse {
   isActive: boolean;
   userId?: number;
   userName?: string;
+  followUpDays?: number;
 }
 
 export interface CreateLocationRequest {
@@ -37,4 +38,5 @@ export interface CreateLocationRequest {
   email: string;
   comments: string;
   userId?: number;
+  followUpDays?: number;
 }

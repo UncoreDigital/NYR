@@ -44,7 +44,7 @@ export class LoginComponent implements OnInit {
       this.authService.login(credentials).subscribe({
         next: (response) => {
           this.isLoading = false;
-          this.toastService.success('Login Successful', 'Welcome back!');
+          this.toastService.success('Login Successful', 'Welcome back!');          
           this.router.navigate(['/dashboard']);
         },
         error: (error) => {
