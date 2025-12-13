@@ -66,7 +66,8 @@ export class RoutesComponent implements OnInit {
           routeStops: r.routeStops || [],
           id: r.id || '',
           driverId: r.userId || '',
-          startPoint: r.warehouseName || ""
+          startPoint: r.warehouseName || "",
+          warehouseId: r.warehouseId || 0
         }));
         this.filteredRoutes = [...this.routes];
         this.applyFilters();
@@ -159,7 +160,8 @@ export class RoutesComponent implements OnInit {
         status: route.status,
         routeStops: (route as any).routeStops || [],
         selectedDriverId: route.driverId || 0,
-        startPoint: route.startPoint || ""
+        startPoint: route.startPoint || "",
+        warehouseId: route.warehouseId || 0
       }
     });
   }

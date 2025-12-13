@@ -10,6 +10,7 @@ import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 import { LocationService } from 'src/app/services/location.service';
 import { RouteService } from 'src/app/services/route.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { WarehouseService } from 'src/app/services/warehouse.service';
 
 export interface routeDetail {
   stop: string;
@@ -149,8 +150,9 @@ export class RouteDetailComponent implements OnInit {
   approveRouteDisabled: boolean = false;
   recalculateRouteDisabled: boolean = false;
   mapRouteData: any[] = [];
+  startingPointDetails: any;
   
-  constructor(private router: Router, private locationService: LocationService, private routeService: RouteService, private toastService: ToastService) { }
+  constructor(private router: Router, private locationService: LocationService, private routeService: RouteService, private toastService: ToastService, private warehouseService: WarehouseService) { }
 
   ngOnInit(): void {
     // Check if data was passed from navigation using history.state
@@ -170,12 +172,28 @@ export class RouteDetailComponent implements OnInit {
       // Check if we're coming from a not started route
       this.isFromNotStartedRoute = this.routeStatus.toLowerCase() === 'not started';
     }
+    this.getWareHouseById(this.routeCreationData?.warehouseId);
     this.updatePagination();
     this.driverName = this.routeCreationData.selectedDriver || this.routeCreationData.driverName || '';
     this.deliveryDate = this.routeCreationData.selectedDate || this.routeCreationData.shippingDate || new Date().toISOString().slice(0, 10).split('-').reverse().join('-');
     // Initialize button states
     this.initializeButtonStates();
-    this.loadLocationsDetails();
+    this.loadLocationsDetails();    
+  }
+
+  getWareHouseById(warehouseId: number) {
+    this.warehouseService.getWarehouseById(warehouseId).subscribe({
+      next: (res: any) => {
+        console.log('Warehouse Details:', res);
+        this.startingPointDetails = res;
+        this.startingPointDetails.fullAddress = (res?.addressLine1 || "") + ", " + (res?.addressLine2 || "") + ", " + (res?.city || "") + ", " + (res?.state || "") + ", " + (res?.zipCode || "");
+      },
+      error: (err: any) => {
+        this.toastService.error('Error', 'Failed to get Warehouse details');
+        this.isLoading = false;
+        alert('Failed to get Warehouse details. Please try again.');
+      }
+    });
   }
 
   prepareLocationData(selectedLocations: any) {
@@ -212,6 +230,7 @@ export class RouteDetailComponent implements OnInit {
           shippingInventory: shippingInventory,
           type: loc.type,
           deliveryOTP: loc.deliveryOTP || '',
+          fullAddress: loc.address || '',
         });
       }
     });
@@ -408,12 +427,13 @@ export class RouteDetailComponent implements OnInit {
           followupRequestId: route?.type?.toLowerCase() == "followuprequest" ? restockId : 0,
           latitude: route ? route.latitude : 0,
           longitude: route ? route.longitude : 0,
+          distance: route.distance || '0 Miles',
         });
       });
     });
     const payload: any = {
       userId: this.routeCreationData.selectedDriverId || this.routeCreationData.driverId || 0,
-      deliveryDate: new Date(this.deliveryDate).toISOString(),
+      deliveryDate: this.convertToISO(this.deliveryDate),
       status: statusType,
       routeStops: routes
     }
@@ -443,6 +463,12 @@ export class RouteDetailComponent implements OnInit {
         alert('Failed to create route. Please try again.');
       }
     });
+  }
+
+  convertToISO(dateStr: string): string {
+    const [day, month, year] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    return date.toISOString();
   }
 
   rejectApproval() {
@@ -536,7 +562,7 @@ export class RouteDetailComponent implements OnInit {
     if (!stops || stops.length === 0) return;
 
     const tableData: routeDetail[] = stops.map((stop, index) => {
-      const matchedLocation = this.allLocations.find(loc => 
+      const matchedLocation = this.allLocations.filter(x => !this.startingPointDetails.fullAddress?.includes(x?.fullAddress)).find(loc => 
         loc.fullAddress?.includes(stop.address?.addressLineOne)
       );
 
@@ -560,10 +586,15 @@ export class RouteDetailComponent implements OnInit {
     });
 
     this.dataSource.data = tableData;
+    tableData.forEach((route, idx) => {
+      if (this.routeMapComponent.routeStops.filter((x: any) => x.locationId === route.id)) {
+        this.routeMapComponent.routeStops.filter((x: any) => x.locationId === route.id)[0].distance = route.distance;
+      }
+    });
     this.updatePagination();
     
     // Calculate total distance
-    const totalDistanceValue = stops.reduce((sum, stop, index) => {
+    const totalDistanceValue = this.mapRouteData?.reduce((sum, stop, index) => {
       if (index > 0 && stop.calculatedDistance) {
         const distValue = parseFloat(stop.calculatedDistance.replace(' Miles', ''));
         return sum + (isNaN(distValue) ? 0 : distValue);
@@ -587,7 +618,8 @@ export class RouteDetailComponent implements OnInit {
     
     // When switching to table view, sync data from route-map component
     if (view === 'table' && this.routeMapComponent) {
-      this.syncWithRouteMapData(this.routeMapComponent.routeStops);
+      // this.syncWithRouteMapData(this.routeMapComponent.routeStops);
+      this.syncWithRouteMapData(this.dataSource.data);
     }
   }
 
@@ -661,10 +693,15 @@ export class RouteDetailComponent implements OnInit {
     this.showRecalculateButton = false;
     this.showCreateRouteButton = false;
 
+    const dateStr = this.deliveryDate;
+    const [day, month, year] = dateStr.split('-');
+
+    const isoString = new Date(`${year}-${month}-${day}`).toISOString();
+
     // Build payload for circuit computation based on current stops
     const payload: any = {
-      userId: this.routeCreationData.selectedDriverId || null,
-      deliveryDate: this.deliveryDate ? new Date(this.deliveryDate).toISOString() : null,
+      userId: this.routeCreationData.driverId || this.routeCreationData.selectedDriverId || null,
+      deliveryDate: isoString, //this.deliveryDate ? new Date(this.deliveryDate).toISOString() : null,
       routeStops: this.dataSource.data.map((stop, idx) => ({
         locationId: stop.id,
         stopOrder: idx + 1,
@@ -706,12 +743,24 @@ export class RouteDetailComponent implements OnInit {
           this.showRecalculateButton = true;
           return;
         }
-        
-        const routeStops = this.dataSource.data.map((stop, idx) => ({
-          "address": {
-            addressLineOne : this.allLocations.find(loc => loc.id === stop.id)?.fullAddress || "",
-          }
-        }));
+
+        let routeStops: any[] = [];
+        if (this.startingPointDetails?.fullAddress != "") {
+            routeStops.push({
+            "address": {
+              addressLineOne : this.startingPointDetails?.fullAddress || "",
+            }
+          });
+        }
+
+        routeStops = [
+          ...routeStops,
+          ...this.dataSource.data.map((stop: any, idx) => ({
+            "address": {
+              addressLineOne : this.allLocations.find(loc => loc.id === stop.locationId)?.fullAddress || "",
+            }
+          }))
+        ];        
 
         // Step 2: import stops into the created Spoke route
         
@@ -728,16 +777,54 @@ export class RouteDetailComponent implements OnInit {
                 //Step 4: parse optimized stops and update UI
                 this.routeService.getStopDetails(routeId.replace("plans/", "").trim()).subscribe({
                   next: (stopDetailsRes: any) => {
-                    const rawStops = stopDetailsRes?.stops || [];
-                    
+                    let rawStops: any[] = [];
+                    rawStops = stopDetailsRes?.stops || [];
+                    // routeStops.filter(x => !x?.address?.addressLineOne.includes(this.startingPointDetails?.fullAddress)).forEach(element => {
+                    //   if (element.address.addressLineOne.includes(stopDetailsRes?.address?.addressLineOne)) {
+                    //     rawStops.push(element);
+                    //   }
+                      
+                    // });
+                    // let rawStops = stopDetailsRes?.stops || [];
+                    // rawStops = rawStops.slice(1, -1);
+
                     // Process stops and calculate distances between consecutive stops
+                    let finalStops: any[] = [];
                     const stopsWithDistances = this.processStopsWithDistances(rawStops);
+                    stopsWithDistances?.filter((x: any) => !this.startingPointDetails?.fullAddress.includes(x?.address?.addressLineOne)).forEach((element: any) => {
+                      if (routeStops.filter(x => x?.address?.addressLineOne.includes(element?.address?.addressLineOne)).length > 0) {
+                        finalStops.push(element);
+                      }
+                    });
                     
-                    this.mapRouteData = stopsWithDistances;
+                    this.mapRouteData = [];
+                    /// Stops for getting distance calculation
+                    stopsWithDistances?.forEach(element => {
+                      if (routeStops?.map(x => x?.address?.addressLineOne)?.filter(x => x?.includes(element?.address?.addressLineOne)).length > 0) {
+                        this.mapRouteData.push(element);
+                      }                      
+                    });
+
+
+                    // // //Call service Getting distnace value 
+                    // this.routeService.getPlanDetails(routeId.replace("plans/", "").trim()).subscribe({
+                    //   next: (optRes: any) => {
+                    //     console.log('GetPlanDetails response for distance calculation:', optRes);
+                    //     let distanceData: any[] = [];
+                    //     distanceData = optRes?.stops || [];
+                    //   },
+                    //   error: (err: any) => {
+                    //     console.error('Error optimizing route for distance calculation:', err);
+                    //   }
+                    // });
+                    // //
+
+
+                    // this.mapRouteData = stopsWithDistances;
                     console.log('StopDetails response with distances:', this.mapRouteData);
                     
                     // Update table data with the calculated distances
-                    this.updateTableDataFromStops(stopsWithDistances);
+                    this.updateTableDataFromStops(finalStops);
                     this.isLoading = false;
                   }
                 });          

@@ -176,6 +176,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
             shippingInventory: shippingInventory,
             type: loc.type,
             deliveryOTP: loc.deliveryOTP || '',
+            fullAddress: loc.address || '',
           });
         }
       });

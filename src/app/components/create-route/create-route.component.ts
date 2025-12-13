@@ -8,6 +8,7 @@ import { UserResponse } from 'src/app/models/user.model';
 import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 import { LocationService } from 'src/app/services/location.service';
 import { TransferResponse, TransferService } from 'src/app/services/transfer.service';
+import { formatDate } from '@angular/common';
 
 export interface CreateRoutes {
   id: number;
@@ -221,15 +222,21 @@ export class CreateRouteComponent implements OnInit {
     }));
     let selectedLocations: any = this.dataSource.data;
     selectedLocations.map((x: any) => x.id = undefined);
+    const formattedSelectedDate = formatDate(
+      this.selectedDate ? new Date(this.selectedDate) : new Date(),
+      'dd-MM-yyyy',
+      'en-IN'
+    );
     this.router.navigate(['/route-detail'], {
       state: {
         selectedLocations: selectedLocations,
         routeData: {
-          selectedDate: this.selectedDate,
+          selectedDate: formattedSelectedDate,
           selectedDriver: this.selectedDriverName,
           totalLocations: selectedLocations.length,
           selectedDriverId: this.driverOptions.find(d => d.value === this.selectedDriverName)?.id,
-          startPoint: this.driverOptions.find(d => d.value === this.selectedDriverName)?.warehouseName || ''
+          startPoint: this.driverOptions.find(d => d.value === this.selectedDriverName)?.warehouseName || '',
+          warehouseId: this.driverOptions.find(d => d.value === this.selectedDriverName)?.id || '',
         }
       }
     });
