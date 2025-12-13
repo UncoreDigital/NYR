@@ -216,7 +216,11 @@ export class AddInventoryComponent implements OnInit {
     this.productService.getProductVariantsWithAttributes(product.id).subscribe({
       next: (variants) => {
         this.productVariants = variants;
-        
+        variants.map(x => x.sku = this.warehouseProducts.find(p => p.id === x.productId)?.barcodeSKU
+        || this.warehouseProducts.find(p => p.id === x.productId)?.barcodeSKU2 
+        || this.warehouseProducts.find(p => p.id === x.productId)?.barcodeSKU3 
+        || this.warehouseProducts.find(p => p.id === x.productId)?.barcodeSKU4 
+        || '');
         // Convert ProductVariantDto to Variant interface and map existing quantities
         this.allVariants = variants.map(v => {
           // Find existing inventory for this variant
