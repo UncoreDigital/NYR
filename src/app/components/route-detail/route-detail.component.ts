@@ -210,7 +210,8 @@ export class RouteDetailComponent implements OnInit {
           userId: loc.userId,
           userName: loc.userName,
           shippingInventory: shippingInventory,
-          type: loc.type
+          type: loc.type,
+          deliveryOTP: loc.deliveryOTP || '',
         });
       }
     });
