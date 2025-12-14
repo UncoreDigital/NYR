@@ -476,9 +476,11 @@ export class RouteDetailComponent implements OnInit {
   }
 
   convertToISO(dateStr: string): string {
-    const [day, month, year] = dateStr.split('-').map(Number);
-    const date = new Date(year, month - 1, day);
-    return date.toISOString();
+    // const [day, month, year] = dateStr.split('-').map(Number);
+    // const date = new Date(year, month - 1, day);
+    // return date.toISOString();
+    const [day, month, year] = dateStr.split('-');
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
 
   rejectApproval() {
