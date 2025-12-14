@@ -412,7 +412,9 @@ export class RouteDetailComponent implements OnInit {
       let restockIds = [...new Set(route?.shippingInventoryData.map((x: any) => x.restockRequestId))];
 
       //Check for the Followup or FollowupRequest type
-      restockIds = route?.type?.toLowerCase() == "followuprequest" ? [route.requestId] : [];
+      if (restockIds.length == 0) {
+        restockIds = route?.type?.toLowerCase() == "followuprequest" ? [route.requestId] : [];
+      }
       //
       
       let matchedData: any = this.allLocations.find(loc => route.locationId == loc.id);
