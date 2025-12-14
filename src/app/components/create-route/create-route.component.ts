@@ -78,7 +78,7 @@ export class CreateRouteComponent implements OnInit {
     this.transferService.getTransfersByType('RestockRequest').subscribe({
       next: (response: TransferResponse[]) => {
         // Map LocationResponse to CreateRoutes model
-        this.createRoutes = response.filter(x => ['restock requested', 'followup requested'].includes(x.status?.toLowerCase())).map(loc => ({
+        this.createRoutes = response.filter(x => ['restock requested', 'followup requested', 'followup'].includes(x.status?.toLowerCase())).map(loc => ({
           id: loc.locationId || 0,
           shippingDate: loc.requestDate || '',
           locationName: loc.locationName,

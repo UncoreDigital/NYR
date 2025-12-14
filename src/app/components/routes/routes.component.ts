@@ -149,7 +149,7 @@ export class RoutesComponent implements OnInit {
   }
 
   viewMap(route: any) {
-    route.routeStops.map((x: any) => x.type = x.followupRequestId == null ? "restockrequest" : "followupRequestId" )
+    route.routeStops.map((x: any) => x.type = x.followupRequestId == null ? "restockrequest" : "followuprequested" )
     // Navigate to route detail page with route data
     this.router.navigate(['/route-detail'], {
       state: { routeData: route },

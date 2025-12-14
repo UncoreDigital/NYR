@@ -231,6 +231,7 @@ export class RouteDetailComponent implements OnInit {
           type: loc.type,
           deliveryOTP: loc.deliveryOTP || '',
           fullAddress: loc.address || '',
+          requestId: loc.requestId,
         });
       }
     });
@@ -409,26 +410,33 @@ export class RouteDetailComponent implements OnInit {
     this.dataSource.data.forEach((route: any) => {
       // Get distinct restockRequestIds
       let restockIds = [...new Set(route?.shippingInventoryData.map((x: any) => x.restockRequestId))];
+
+      //Check for the Followup or FollowupRequest type
+      restockIds = route?.type?.toLowerCase() == "followuprequest" ? [route.requestId] : [];
+      //
       
       let matchedData: any = this.allLocations.find(loc => route.locationId == loc.id);
       let address = matchedData ? matchedData.addressLine1 + ', ' + matchedData.addressLine2 + ', ' + matchedData.state + ' ' + matchedData.zipCode : '';
       
       // Loop through each distinct restockRequestId and create a route entry
       restockIds.forEach((restockId: any) => {
-        routes.push({
-          id: route?.shippingInventoryData.filter((x: any) => x.restockRequestId == restockId)?.[0]?.routeStopId || 0,
-          locationId: route.locationId,
-          stopOrder: Number(route.stop.replace('Stop ', '').trim()),
-          address: address,
-          customerId: matchedData ? matchedData.customerId : '',
-          contactPhone: matchedData ? (matchedData?.contactPhone ? matchedData.contactPhone : (matchedData.locationPhone || '')) : '',
-          notes: '',
-          restockRequestId: route?.type?.toLowerCase() != "followuprequest" ? restockId : 0,
-          followupRequestId: route?.type?.toLowerCase() == "followuprequest" ? restockId : 0,
-          latitude: route ? route.latitude : 0,
-          longitude: route ? route.longitude : 0,
-          distance: route.distance || '0 Miles',
-        });
+        //check if followup request already exists in routes then remove it
+        if (!(route?.type?.toLowerCase() == "followuprequest" && routes.filter((id: any) => id.followupRequestId === restockId).length > 0)) {
+          routes.push({
+            id: route?.shippingInventoryData.filter((x: any) => x.restockRequestId == restockId)?.[0]?.routeStopId || 0,
+            locationId: route.locationId,
+            stopOrder: Number(route.stop.replace('Stop ', '').trim()),
+            address: address,
+            customerId: matchedData ? matchedData.customerId : '',
+            contactPhone: matchedData ? (matchedData?.contactPhone ? matchedData.contactPhone : (matchedData.locationPhone || '')) : '',
+            notes: '',
+            restockRequestId: route?.type?.toLowerCase() != "followuprequest" ? restockId : 0,
+            followupRequestId: route?.type?.toLowerCase() == "followuprequest" ? restockId : 0,
+            latitude: route ? route.latitude : 0,
+            longitude: route ? route.longitude : 0,
+            distance: route.distance || '0 Miles',
+          });
+        }        
       });
     });
     const payload: any = {

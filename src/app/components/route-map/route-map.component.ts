@@ -23,6 +23,7 @@ export interface RouteStop {
   shippingInventoryData?: any[];
   id?: number;
   deliveryOTP?: string;
+  type?: string;
 }
 
 export interface Customer {
@@ -177,6 +178,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
             type: loc.type,
             deliveryOTP: loc.deliveryOTP || '',
             fullAddress: loc.address || '',
+            requestId: loc.requestId,
           });
         }
       });

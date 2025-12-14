@@ -84,7 +84,7 @@
                                         <!-- Status only shown for non-draft routes -->
                                         <div class="stop-status" *ngIf="!isDraftRoute">
                                             <span class="status-badge" [class]="stop.status">
-                                                {{ stop.status | titlecase }}
+                                                {{ stop.status | titlecase }}{{ stop.type == 'followuprequested' ? ' (Followup)': "" }}
                                             </span>
                                         </div>
                                         <!-- Delete button only shown for draft routes -->
