@@ -8,6 +8,7 @@ import { WarehouseInventoryDetailResponse } from '../../models/warehouse-invento
 import { TransferInventoryService } from '../../services/transfer-inventory.service';
 import { VanInventoryService } from '../../services/van-inventory.service';
 import { RestockRequestService } from '../../services/restock-request.service';
+import { InventoryLocationService } from 'src/app/services/inventoryLocation.service';
 
 export interface inventoryLocation {
   productName: string,
@@ -23,7 +24,7 @@ export interface inventoryLocation {
   styleUrl: './inventory-detail.component.css'
 })
 export class InventoryDetailComponent implements OnInit {
-  displayedColumns: string[] = ['productName', 'skucode', 'variantName', 'variantSku', 'quantity'];
+  displayedColumns: string[] = ['productName', 'skucode', 'variantName', 'quantity'];
   dataSource = new MatTableDataSource<inventoryLocation>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -46,7 +47,8 @@ export class InventoryDetailComponent implements OnInit {
     private warehouseInventoryService: WarehouseInventoryService,
     private transferInventoryService: TransferInventoryService,
     private vanInventoryService: VanInventoryService,
-    private restockRequestService: RestockRequestService
+    private restockRequestService: RestockRequestService,
+    private inventoryLocationService: InventoryLocationService,
   ) { }
 
   ngOnInit(): void {
@@ -131,18 +133,16 @@ export class InventoryDetailComponent implements OnInit {
     } else if (this.sourceContext === 'location' && this.locationId) {
       // Load restock requests for location
       this.loading = true;
-      this.restockRequestService.getRequestsByLocation(this.locationId).subscribe({
+      this.inventoryLocationService.getInventoryLocationById(this.locationId).subscribe({
         next: (requests) => {
           // Flatten all items from all requests for this location
-          const allItems = requests.flatMap(request => 
-            request.items.map(item => ({
+          const allItems = requests?.map((item: any) => ({
               productName: item.productName,
-              skucode: item.skuCode || '',
+              skucode: item.productSKU || '',
               variantName: item.variantName || 'Universal Product',
-              variantSku: item.variantSku || '-',
+              // variantSku: item.productSKU || '-',
               quantity: item.quantity
-            }))
-          );
+          }));
           this.inventoryLocation = allItems;
           this.dataSource.data = this.inventoryLocation;
           this.loading = false;

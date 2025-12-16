@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { RestockRequestService } from '../../services/restock-request.service';
 import { ToastService } from '../../services/toast.service';
 import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
+import { InventoryLocationService } from 'src/app/services/inventoryLocation.service';
 
 export interface inventoryLocation {
   locationId: number;
@@ -52,6 +53,7 @@ export class InventoryLocationComponent implements OnInit {
   constructor(
     private router: Router,
     private restockRequestService: RestockRequestService,
+    private inventoryLocationService: InventoryLocationService,
     private toastService: ToastService
   ) { }
 
@@ -61,11 +63,9 @@ export class InventoryLocationComponent implements OnInit {
 
   loadLocations(): void {
     this.isLoading = true;
-    
-    // Get location summary from restock requests
-    this.restockRequestService.getRequestsSummary().subscribe({
-      next: (summary) => {
-        this.inventoryLocation = summary.map(loc => ({
+    this.inventoryLocationService.getAllInventoryLocation().subscribe({
+    next: (summary) => {
+        this.inventoryLocation = summary?.map(loc => ({
           locationId: loc.locationId,
           location: loc.locationName || '-',
           customer: loc.customerName || '-',
