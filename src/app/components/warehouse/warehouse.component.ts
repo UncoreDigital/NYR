@@ -124,7 +124,7 @@ export class WarehouseComponent implements OnInit {
       width: '400px',
       data: {
         title: 'Delete Warehouse',
-        message: `Are you sure you want to delete warehouse "${warehouse.warehouseName}"? This action cannot be undone.`,
+        message: `Are you sure you want to delete the warehouse "${warehouse.warehouseName}"? This action cannot be undone and will permanently delete all associated inventory.`,
         confirmText: 'Delete',
         cancelText: 'Cancel'
       }
