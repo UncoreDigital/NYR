@@ -9,6 +9,7 @@ import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 import { LocationService } from 'src/app/services/location.service';
 import { TransferResponse, TransferService } from 'src/app/services/transfer.service';
 import { formatDate } from '@angular/common';
+import { formatToMMDDYYYY } from 'src/app/utils/date-utils';
 
 export interface CreateRoutes {
   id: number;
@@ -49,6 +50,9 @@ export class CreateRouteComponent implements OnInit {
     }
   }
   pageSizeOptions: number[] = [25, 50, 75, 100];
+
+  // Expose shared formatter to template
+  formatToMMDDYYYY = formatToMMDDYYYY;
 
   createRoutes: CreateRoutes[] = [];
   selectedDate: string = new Date().toISOString().split('T')[0];
@@ -268,4 +272,6 @@ export class CreateRouteComponent implements OnInit {
     // Clear error message when driver is selected
     this.confirmErrorMessage = '';
   }
+
+
 }

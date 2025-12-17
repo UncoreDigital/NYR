@@ -64,7 +64,7 @@
 
                     <ng-container matColumnDef="shippingDate">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header>REQUESTED DATE</th>
-                        <td mat-cell *matCellDef="let route">{{route.shippingDate?.split('T')[0]}}</td>
+                        <td mat-cell *matCellDef="let route">{{ formatToMMDDYYYY(route.shippingDate) }}</td>
                     </ng-container>
 
                     <ng-container matColumnDef="status">
