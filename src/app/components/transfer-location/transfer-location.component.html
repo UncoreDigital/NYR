@@ -219,6 +219,11 @@
                             </div>
                         </div>
                     </div>
+                    <div class="section-header-combined" *ngIf="selectedCustomer && selectedLocation">
+                        <div class="scanner-icon-container" style="padding: 0px !important; margin-right: 0px !important;">
+                            <mat-icon>qr_code_scanner</mat-icon>
+                        </div>
+                    </div>
 
                     <!-- Scan Mode Section -->
                     <div class="scan-section" *ngIf="selectedTransferOption === 'scan'">
@@ -240,9 +245,6 @@
                                 <input type="text" placeholder="Search variants..." class="search-input" 
                                    [(ngModel)]="variationSearchTerm" [ngModelOptions]="{standalone: true}" 
                                    (keyup)="applyVariantFilter($event)">
-                            </div>
-                            <div class="scanner-icon-container">
-                                <mat-icon>qr_code_scanner</mat-icon>
                             </div>
                         </div>
 

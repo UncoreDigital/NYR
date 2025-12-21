@@ -483,6 +483,10 @@ export class TransferLocationComponent implements OnInit {
   clearCustomer() {
     this.selectedCustomer = null;
     this.customerSearchTerm = '';
+    this.locationSearchTerm = '';
+    this.allVariants = [];
+    this.productSearchTerm = '';
+    this.filteredVariants = [];
     this.vanForm.patchValue({ customer: '' });
     this.showCustomerDropdown = false;
   }

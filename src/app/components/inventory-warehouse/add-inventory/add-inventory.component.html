@@ -106,7 +106,11 @@
                     </div>
 
 
-
+                    <div class="section-header-combined" *ngIf="selectedWarehouse">
+                        <div class="scanner-icon-container" style="padding: 0px !important; margin-right: 0px !important;">
+                            <mat-icon>qr_code_scanner</mat-icon>
+                        </div>
+                    </div>
                     <!-- Warehouse Products List (Edit Mode Only) -->
                     <!-- <div class="warehouse-products-section" *ngIf="warehouseProducts.length > 0 && !selectedProduct">
                         <h3>Products in this Warehouse</h3>
@@ -144,9 +148,6 @@
                                 <input type="text" placeholder="Search variants..." class="search-input" 
                                        [(ngModel)]="searchTerm" [ngModelOptions]="{standalone: true}" 
                                        (keyup)="applyFilter($event)">
-                            </div>
-                            <div class="scanner-icon-container">
-                                <mat-icon>qr_code_scanner</mat-icon>
                             </div>
                         </div>
 
@@ -212,7 +213,7 @@
                         </div>
 
                         <!-- Universal Product (No Variants) -->
-                        <div *ngIf="allVariants.length === 0" class="universal-product-section">
+                        <!-- <div *ngIf="allVariants.length === 0" class="universal-product-section">
                             <div class="universal-product-form">
                                 <div class="form-group">
                                     <label>Quantity</label>
@@ -230,7 +231,7 @@
                                     {{universalProductInCart ? 'Added' : 'Add to Cart'}}
                                 </button>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
 
                     <!-- Inventory Cart -->

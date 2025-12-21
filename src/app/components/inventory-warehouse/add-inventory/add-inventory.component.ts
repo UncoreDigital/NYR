@@ -435,6 +435,9 @@ export class AddInventoryComponent implements OnInit {
   clearWarehouse() {
     this.selectedWarehouse = null;
     this.warehouseSearchTerm = '';
+    this.productSearchTerm = '';
+    this.allVariants = [];
+    this.filteredVariants = [];
     this.inventoryForm.patchValue({ warehouseName: '' });
     this.showWarehouseDropdown = false;
   }

@@ -512,6 +512,8 @@ export class TransferVanComponent implements OnInit {
   clearWarehouse() {
     this.selectedWarehouse = null;
     this.warehouseSearchTerm = '';
+    this.vanSearchTerm = '';
+    this.productSearchTerm = '';
     this.vanForm.patchValue({ warehouse: '' });
     this.showWarehouseDropdown = false;
     this.products = [];
