@@ -33,7 +33,17 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  isFromAPK(): boolean {
+    const ua = navigator.userAgent || '';
+    return /wv|Android.*Version\/[\d.]+/.test(ua);
+  }
+
   onSubmit(): void {
+    if (this.isFromAPK()) {
+      const errorMessage = 'Login failed. Please try again.';
+      this.toastService.error('Login Failed', errorMessage);
+      return; // Skip login if from APK
+    }
     if (this.loginForm.valid && !this.isLoading) {
       this.isLoading = true;
       const credentials = {
