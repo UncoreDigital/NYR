@@ -17,6 +17,7 @@ export interface Transfers {
   deliveryDate: string;
   driver: string;
   status: string;
+  driverId?: number;
 }
 
 @Component({
@@ -117,7 +118,8 @@ export class TransfersComponent implements OnInit {
           deliveryDate: transfer.deliveryDate ? transfer.deliveryDate : (transfer.requestDate ? transfer.requestDate : ''),
           driver: transfer.driverName || '-',
           status: this.mapStatusFromApi(transfer.status),
-          shippingInventory: transfer.shippingInventory || []
+          shippingInventory: transfer.shippingInventory || [],
+          driverId: transfer.driverId
         }));
         
         this.filteredTransfers = [...this.transfers];

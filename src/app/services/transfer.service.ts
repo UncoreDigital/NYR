@@ -65,4 +65,8 @@ export class TransferService {
   getTransfersSummary(): Observable<TransferSummaryResponse> {
     return this.http.get<TransferSummaryResponse>(`${this.API_URL}/Transfers/summary`);
   }
+
+  getInventoryCountsbyDriverId(driverId: number): Observable<any> {
+    return this.http.get<TransferSummaryResponse>(`${this.API_URL}/Transfers/inventory-counts/driver/${driverId}`);
+  }
 }
