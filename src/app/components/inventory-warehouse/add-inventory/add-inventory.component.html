@@ -107,8 +107,85 @@
 
 
                     <div class="section-header-combined" *ngIf="selectedWarehouse">
-                        <div class="scanner-icon-container" style="padding: 0px !important; margin-right: 0px !important;">
-                            <mat-icon>qr_code_scanner</mat-icon>
+                        <div class="scanner-icon-container" 
+                             style="padding: 0px !important; margin-right: 0px !important; cursor: pointer;"
+                             (click)="startBarcodeScanning()"
+                             [class.scanning]="isScanning"
+                             matTooltip="Click to scan barcode with CipherLab RS35"
+                             matTooltipPosition="above">
+                            <mat-icon [class.scanning-animation]="isScanning">qr_code_scanner</mat-icon>
+                            <span *ngIf="isScanning" class="scanning-text">Scanning...</span>
+                        </div>
+                        <div *ngIf="isScanning" class="scanning-instructions">
+                            <mat-icon>info</mat-icon>
+                            <span>Point your CipherLab RS35 scanner at a barcode</span>
+                            <button type="button" class="btn-stop-scan" (click)="stopScanning()">
+                                <mat-icon>stop</mat-icon>
+                                Stop
+                            </button>
+                        </div>
+                        <!-- Test Mode Toggle -->
+                        <!-- <div class="test-mode-toggle" *ngIf="isTestMode()">
+                            <button type="button" 
+                                    class="btn-test-toggle" 
+                                    (click)="toggleTestInterface()"
+                                    [class.active]="showTestInterface">
+                                <mat-icon>bug_report</mat-icon>
+                                Test Scanner
+                            </button>
+                        </div> -->
+                    </div>
+
+                    <!-- Test Interface -->
+                    <div class="test-interface" *ngIf="showTestInterface && isTestMode()">
+                        <div class="test-interface-header">
+                            <mat-icon>science</mat-icon>
+                            <h4>Barcode Scanner Test Mode</h4>
+                            <p>Simulate barcode scanning without physical device</p>
+                        </div>
+                        
+                        <div class="test-controls">
+                            <div class="test-input-group">
+                                <label>Enter Barcode:</label>
+                                <div class="test-input-container">
+                                    <input type="text" 
+                                           class="test-barcode-input" 
+                                           [(ngModel)]="testBarcode" 
+                                           [ngModelOptions]="{standalone: true}"
+                                           placeholder="Enter barcode to simulate..."
+                                           (keyup.enter)="simulateBarcodeScan()">
+                                    <button type="button" 
+                                            class="btn-simulate" 
+                                            (click)="simulateBarcodeScan()"
+                                            [disabled]="!testBarcode.trim()">
+                                        <mat-icon>qr_code</mat-icon>
+                                        Simulate Scan
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="test-quick-actions">
+                                <button type="button" class="btn-test-action" (click)="simulateRandomScan()">
+                                    <mat-icon>shuffle</mat-icon>
+                                    Random Scan
+                                </button>
+                                <button type="button" class="btn-test-action error" (click)="simulateError()">
+                                    <mat-icon>error</mat-icon>
+                                    Simulate Error
+                                </button>
+                            </div>
+
+                            <div class="test-barcodes">
+                                <label>Quick Test Barcodes:</label>
+                                <div class="test-barcode-list">
+                                    <button type="button" 
+                                            class="btn-test-barcode" 
+                                            *ngFor="let barcode of getTestBarcodes()"
+                                            (click)="useTestBarcode(barcode)">
+                                        {{barcode}}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <!-- Warehouse Products List (Edit Mode Only) -->

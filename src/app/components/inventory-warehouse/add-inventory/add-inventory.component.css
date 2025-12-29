@@ -857,3 +857,468 @@
   flex: 1;
   margin-bottom: 0;
 }
+/* Barcode Scanner Styles */
+.scanner-icon-container.scanning {
+  background-color: #e8f5e8;
+  border: 2px solid #4CAF50;
+  animation: scannerPulse 1.5s ease-in-out infinite;
+}
+
+.scanner-icon-container.scanning mat-icon {
+  color: #4CAF50;
+  animation: scannerRotate 2s linear infinite;
+}
+
+.scanning-animation {
+  animation: scannerRotate 2s linear infinite;
+}
+
+.scanning-text {
+  margin-left: 8px;
+  color: #4CAF50;
+  font-size: 12px;
+  font-weight: 500;
+  animation: scannerBlink 1s ease-in-out infinite;
+}
+
+@keyframes scannerPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+  }
+}
+
+@keyframes scannerRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes scannerBlink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0.5;
+  }
+}
+
+/* Scanner Icon Hover Effect */
+.scanner-icon-container:hover:not(.scanning) {
+  background-color: #f0f8ff;
+  border: 1px solid #667eea;
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+
+.scanner-icon-container:hover:not(.scanning) mat-icon {
+  color: #5a67d8;
+  transform: scale(1.1);
+  transition: all 0.3s ease;
+}
+
+/* Scanner Ready State */
+.scanner-icon-container {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.scanner-icon-container::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.scanner-icon-container.scanning::after {
+  border-color: #4CAF50;
+  animation: scannerBorder 2s linear infinite;
+}
+
+@keyframes scannerBorder {
+  0% {
+    border-color: #4CAF50;
+    opacity: 1;
+  }
+  50% {
+    border-color: #81C784;
+    opacity: 0.7;
+  }
+  100% {
+    border-color: #4CAF50;
+    opacity: 1;
+  }
+}
+/* Scanning Instructions */
+.scanning-instructions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: #e8f5e8;
+  border: 1px solid #4CAF50;
+  border-radius: 8px;
+  color: #2e7d32;
+  font-size: 14px;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-out;
+}
+
+.scanning-instructions mat-icon {
+  color: #4CAF50;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.btn-stop-scan {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: auto;
+}
+
+.btn-stop-scan:hover {
+  background: #d32f2f;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
+}
+
+.btn-stop-scan mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: white;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments for scanning instructions */
+@media (max-width: 768px) {
+  .scanning-instructions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .btn-stop-scan {
+    margin-left: 0;
+    align-self: flex-end;
+  }
+}
+/* Test Mode Styles */
+.test-mode-toggle {
+  margin-left: auto;
+}
+
+.btn-test-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ff9800;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-test-toggle:hover {
+  background: #f57c00;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);
+}
+
+.btn-test-toggle.active {
+  background: #4CAF50;
+}
+
+.btn-test-toggle.active:hover {
+  background: #45a049;
+}
+
+.btn-test-toggle mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Test Interface */
+.test-interface {
+  margin: 20px 0;
+  background: #fff3e0;
+  border: 2px solid #ff9800;
+  border-radius: 8px;
+  padding: 20px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.test-interface-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #ffcc80;
+}
+
+.test-interface-header mat-icon {
+  color: #ff9800;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.test-interface-header h4 {
+  margin: 0;
+  color: #e65100;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.test-interface-header p {
+  margin: 0;
+  color: #bf360c;
+  font-size: 12px;
+  margin-left: auto;
+}
+
+/* Test Controls */
+.test-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.test-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.test-input-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #e65100;
+}
+
+.test-input-container {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.test-barcode-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 2px solid #ffcc80;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  transition: border-color 0.3s ease;
+}
+
+.test-barcode-input:focus {
+  outline: none;
+  border-color: #ff9800;
+  box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
+}
+
+.btn-simulate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #2196F3;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-simulate:hover:not(:disabled) {
+  background: #1976D2;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
+}
+
+.btn-simulate:disabled {
+  background: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-simulate mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* Test Quick Actions */
+.test-quick-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-test-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #9C27B0;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-test-action:hover {
+  background: #7B1FA2;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(156, 39, 176, 0.3);
+}
+
+.btn-test-action.error {
+  background: #f44336;
+}
+
+.btn-test-action.error:hover {
+  background: #d32f2f;
+  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
+}
+
+.btn-test-action mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Test Barcodes */
+.test-barcodes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.test-barcodes label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #e65100;
+}
+
+.test-barcode-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn-test-barcode {
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-test-barcode:hover {
+  background: #e0e0e0;
+  border-color: #bbb;
+  transform: translateY(-1px);
+}
+
+.btn-test-barcode:active {
+  background: #d0d0d0;
+  transform: translateY(0);
+}
+
+/* Responsive Design for Test Interface */
+@media (max-width: 768px) {
+  .test-interface-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .test-interface-header p {
+    margin-left: 0;
+  }
+
+  .test-input-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-simulate {
+    justify-content: center;
+  }
+
+  .test-quick-actions {
+    justify-content: center;
+  }
+
+  .test-barcode-list {
+    justify-content: center;
+  }
+
+  .test-mode-toggle {
+    margin-left: 0;
+    margin-top: 10px;
+  }
+
+  .section-header-combined {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+}
