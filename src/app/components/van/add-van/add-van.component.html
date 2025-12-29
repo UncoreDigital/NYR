@@ -27,13 +27,57 @@
                 <h1>{{ isEditMode ? 'Edit Van' : 'Add Van' }}</h1>
 
             </div>
-
+            <!-- Loading Spinner -->
+            <div *ngIf="isLoading" class="loading-container">
+                <mat-spinner diameter="50"></mat-spinner>
+                <p>Loading users...</p>
+            </div>
             <div class="table-container">
                 <form [formGroup]="vanForm" class="user-form" (ngSubmit)="onSubmit()">
                     <div class="form-row">
                         <div class="form-group">
                             <label>Default Driver Name</label>
-                            <input formControlName="driverName" type="text" placeholder="Enter Default Driver Name" />
+                            <!-- <input formControlName="driverName" type="text" placeholder="Enter Default Driver Name" /> -->
+                            <div class="custom-select-container">
+                                <div class="custom-select-container">
+                                <div class="search-wrapper" (click)="showDriverDropdown = true">
+                                    <mat-icon class="search-icon">search</mat-icon>
+                                    <input 
+                                        type="text" 
+                                        class="search-input" 
+                                        placeholder="Select starting point"
+                                        [value]="driverSearchTerm"
+                                        (input)="onDriverSearchInput($event); filterDrivers()"
+                                        (focus)="showDriverDropdown = true"
+                                        (blur)="hideDriverDropdown()"
+                                        [readonly]="selectedDriver ? true : false"
+                                    >
+                                    <button 
+                                        *ngIf="selectedDriver" 
+                                        type="button" 
+                                        class="clear-button"
+                                        (click)="clearVan(); $event.stopPropagation()"
+                                    >
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                </div>
+                                <div class="dropdown-list" *ngIf="showDriverDropdown && !selectedDriver">
+                                    <div 
+                                        class="dropdown-item" 
+                                        *ngFor="let option of getFilteredDrivers()"
+                                        (mousedown)="selectDriver(option)"
+                                        [class.selected]="selectedDriver?.id === option.id"
+                                    >
+                                        <div class="dropdown-item-content">
+                                            <span class="option-name">{{ option.name }}</span>
+                                        </div>
+                                    </div>
+                                    <div *ngIf="getFilteredDrivers().length === 0" class="no-results">
+                                        No Drivers found
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Van Name*</label>

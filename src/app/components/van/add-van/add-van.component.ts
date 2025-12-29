@@ -4,6 +4,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { VanService } from '../../../services/van.service';
 import { CreateVanRequest, VanResponse, UpdateVanRequest } from '../../../models/van.model';
 import { ToastService } from '../../../services/toast.service';
+import { UserService } from 'src/app/services/user.service';
+import { UserResponse } from 'src/app/models/user.model';
 
 @Component({
   selector: 'app-add-van',
@@ -21,17 +23,48 @@ export class AddVanComponent implements OnInit {
   currentVan: VanResponse | null = null;
   isSaving = false;
 
+  // Driver List dropdown properties
+  driverSearchTerm: string = '';
+  showDriverDropdown: boolean = false;
+  selectedDriver: any = null;
+  driverOptions: any[] = [];
+  isLoading = false;
+
   constructor(
     private fb: FormBuilder, 
     private router: Router,
     private route: ActivatedRoute,
     private vanService: VanService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private userService: UserService
   ) {
     this.vanForm = this.fb.group({
       vanName: ['', Validators.required],
       driverName: [''],
       vanNumber: [''],
+      driverId: [''],
+    });
+    this.loadUsers();
+  }
+
+  loadUsers(): void {
+    this.isLoading = true;
+    
+    this.userService.getUsers().subscribe({
+      next: (apiUsers: UserResponse[]) => {
+        this.driverOptions = apiUsers?.filter(userData => userData?.roleName?.toLocaleLowerCase() === 'driver').map(apiUser => ({
+        id: apiUser.id,
+        role: apiUser.roleName,
+        name: apiUser.name,
+        email: apiUser.email,
+        phoneNumber: apiUser.phoneNumber
+      }));
+        this.isLoading = false;
+      },
+      error: (error: any) => {
+        console.error('Error loading users:', error);
+        this.isLoading = false;
+      }
     });
   }
 
@@ -65,8 +98,10 @@ export class AddVanComponent implements OnInit {
     this.vanForm.patchValue({
       vanName: van.vanName,
       driverName: van.defaultDriverName,
-      vanNumber: van.vanNumber
+      vanNumber: van.vanNumber,
+      driverId: van.driverId
     });
+    this.selectDriver(van);
   }
 
   onSubmit() {
@@ -83,6 +118,7 @@ export class AddVanComponent implements OnInit {
           defaultDriverName: formValue.driverName,
           vanName: formValue.vanName,
           vanNumber: formValue.vanNumber,
+          driverId: formValue.driverId,
           isActive: this.currentVan?.isActive ?? true
         };
 
@@ -107,7 +143,8 @@ export class AddVanComponent implements OnInit {
         const vanData: CreateVanRequest = {
           defaultDriverName: formValue.driverName,
           vanName: formValue.vanName,
-          vanNumber: formValue.vanNumber
+          vanNumber: formValue.vanNumber,
+          driverId: formValue.driverId
         };
 
         this.vanService.createVan(vanData).subscribe({
@@ -145,5 +182,51 @@ export class AddVanComponent implements OnInit {
 
   goToVansList() {
     this.router.navigate(['/van']);
+  }
+
+  // Driver dropdown methods
+  getFilteredDrivers() {
+    if (!this.driverSearchTerm.trim()) {
+      return this.driverOptions;
+    }
+    return this.driverOptions.filter(option => 
+      option.name.toLowerCase().includes(this.driverSearchTerm.toLowerCase())
+    );
+  }
+
+  
+  selectDriver(option: any) {
+    let driverName = option.name || option.defaultDriverName;
+    let driverId = option.id || option.driverId;
+    this.selectedDriver = option;
+    this.driverSearchTerm = driverName;
+    this.vanForm.patchValue({ driverName: `${driverName}` });
+    this.vanForm.patchValue({ driverId: `${driverId}` });
+
+    this.showDriverDropdown = false;
+  }
+
+  clearVan() {
+    this.selectedDriver = null;
+    this.driverSearchTerm = '';
+    this.vanForm.patchValue({ driverName: '' });
+    this.showDriverDropdown = false;
+  }
+
+  hideDriverDropdown() {
+    setTimeout(() => {
+      this.showDriverDropdown = false;
+    }, 150);
+  }
+  
+  filterDrivers() {
+    if (!this.showDriverDropdown) {
+      this.showDriverDropdown = true;
+    }
+  }
+
+  onDriverSearchInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.driverSearchTerm = target.value;
   }
 }

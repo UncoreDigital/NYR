@@ -4,6 +4,7 @@ export interface VanResponse {
   vanName: string;
   vanNumber: string;
   isActive: boolean;
+  driverId?: number;
 }
 
 export interface Van {
@@ -18,6 +19,7 @@ export interface CreateVanRequest {
   defaultDriverName: string;
   vanName: string;
   vanNumber: string;
+  driverId?: number;
 }
 
 export interface UpdateVanRequest {
@@ -25,4 +27,5 @@ export interface UpdateVanRequest {
   vanName: string;
   vanNumber: string;
   isActive: boolean;
+  driverId?: number;
 }
