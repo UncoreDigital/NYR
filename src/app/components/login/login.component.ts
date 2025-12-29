@@ -53,6 +53,11 @@ export class LoginComponent implements OnInit {
 
       this.authService.login(credentials).subscribe({
         next: (response) => {
+          if (response.user.roleName !== 'Admin') {
+            this.isLoading = false;
+            this.toastService.error('Login Failed', 'You do not have admin access.');
+            return;
+          }
           this.isLoading = false;
           this.toastService.success('Login Successful', 'Welcome back!');          
           this.router.navigate(['/dashboard']);
