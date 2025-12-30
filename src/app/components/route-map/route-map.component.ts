@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, AfterViewInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, ElementRef, ViewChild } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,7 +8,6 @@ import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
 import { LocationService } from 'src/app/services/location.service';
-import * as L from 'leaflet';
 
 export interface RouteStop {
   locationName: string;
@@ -92,7 +91,10 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   showShippingInventoryModal = false;
   selectedShippingInventory: ProductDetail[] = [];
   routeStops: RouteStop[] = [];
-  private map: any;
+  @ViewChild('mapContainer', { static: false }) mapContainer?: ElementRef;
+  private map: any = null;
+  private markers: any[] = [];
+  private polyline: any = null;
 
   constructor(
     private router: Router,
@@ -100,14 +102,6 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   ) {}
 
   ngOnInit(): void {
-    delete (L.Icon.Default.prototype as any)._getIconUrl;
-
-    L.Icon.Default.mergeOptions({
-      iconUrl: 'assets/marker-icon.png',
-      shadowUrl: 'assets/marker-shadow.png',
-      iconRetinaUrl: 'assets/marker-icon.png',
-    });
-
     const state = history.state;
     this.prepareLocationData(state.selectedLocations || state.routeData?.routeStops || [])
     //Temp Solution to get route data from state
@@ -219,62 +213,87 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   initializeMap(): void {
-    // Clear existing map if it exists
-    if (this.map) {
-      this.map.remove();
-      this.map = null;
+    // Clear existing map objects
+    try {
+      if (this.markers && this.markers.length) {
+        this.markers.forEach(m => m.setMap && m.setMap(null));
+        this.markers = [];
+      }
+      if (this.polyline) {
+        this.polyline.setMap && this.polyline.setMap(null);
+        this.polyline = null;
+      }
+      if (this.map && this.map.getDiv) {
+        // Remove map reference; DOM node persists
+        this.map = null;
+      }
+    } catch (e) {
+      console.warn('Error clearing map:', e);
     }
 
-    // Check if mapRouteData has valid stops
     const stops: any[] = this.mapRouteData?.map(x => x.address).filter(addr => addr?.latitude && addr?.longitude) || [];
-    
-    if (stops.length === 0) {
-      console.warn('No valid stops with coordinates to display on map');
-      // Initialize map with default center if no stops
-      this.map = L.map('map', {
-        center: [23.0497, 72.5167],
-        zoom: 13
-      });
-      
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19
-      }).addTo(this.map);
-      
+
+    const mapElem = this.mapContainer ? this.mapContainer.nativeElement : document.getElementById('map');
+    if (!mapElem) {
+      console.warn('Map container not found');
       return;
     }
 
-    // Initialize new map
-    this.map = L.map('map', {
-      center: [stops[0].latitude, stops[0].longitude],
+    // If no stops, initialize a centered map
+    if (stops.length === 0) {
+      const defaultCenter = { lat: 23.0497, lng: 72.5167 };
+      this.map = new (window as any).google.maps.Map(mapElem, {
+        center: defaultCenter,
+        zoom: 13
+      });
+      return;
+    }
+
+    // Create map centered on first stop
+    const initialCenter = { lat: stops[0].latitude, lng: stops[0].longitude };
+    this.map = new (window as any).google.maps.Map(mapElem, {
+      center: initialCenter,
       zoom: 13
     });
 
-    // OSM tile layer (FREE)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19
-    }).addTo(this.map);
+    const bounds = new (window as any).google.maps.LatLngBounds();
 
-    // Add markers for stops
-    stops.forEach(stop => {
-      L.marker([
-        stop.latitude,
-        stop.longitude
-      ])
-        .addTo(this.map)
-        .bindPopup(`<b>${stop.addressLineOne}</b><br>${stop.addressLineTwo}`);
+    // Add markers
+    stops.forEach((s: any, i: number) => {
+      const pos = { lat: s.latitude, lng: s.longitude };
+      const marker = new (window as any).google.maps.Marker({
+        position: pos,
+        map: this.map,
+        label: `${i + 1}`,
+        title: s.addressLineOne || ''
+      });
+
+      const info = new (window as any).google.maps.InfoWindow({
+        content: `<b>${s.addressLineOne || ''}</b><br>${s.addressLineTwo || ''}`
+      });
+
+      marker.addListener('click', () => info.open(this.map, marker));
+
+      this.markers.push(marker);
+      bounds.extend(pos);
     });
 
-    // Fit map to markers
-    const group = L.featureGroup(
-      stops.map(s =>
-        L.marker([s.latitude, s.longitude])
-      )
-    );
-    this.map.fitBounds(group.getBounds());
+    if (this.markers.length) {
+      this.map.fitBounds(bounds);
+    }
 
-    // Draw route polyline
-    const latlngs = stops.map(s => [s.latitude, s.longitude]);
-    L.polyline(latlngs, { color: 'blue' }).addTo(this.map);
+    // Draw polyline
+    const path = stops.map(s => ({ lat: s.latitude, lng: s.longitude }));
+    if (path.length > 1) {
+      this.polyline = new (window as any).google.maps.Polyline({
+        path,
+        geodesic: true,
+        strokeColor: '#0000FF',
+        strokeOpacity: 1.0,
+        strokeWeight: 3
+      });
+      this.polyline.setMap(this.map);
+    }
   }
 
   getTotalTime(): string {
