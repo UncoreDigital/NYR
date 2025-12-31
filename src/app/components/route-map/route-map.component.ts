@@ -95,6 +95,11 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   private map: any = null;
   private markers: any[] = [];
   private polyline: any = null;
+  private directionsService: any = null;
+  private directionsRenderer: any = null;
+
+  // Directions error state for UI
+  public directionsError: string | null = null;
 
   constructor(
     private router: Router,
@@ -223,6 +228,14 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
         this.polyline.setMap && this.polyline.setMap(null);
         this.polyline = null;
       }
+      // Clear directions renderer if present
+      if (this.directionsRenderer) {
+        this.directionsRenderer.setMap && this.directionsRenderer.setMap(null);
+        this.directionsRenderer = null;
+      }
+      if (this.directionsService) {
+        this.directionsService = null;
+      }
       if (this.map && this.map.getDiv) {
         // Remove map reference; DOM node persists
         this.map = null;
@@ -238,6 +251,9 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
       console.warn('Map container not found');
       return;
     }
+
+    // Reset any previous directions error
+    this.directionsError = null;
 
     // If no stops, initialize a centered map
     if (stops.length === 0) {
@@ -282,9 +298,46 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
       this.map.fitBounds(bounds);
     }
 
-    // Draw polyline
+    // Draw route — prefer real roads using DirectionsService, fallback to straight polyline
     const path = stops.map(s => ({ lat: s.latitude, lng: s.longitude }));
-    if (path.length > 1) {
+    if (path.length > 1 && (window as any).google && (window as any).google.maps && (window as any).google.maps.DirectionsService) {
+      // Initialize services
+      this.directionsService = new (window as any).google.maps.DirectionsService();
+      this.directionsRenderer = new (window as any).google.maps.DirectionsRenderer({ map: this.map, suppressMarkers: true });
+
+      const origin = path[0];
+      const destination = path[path.length - 1];
+      const waypoints = path.slice(1, -1).map(p => ({ location: new (window as any).google.maps.LatLng(p.lat, p.lng), stopover: true }));
+
+      const request: any = {
+        origin,
+        destination,
+        waypoints,
+        travelMode: (window as any).google.maps.TravelMode ? (window as any).google.maps.TravelMode.DRIVING : 'DRIVING',
+        optimizeWaypoints: false
+      };
+
+      this.directionsService.route(request, (result: any, status: any) => {
+        if (status === 'OK') {
+          this.directionsRenderer.setDirections(result);
+          // Clear any previous error
+          this.directionsError = null;
+        } else {
+          // Set user-facing error message and fallback to simple polyline
+          this.directionsError = `Unable to compute driving route (${status}). Showing straight-line path.`;
+          console.warn('DirectionsService failed:', status, result);
+
+          this.polyline = new (window as any).google.maps.Polyline({
+            path,
+            geodesic: true,
+            strokeColor: '#0000FF',
+            strokeOpacity: 1.0,
+            strokeWeight: 3
+          });
+          this.polyline.setMap(this.map);
+        }
+      });
+    } else if (path.length > 1) {
       this.polyline = new (window as any).google.maps.Polyline({
         path,
         geodesic: true,
@@ -298,6 +351,16 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
 
   getTotalTime(): string {
     return '23 min';
+  }
+
+  // Directions error helpers
+  clearDirectionsError(): void {
+    this.directionsError = null;
+  }
+
+  retryDirections(): void {
+    // Reinitialize map to retry directions request
+    this.initializeMap();
   }
 
   goBack(): void {

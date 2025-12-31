@@ -49,6 +49,15 @@
                         <!-- Map container (Google Maps JS API will render here) -->
                         <div id="map" #mapContainer style="height: 600px; width: 100%;"></div>
 
+                        <!-- Error banner shown when DirectionsService fails -->
+                        <div *ngIf="directionsError" class="map-error-banner">
+                            <div class="map-error-message">{{ directionsError }}</div>
+                            <div class="map-error-actions">
+                                <button class="btn btn-sm btn-outline" (click)="retryDirections()">Retry</button>
+                                <button class="btn btn-sm" (click)="clearDirectionsError()">Dismiss</button>
+                            </div>
+                        </div>
+
                         <!-- <div class="map-overlay">
                             <div class="route-progress">
                                 <div class="progress-item">
