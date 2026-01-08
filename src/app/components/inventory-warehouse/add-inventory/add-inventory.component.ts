@@ -232,11 +232,15 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     this.productService.getProductVariantsWithAttributes(product.id).subscribe({
       next: (variants) => {
         this.productVariants = variants;
-        variants.map(x => x.sku = this.warehouseProducts.find(p => p.id === x.productId)?.barcodeSKU
-        || this.warehouseProducts.find(p => p.id === x.productId)?.barcodeSKU2 
-        || this.warehouseProducts.find(p => p.id === x.productId)?.barcodeSKU3 
-        || this.warehouseProducts.find(p => p.id === x.productId)?.barcodeSKU4 
-        || '');
+        variants.map(x => {
+          const product = this.warehouseProducts.find(p => p.id === x.productId);
+          if (product && product.variants && product.variants.length > 0) {
+            const variant = product.variants.find(v => v.id === x.id);
+            x.sku = variant ? (variant.barcodeSKU || variant.barcodeSKU2 || variant.barcodeSKU3 || variant.barcodeSKU4 || '') : '';
+          } else {
+            x.sku = '';
+          }
+        });
         // Convert ProductVariantDto to Variant interface and map existing quantities
         this.allVariants = variants.map(v => {
           // Find existing inventory for this variant
@@ -603,15 +607,28 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   }
 
   private findProductByBarcode(barcode: string): void {
-    // Search through all products to find matching barcode
-    const matchingProduct = this.products.find(product => 
-      product.barcodeSKU === barcode ||
-      product.barcodeSKU2 === barcode ||
-      product.barcodeSKU3 === barcode ||
-      product.barcodeSKU4 === barcode
-    );
+    // Search through all products and their variants to find matching barcode
+    let matchingProduct: ProductApiModel | undefined;
+    let matchingVariant: any;
+    
+    for (const product of this.products) {
+      if (product.variants && product.variants.length > 0) {
+        const variant = product.variants.find(v => 
+          v.barcodeSKU === barcode ||
+          v.barcodeSKU2 === barcode ||
+          v.barcodeSKU3 === barcode ||
+          v.barcodeSKU4 === barcode
+        );
+        
+        if (variant) {
+          matchingProduct = product;
+          matchingVariant = variant;
+          break;
+        }
+      }
+    }
 
-    if (matchingProduct) {
+    if (matchingProduct && matchingVariant) {
       // Check if this is the same product already selected
       if (this.selectedProduct && this.selectedProduct.id === matchingProduct.id) {
         // Same product - try to add/increase variant quantity
@@ -619,7 +636,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       } else {
         // Different product - auto-select it
         this.selectProduct(matchingProduct);
-        this.toastService.success('Product Found', `Selected: ${matchingProduct.name}`);
+        this.toastService.success('Product Found', `Selected: ${matchingProduct.name} - ${matchingVariant.variantName}`);
         
         // Try to find matching variant by SKU
         setTimeout(() => {
@@ -657,15 +674,23 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     }
   }
 
-  private findAndSelectVariantBySKU(sku: string): void {
+  private findAndSelectVariantBySKU(barcode: string): void {
     if (!this.selectedProduct || this.allVariants.length === 0) {
       return;
     }
 
-    // Find variant with matching SKU
-    const matchingVariant = this.allVariants.find(variant => 
-      variant.sku === sku
-    );
+    // Find variant with matching barcode in any of the barcode fields
+    const matchingVariant = this.allVariants.find(variant => {
+      // Get the product variant data to access barcode fields
+      const productVariant = this.selectedProduct?.variants?.find(v => v.id === variant.id);
+      if (productVariant) {
+        return productVariant.barcodeSKU === barcode ||
+               productVariant.barcodeSKU2 === barcode ||
+               productVariant.barcodeSKU3 === barcode ||
+               productVariant.barcodeSKU4 === barcode;
+      }
+      return false;
+    });
 
     if (matchingVariant) {
       // Check if variant is already in cart
@@ -698,7 +723,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
           this.toastService.success('Variant Added', `${singleVariant.variantName} added to cart`);
         }
       } else {
-        this.toastService.warning('Variant Not Found', `No variant found with SKU: ${sku}`);
+        this.toastService.warning('Variant Not Found', `No variant found with barcode: ${barcode}`);
       }
     }
   }
@@ -855,29 +880,89 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       {
         id: 9999,
         name: 'Test Product 1 (Single Variant)',
-        barcodeSKU: '123232432',
-        barcodeSKU2: '',
-        barcodeSKU3: '',
-        barcodeSKU4: '',
-        description: 'Test product with single variant for barcode scanning'
+        categoryId: 1,
+        categoryName: 'Test Category',
+        brandId: 1,
+        brandName: 'Test Brand',
+        supplierId: 1,
+        supplierName: 'Test Supplier',
+        showInCatalogue: true,
+        isUniversal: true,
+        createdAt: new Date().toISOString(),
+        isActive: true,
+        variants: [{
+          id: 1,
+          productId: 9999,
+          variantName: 'Universal',
+          sku: 'TEST-SKU-1',
+          price: 10.99,
+          description: 'Test product with single variant for barcode scanning',
+          imageUrl: '',
+          barcodeSKU: '123232432',
+          barcodeSKU2: '',
+          barcodeSKU3: '',
+          barcodeSKU4: '',
+          isEnabled: true,
+          attributes: []
+        }]
       } as ProductApiModel,
       {
         id: 9998,
         name: 'Test Product 2 (Single Variant)',
-        barcodeSKU: '96321457',
-        barcodeSKU2: '',
-        barcodeSKU3: '',
-        barcodeSKU4: '',
-        description: 'Another test product with single variant'
+        categoryId: 1,
+        categoryName: 'Test Category',
+        brandId: 1,
+        brandName: 'Test Brand',
+        supplierId: 1,
+        supplierName: 'Test Supplier',
+        showInCatalogue: true,
+        isUniversal: true,
+        createdAt: new Date().toISOString(),
+        isActive: true,
+        variants: [{
+          id: 2,
+          productId: 9998,
+          variantName: 'Universal',
+          sku: 'TEST-SKU-2',
+          price: 15.99,
+          description: 'Another test product with single variant',
+          imageUrl: '',
+          barcodeSKU: '96321457',
+          barcodeSKU2: '',
+          barcodeSKU3: '',
+          barcodeSKU4: '',
+          isEnabled: true,
+          attributes: []
+        }]
       } as ProductApiModel,
       {
         id: 9997,
         name: 'Sample Item (Multiple Variants)',
-        barcodeSKU: 'SKU14',
-        barcodeSKU2: 'TEST002',
-        barcodeSKU3: 'SAMPLE123',
-        barcodeSKU4: 'DEMO456',
-        description: 'Sample item with multiple SKUs and variants'
+        categoryId: 1,
+        categoryName: 'Test Category',
+        brandId: 1,
+        brandName: 'Test Brand',
+        supplierId: 1,
+        supplierName: 'Test Supplier',
+        showInCatalogue: true,
+        isUniversal: false,
+        createdAt: new Date().toISOString(),
+        isActive: true,
+        variants: [{
+          id: 3,
+          productId: 9997,
+          variantName: 'Variant 1',
+          sku: 'SAMPLE-SKU-1',
+          price: 25.99,
+          description: 'Sample item with multiple SKUs and variants',
+          imageUrl: '',
+          barcodeSKU: 'SKU14',
+          barcodeSKU2: 'TEST002',
+          barcodeSKU3: 'SAMPLE123',
+          barcodeSKU4: 'DEMO456',
+          isEnabled: true,
+          attributes: []
+        }]
       } as ProductApiModel
     ];
 

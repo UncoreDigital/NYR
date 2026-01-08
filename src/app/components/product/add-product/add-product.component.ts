@@ -47,6 +47,120 @@ export class AddProductComponent implements OnInit {
   variationCombinations: any[] = [];
   selectedOptions: Map<string, string[]> = new Map();
 
+  // Universal product fields (when universal mode is enabled)
+  universalDescription: string = '';
+  universalPrice: number | null = null;
+  universalBarcodeSKU: string = '';
+  universalBarcodeSKU2: string = '';
+  universalBarcodeSKU3: string = '';
+  universalBarcodeSKU4: string = '';
+
+  // Validation methods
+  validateBarcodeUniqueness(barcode: string, excludeComboIndex?: number): boolean {
+    if (!barcode.trim()) return true; // Empty barcodes are allowed
+    
+    // Check against universal barcodes
+    if (this.universal) {
+      const universalBarcodes = [
+        this.universalBarcodeSKU,
+        this.universalBarcodeSKU2,
+        this.universalBarcodeSKU3,
+        this.universalBarcodeSKU4
+      ].filter(b => b.trim());
+      
+      if (universalBarcodes.includes(barcode)) return false;
+    }
+    
+    // Check against other variant combinations
+    for (let i = 0; i < this.variationCombinations.length; i++) {
+      if (excludeComboIndex !== undefined && i === excludeComboIndex) continue;
+      
+      const combo = this.variationCombinations[i];
+      if (!combo.enabled) continue;
+      
+      const comboBarcodes = [
+        combo.barcodeSKU,
+        combo.barcodeSKU2,
+        combo.barcodeSKU3,
+        combo.barcodeSKU4
+      ].filter(b => b && b.trim());
+      
+      if (comboBarcodes.includes(barcode)) return false;
+    }
+    
+    return true;
+  }
+
+  validateDescriptionLength(description: string): boolean {
+    if (!description || !description.trim()) return false;
+    const length = description.trim().length;
+    return length >= 10 && length <= 1000;
+  }
+
+  validateImageUrl(imageUrl: string): boolean {
+    if (!imageUrl.trim()) return true; // Empty URLs are allowed
+    
+    try {
+      new URL(imageUrl);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  validatePrice(price: number | null): boolean {
+    return price !== null && price > 0;
+  }
+
+  // Validation error messages
+  getBarcodeValidationError(barcode: string, excludeComboIndex?: number): string | null {
+    if (!barcode.trim()) return null;
+    
+    if (!this.validateBarcodeUniqueness(barcode, excludeComboIndex)) {
+      return 'This barcode is already used by another variant';
+    }
+    
+    return null;
+  }
+
+  getDescriptionValidationError(description: string): string | null {
+    if (!description || !description.trim()) {
+      return 'Description is required';
+    }
+    
+    if (!this.validateDescriptionLength(description)) {
+      return 'Description must be between 10 and 1000 characters';
+    }
+    
+    return null;
+  }
+
+  getImageUrlValidationError(imageUrl: string): string | null {
+    if (!imageUrl.trim()) return null;
+    
+    if (!this.validateImageUrl(imageUrl)) {
+      return 'Please enter a valid image URL';
+    }
+    
+    return null;
+  }
+
+  getPriceValidationError(price: number | null): string | null {
+    if (!this.validatePrice(price)) {
+      return 'Price must be greater than 0';
+    }
+    
+    return null;
+  }
+
+  // Helper method for template
+  hasEnabledCombinations(): boolean {
+    return this.variationCombinations.some(c => c.enabled);
+  }
+
+  // Store original variants for edit mode
+  originalVariants: any[] = [];
+
   // Category dropdown properties
   categorySearchTerm: string = '';
   showCategoryDropdown: boolean = false;
@@ -84,15 +198,9 @@ export class AddProductComponent implements OnInit {
   ) {
     this.productForm = this.fb.group({
       productName: ['', [Validators.required, Validators.minLength(2)]],
-      description: ['', [Validators.required]],
-      sku1: [''],
-      sku2: [''],
-      sku3: [''],
-      sku4: [''],
       category: ['', [Validators.required]],
       brand: ['', [Validators.required]],
       supplier: ['', [Validators.required]],
-      price: ['', [Validators.required, Validators.min(0.01)]],
       showInCatalogue: [false],
       universal: [false],
       variation: ['']
@@ -211,12 +319,6 @@ export class AddProductComponent implements OnInit {
   populateFormWithProduct(product: ProductApiModel): void {
     this.productForm.patchValue({
       productName: product.name,
-      description: product.description,
-      sku1: product.barcodeSKU,
-      sku2: product.barcodeSKU2,
-      sku3: product.barcodeSKU3,
-      sku4: product.barcodeSKU4,
-      price: product.price,
       showInCatalogue: product.showInCatalogue,
       universal: product.isUniversal
     });
@@ -243,34 +345,34 @@ export class AddProductComponent implements OnInit {
       this.productForm.patchValue({ supplier: supplier.name });
     }
 
-    // Set image URL and preview
-    if (product.imageUrl) {
-      this.imageUrl = product.imageUrl;
-      this.imagePreview = product.imageUrl;
-    }
-
-    // Set category, brand, and supplier after dropdowns are loaded
-    setTimeout(() => {
-      const category = this.categories.find(c => c.id === product.categoryId);
-      const brand = this.brands.find(b => b.id === product.brandId);
-      const supplier = this.suppliers.find(s => s.id === product.supplierId);
-
-      if (category) {
-        this.productForm.patchValue({ category: category.name });
-      }
-      if (brand) {
-        this.productForm.patchValue({ brand: brand.name });
-      }
-      if (supplier) {
-        this.productForm.patchValue({ supplier: supplier.name });
-      }
-    }, 1000); // Wait for dropdowns to load
-
     // Set universal flag
     this.universal = product.isUniversal;
 
+    // Handle universal product fields
+    if (product.isUniversal && product.variants && product.variants.length > 0) {
+      // Store original variants for edit mode
+      this.originalVariants = [...product.variants];
+      
+      const firstVariant = product.variants[0];
+      this.universalDescription = firstVariant.description || '';
+      this.universalPrice = firstVariant.price || null;
+      this.universalBarcodeSKU = firstVariant.barcodeSKU || '';
+      this.universalBarcodeSKU2 = firstVariant.barcodeSKU2 || '';
+      this.universalBarcodeSKU3 = firstVariant.barcodeSKU3 || '';
+      this.universalBarcodeSKU4 = firstVariant.barcodeSKU4 || '';
+      
+      // Set image URL and preview from first variant
+      if (firstVariant.imageUrl) {
+        this.imageUrl = firstVariant.imageUrl;
+        this.imagePreview = firstVariant.imageUrl;
+      }
+    }
+
     // Set variants - load from new ProductVariants system
-    if (product.variants && product.variants.length > 0) {
+    if (product.variants && product.variants.length > 0 && !product.isUniversal) {
+      // Store original variants for edit mode
+      this.originalVariants = [...product.variants];
+      
       // Extract unique variations from variants
       const variationGroups = new Map<string, any>();
       const variationValuesByType = new Map<string, Set<string>>();
@@ -318,13 +420,26 @@ export class AddProductComponent implements OnInit {
           // Find matching variant
           const matchingVariant = product.variants.find((v: any) => v.variantName === this.getCombinationName(combo));
           if (matchingVariant) {
+            combo.id = matchingVariant.id; // Store variant ID for updates
             combo.sku = matchingVariant.sku || '';
-            combo.price = matchingVariant.price || product.price;
+            combo.price = matchingVariant.price || 0;
+            combo.description = matchingVariant.description || '';
+            combo.imageUrl = matchingVariant.imageUrl || '';
+            combo.barcodeSKU = matchingVariant.barcodeSKU || '';
+            combo.barcodeSKU2 = matchingVariant.barcodeSKU2 || '';
+            combo.barcodeSKU3 = matchingVariant.barcodeSKU3 || '';
+            combo.barcodeSKU4 = matchingVariant.barcodeSKU4 || '';
             combo.enabled = matchingVariant.isEnabled;
           } else {
+            combo.id = null; // New variant
             combo.sku = '';
-            combo.price = product.price;
-            combo.stock = 0;
+            combo.price = 0;
+            combo.description = '';
+            combo.imageUrl = '';
+            combo.barcodeSKU = '';
+            combo.barcodeSKU2 = '';
+            combo.barcodeSKU3 = '';
+            combo.barcodeSKU4 = '';
             combo.enabled = true;
           }
         });
@@ -333,7 +448,23 @@ export class AddProductComponent implements OnInit {
       console.log('Loaded variants for edit:', this.selectedVariations);
       console.log('Loaded combinations for edit:', this.variationCombinations);
     }
-    // Note: Old ProductVariation system has been removed
+
+    // Set category, brand, and supplier after dropdowns are loaded
+    setTimeout(() => {
+      const category = this.categories.find(c => c.id === product.categoryId);
+      const brand = this.brands.find(b => b.id === product.brandId);
+      const supplier = this.suppliers.find(s => s.id === product.supplierId);
+
+      if (category) {
+        this.productForm.patchValue({ category: category.name });
+      }
+      if (brand) {
+        this.productForm.patchValue({ brand: brand.name });
+      }
+      if (supplier) {
+        this.productForm.patchValue({ supplier: supplier.name });
+      }
+    }, 1000); // Wait for dropdowns to load
   }
 
   onSubmit() {
@@ -344,30 +475,147 @@ export class AddProductComponent implements OnInit {
       return;
     }
 
+    // Validate universal product fields
+    if (this.universal) {
+      const descError = this.getDescriptionValidationError(this.universalDescription);
+      if (descError) {
+        this.toastService.warning('Validation Error', descError);
+        return;
+      }
+      
+      const priceError = this.getPriceValidationError(this.universalPrice);
+      if (priceError) {
+        this.toastService.warning('Validation Error', priceError);
+        return;
+      }
+      
+      // Validate universal barcodes uniqueness
+      const universalBarcodes = [
+        { value: this.universalBarcodeSKU, name: 'Barcode SKU' },
+        { value: this.universalBarcodeSKU2, name: 'Barcode SKU #2' },
+        { value: this.universalBarcodeSKU3, name: 'Barcode SKU #3' },
+        { value: this.universalBarcodeSKU4, name: 'Barcode SKU #4' }
+      ].filter(b => b.value.trim());
+      
+      const uniqueBarcodes = new Set();
+      for (const barcode of universalBarcodes) {
+        if (uniqueBarcodes.has(barcode.value)) {
+          this.toastService.warning('Validation Error', `Duplicate barcode found: ${barcode.value}`);
+          return;
+        }
+        uniqueBarcodes.add(barcode.value);
+      }
+    }
+
     // Validate variations for non-universal products
     if (!this.universal && this.selectedVariations.length === 0) {
       this.toastService.warning('Validation Error', 'Please select at least one variation for non-universal products.');
       return;
     }
 
+    // Validate variant combinations for non-universal products
+    if (!this.universal && this.variationCombinations.length === 0) {
+      this.toastService.warning('Validation Error', 'Please generate at least one variant combination.');
+      return;
+    }
+
+    // Validate enabled combinations have required fields
+    if (!this.universal) {
+      const enabledCombos = this.variationCombinations.filter(combo => combo.enabled);
+      if (enabledCombos.length === 0) {
+        this.toastService.warning('Validation Error', 'Please enable at least one variant combination.');
+        return;
+      }
+
+      for (const combo of enabledCombos) {
+        const descError = this.getDescriptionValidationError(combo.description);
+        if (descError) {
+          this.toastService.warning('Validation Error', `${descError} for variant: ${this.getCombinationName(combo)}`);
+          return;
+        }
+        
+        const priceError = this.getPriceValidationError(combo.price);
+        if (priceError) {
+          this.toastService.warning('Validation Error', `${priceError} for variant: ${this.getCombinationName(combo)}`);
+          return;
+        }
+        
+        // Validate image URL if provided
+        if (combo.imageUrl) {
+          const imageError = this.getImageUrlValidationError(combo.imageUrl);
+          if (imageError) {
+            this.toastService.warning('Validation Error', `${imageError} for variant: ${this.getCombinationName(combo)}`);
+            return;
+          }
+        }
+      }
+      
+      // Validate barcode uniqueness across all variants
+      const allBarcodes = new Map<string, string>(); // barcode -> variant name
+      for (const combo of enabledCombos) {
+        const comboBarcodes = [
+          { value: combo.barcodeSKU, name: 'Barcode SKU' },
+          { value: combo.barcodeSKU2, name: 'Barcode SKU #2' },
+          { value: combo.barcodeSKU3, name: 'Barcode SKU #3' },
+          { value: combo.barcodeSKU4, name: 'Barcode SKU #4' }
+        ].filter(b => b.value && b.value.trim());
+        
+        for (const barcode of comboBarcodes) {
+          if (allBarcodes.has(barcode.value)) {
+            this.toastService.warning('Validation Error', 
+              `Duplicate barcode "${barcode.value}" found in variants: ${allBarcodes.get(barcode.value)} and ${this.getCombinationName(combo)}`);
+            return;
+          }
+          allBarcodes.set(barcode.value, this.getCombinationName(combo));
+        }
+      }
+    }
+
     if (this.productForm.valid) {
       this.isLoading = true;
       const formData = this.productForm.value;
       
-      // Map form data to API payload
-      // Generate variants from combinations (new system)
+      // Generate variants from combinations or universal product
       const generatedVariants: any[] = [];
       
-      if (this.variationCombinations.length > 0) {
+      if (this.universal) {
+        // Create single variant for universal product
+        const universalVariant: any = {
+          variantName: 'Universal',
+          sku: null,
+          price: this.universalPrice,
+          description: this.universalDescription,
+          imageUrl: this.imageUrl || '',
+          barcodeSKU: this.universalBarcodeSKU || '',
+          barcodeSKU2: this.universalBarcodeSKU2 || '',
+          barcodeSKU3: this.universalBarcodeSKU3 || '',
+          barcodeSKU4: this.universalBarcodeSKU4 || '',
+          isEnabled: true,
+          attributes: []
+        };
+        
+        // Include variant ID if in edit mode
+        if (this.isEditMode && this.originalVariants.length > 0) {
+          universalVariant.id = this.originalVariants[0].id;
+        }
+        
+        generatedVariants.push(universalVariant);
+      } else if (this.variationCombinations.length > 0) {
         // Use enabled combinations only and create variants for each combination
         const enabledCombos = this.variationCombinations.filter(combo => combo.enabled);
         
         enabledCombos.forEach(combo => {
           // Create variant with attributes
-          const variant = {
+          const variant: any = {
             variantName: this.getCombinationName(combo),
             sku: combo.sku || null,
-            price: combo.price ? parseFloat(combo.price) : null,
+            price: parseFloat(combo.price) || 0,
+            description: combo.description || '',
+            imageUrl: combo.imageUrl || '',
+            barcodeSKU: combo.barcodeSKU || '',
+            barcodeSKU2: combo.barcodeSKU2 || '',
+            barcodeSKU3: combo.barcodeSKU3 || '',
+            barcodeSKU4: combo.barcodeSKU4 || '',
             isEnabled: combo.enabled,
             attributes: combo.values.map((val: any) => {
               // Find the variation and option IDs
@@ -381,6 +629,11 @@ export class AddProductComponent implements OnInit {
             })
           };
           
+          // Include variant ID if in edit mode and combo has an ID
+          if (this.isEditMode && combo.id) {
+            variant.id = combo.id;
+          }
+          
           generatedVariants.push(variant);
         });
         
@@ -389,16 +642,9 @@ export class AddProductComponent implements OnInit {
 
       const payload = {
         name: formData.productName,
-        description: formData.description,
-        imageUrl: this.imageUrl || '',
-        barcodeSKU: formData.sku1 || '',
-        barcodeSKU2: formData.sku2 || '',
-        barcodeSKU3: formData.sku3 || '',
-        barcodeSKU4: formData.sku4 || '',
         categoryId: this.getCategoryId(formData.category),
         brandId: this.getBrandId(formData.brand),
         supplierId: this.getSupplierId(formData.supplier),
-        price: parseFloat(formData.price) || 0,
         showInCatalogue: formData.showInCatalogue,
         isUniversal: formData.universal,
         variants: generatedVariants
@@ -643,9 +889,16 @@ export class AddProductComponent implements OnInit {
     this.showSuccess = false;
     this.productForm.reset();
     this.selectedVariations = [];
+    this.variationCombinations = [];
     this.imageFile = null;
     this.imagePreview = null;
     this.imageUrl = '';
+    this.universalDescription = '';
+    this.universalPrice = null;
+    this.universalBarcodeSKU = '';
+    this.universalBarcodeSKU2 = '';
+    this.universalBarcodeSKU3 = '';
+    this.universalBarcodeSKU4 = '';
   }
 
   goToProductsList() {
@@ -654,6 +907,24 @@ export class AddProductComponent implements OnInit {
 
   onUniversalToggle(event: any) {
     this.universal = !event.checked;
+    
+    // Clear variant-specific data when switching to universal
+    if (this.universal) {
+      this.selectedVariations = [];
+      this.variationCombinations = [];
+      this.selectedOptions.clear();
+      this.updateVariationFormControl();
+    } else {
+      // Clear universal data when switching to variants
+      this.universalDescription = '';
+      this.universalPrice = null;
+      this.universalBarcodeSKU = '';
+      this.universalBarcodeSKU2 = '';
+      this.universalBarcodeSKU3 = '';
+      this.universalBarcodeSKU4 = '';
+      this.imageUrl = '';
+      this.imagePreview = null;
+    }
   }
 
   // Helper methods for mapping form values to IDs
@@ -886,8 +1157,13 @@ export class AddProductComponent implements OnInit {
         id: index + 1,
         values: combo,
         sku: '',
-        price: this.productForm.get('price')?.value || '',
-        stock: 0,
+        price: 0,
+        description: '',
+        imageUrl: '',
+        barcodeSKU: '',
+        barcodeSKU2: '',
+        barcodeSKU3: '',
+        barcodeSKU4: '',
         enabled: true
       };
     });
@@ -979,5 +1255,12 @@ export class AddProductComponent implements OnInit {
     this.brandSearchTerm = '';
     this.supplierSearchTerm = '';
     this.selectedVariations = [];
+    this.variationCombinations = [];
+    this.universalDescription = '';
+    this.universalPrice = null;
+    this.universalBarcodeSKU = '';
+    this.universalBarcodeSKU2 = '';
+    this.universalBarcodeSKU3 = '';
+    this.universalBarcodeSKU4 = '';
   }
 }

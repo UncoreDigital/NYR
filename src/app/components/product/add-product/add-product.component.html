@@ -51,10 +51,14 @@
                                 <input type="text" formControlName="productName" class="form-control"
                                     placeholder="Enter product name" />
                             </div>
-                            <div class="form-group">
-                                <label>Description*</label>
-                                <textarea formControlName="description" class="form-control" rows="3"
-                                    placeholder="Description"></textarea>
+                            
+                            <!-- Universal Product Fields -->
+                            <div *ngIf="universal">
+                                <div class="form-group">
+                                    <label>Description*</label>
+                                    <textarea [(ngModel)]="universalDescription" [ngModelOptions]="{standalone: true}" 
+                                        class="form-control" rows="3" placeholder="Description"></textarea>
+                                </div>
                             </div>
                         </div>
                         <!-- Right Column: Upload Image -->
@@ -87,51 +91,59 @@
                                     <span>Processing image...</span>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Barcode (SKU)</label>
-                            <div class="sku-input-container">
-                                <input type="text" formControlName="sku1" class="sku-input"
-                                    placeholder="Enter SKU" />
-                                <button type="button" class="camera-btn" title="Scan barcode with camera">
-                                    <mat-icon>photo_camera</mat-icon>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Barcode (SKU #2)</label>
-                            <div class="sku-input-container">
-                                <input type="text" class="sku-input" formControlName="sku2"
-                                    placeholder="Enter SKU" />
-                                <button type="button" class="camera-btn" title="Scan barcode with camera">
-                                    <mat-icon>photo_camera</mat-icon>
-                                </button>
+                            
+                            <!-- Universal Image Note -->
+                            <div *ngIf="universal" class="universal-note">
+                                <small class="text-muted">This image will be used for the universal product variant</small>
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group" style="flex:1;">
-                            <label>Barcode (SKU #3)</label>
-                            <div class="sku-input-container">
-                                <input type="text" class="sku-input" formControlName="sku3"
-                                    placeholder="Enter SKU" />
-                                <button type="button" class="camera-btn" title="Scan barcode with camera">
-                                    <mat-icon>photo_camera</mat-icon>
-                                </button>
+                    <!-- Universal Product Barcode Fields -->
+                    <div *ngIf="universal">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Barcode (SKU)</label>
+                                <div class="sku-input-container">
+                                    <input type="text" [(ngModel)]="universalBarcodeSKU" [ngModelOptions]="{standalone: true}" 
+                                        class="sku-input" placeholder="Enter SKU" />
+                                    <button type="button" class="camera-btn" title="Scan barcode with camera">
+                                        <mat-icon>photo_camera</mat-icon>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Barcode (SKU #2)</label>
+                                <div class="sku-input-container">
+                                    <input type="text" [(ngModel)]="universalBarcodeSKU2" [ngModelOptions]="{standalone: true}" 
+                                        class="sku-input" placeholder="Enter SKU" />
+                                    <button type="button" class="camera-btn" title="Scan barcode with camera">
+                                        <mat-icon>photo_camera</mat-icon>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div class="form-group" style="flex:1;">
-                            <label>Barcode (SKU #4)</label>
-                            <div class="sku-input-container">
-                                <input type="text" class="sku-input" formControlName="sku4"
-                                    placeholder="Enter SKU" />
-                                <button type="button" class="camera-btn" title="Scan barcode with camera">
-                                    <mat-icon>photo_camera</mat-icon>
-                                </button>
+
+                        <div class="form-row">
+                            <div class="form-group" style="flex:1;">
+                                <label>Barcode (SKU #3)</label>
+                                <div class="sku-input-container">
+                                    <input type="text" [(ngModel)]="universalBarcodeSKU3" [ngModelOptions]="{standalone: true}" 
+                                        class="sku-input" placeholder="Enter SKU" />
+                                    <button type="button" class="camera-btn" title="Scan barcode with camera">
+                                        <mat-icon>photo_camera</mat-icon>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label>Barcode (SKU #4)</label>
+                                <div class="sku-input-container">
+                                    <input type="text" [(ngModel)]="universalBarcodeSKU4" [ngModelOptions]="{standalone: true}" 
+                                        class="sku-input" placeholder="Enter SKU" />
+                                    <button type="button" class="camera-btn" title="Scan barcode with camera">
+                                        <mat-icon>photo_camera</mat-icon>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -275,9 +287,10 @@
                                 <span class="loading-text">Loading suppliers...</span>
                             </div>
                         </div>
-                        <div class="form-group" style="flex:1;">
+                        <div class="form-group" style="flex:1;" *ngIf="universal">
                             <label>Price*</label>
-                            <input type="text" formControlName="price" class="form-control" placeholder="Enter Price" />
+                            <input type="number" [(ngModel)]="universalPrice" [ngModelOptions]="{standalone: true}" 
+                                class="form-control" placeholder="Enter Price" min="0.01" step="0.01" />
                         </div>
                     </div>
 
@@ -395,10 +408,12 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 50px;">Enable</th>
-                                        <th>Variant</th>
-                                        <!-- <th style="width: 150px;">SKU</th>
-                                        <th style="width: 120px;">Price</th>
-                                        <th style="width: 100px;">Stock</th> -->
+                                        <th style="width: 200px;">Variant</th>
+                                        <th style="width: 250px;">Description*</th>
+                                        <th style="width: 120px;">Price*</th>
+                                        <th style="width: 150px;">SKU</th>
+                                        <th style="width: 150px;">Barcode</th>
+                                        <th style="width: 150px;">Image URL</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -412,7 +427,26 @@
                                         <td class="variant-name-cell">
                                             <strong>{{ getCombinationName(combo) }}</strong>
                                         </td>
-                                        <!-- <td>
+                                        <td>
+                                            <textarea 
+                                                class="form-control-sm" 
+                                                [(ngModel)]="combo.description"
+                                                [ngModelOptions]="{standalone: true}"
+                                                placeholder="Description"
+                                                rows="2"
+                                                [disabled]="!combo.enabled"></textarea>
+                                        </td>
+                                        <td>
+                                            <input type="number" 
+                                                   class="form-control-sm" 
+                                                   [(ngModel)]="combo.price"
+                                                   [ngModelOptions]="{standalone: true}"
+                                                   placeholder="Price"
+                                                   min="0.01"
+                                                   step="0.01"
+                                                   [disabled]="!combo.enabled" />
+                                        </td>
+                                        <td>
                                             <input type="text" 
                                                    class="form-control-sm" 
                                                    [(ngModel)]="combo.sku"
@@ -421,24 +455,73 @@
                                                    [disabled]="!combo.enabled" />
                                         </td>
                                         <td>
-                                            <input type="number" 
+                                            <input type="text" 
                                                    class="form-control-sm" 
-                                                   [(ngModel)]="combo.price"
+                                                   [(ngModel)]="combo.barcodeSKU"
                                                    [ngModelOptions]="{standalone: true}"
-                                                   placeholder="Price"
+                                                   placeholder="Barcode"
                                                    [disabled]="!combo.enabled" />
                                         </td>
                                         <td>
-                                            <input type="number" 
+                                            <input type="text" 
                                                    class="form-control-sm" 
-                                                   [(ngModel)]="combo.stock"
+                                                   [(ngModel)]="combo.imageUrl"
                                                    [ngModelOptions]="{standalone: true}"
-                                                   placeholder="Stock"
+                                                   placeholder="Image URL"
                                                    [disabled]="!combo.enabled" />
-                                        </td> -->
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+                        
+                        <!-- Additional Barcode Fields for Variants -->
+                        <div class="additional-barcode-section" *ngIf="hasEnabledCombinations()">
+                            <h4>Additional Barcode Fields (Optional)</h4>
+                            <div class="barcode-table-container">
+                                <table class="barcode-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 200px;">Variant</th>
+                                            <th style="width: 150px;">Barcode SKU #2</th>
+                                            <th style="width: 150px;">Barcode SKU #3</th>
+                                            <th style="width: 150px;">Barcode SKU #4</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let combo of variationCombinations; let i = index" 
+                                            [class.disabled-row]="!combo.enabled">
+                                            <td class="variant-name-cell">
+                                                <strong>{{ getCombinationName(combo) }}</strong>
+                                            </td>
+                                            <td>
+                                                <input type="text" 
+                                                       class="form-control-sm" 
+                                                       [(ngModel)]="combo.barcodeSKU2"
+                                                       [ngModelOptions]="{standalone: true}"
+                                                       placeholder="SKU #2"
+                                                       [disabled]="!combo.enabled" />
+                                            </td>
+                                            <td>
+                                                <input type="text" 
+                                                       class="form-control-sm" 
+                                                       [(ngModel)]="combo.barcodeSKU3"
+                                                       [ngModelOptions]="{standalone: true}"
+                                                       placeholder="SKU #3"
+                                                       [disabled]="!combo.enabled" />
+                                            </td>
+                                            <td>
+                                                <input type="text" 
+                                                       class="form-control-sm" 
+                                                       [(ngModel)]="combo.barcodeSKU4"
+                                                       [ngModelOptions]="{standalone: true}"
+                                                       placeholder="SKU #4"
+                                                       [disabled]="!combo.enabled" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                     <div class="form-actions">

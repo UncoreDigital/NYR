@@ -12,7 +12,13 @@ export interface ProductVariant {
   productId: number;
   variantName: string;
   sku?: string;
-  price?: number;
+  price: number; // Now mandatory
+  description: string;
+  imageUrl: string;
+  barcodeSKU: string;
+  barcodeSKU2?: string;
+  barcodeSKU3?: string;
+  barcodeSKU4?: string;
   isEnabled: boolean;
   attributes: ProductVariantAttribute[];
 }
@@ -35,19 +41,12 @@ export interface ProductVariationDetail {
 export interface ProductApiModel {
   id: number;
   name: string;
-  description: string;
-  imageUrl: string;
-  barcodeSKU: string;
-  barcodeSKU2: string;
-  barcodeSKU3: string;
-  barcodeSKU4: string;
   categoryId: number;
   categoryName: string;
   brandId: number;
   brandName: string;
   supplierId: number;
   supplierName: string;
-  price: number;
   showInCatalogue: boolean;
   isUniversal: boolean;
   createdAt: string;
@@ -58,11 +57,9 @@ export interface ProductApiModel {
 export interface Product {
   id: number;
   name: string;
-  description: string;
   categoryName: string;
   brandName: string;
   supplierName: string;
-  price: number;
   createdAt: string;
   isActive: boolean;
 }
