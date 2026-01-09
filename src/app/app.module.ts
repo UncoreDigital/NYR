@@ -58,6 +58,7 @@ import { ScannerComponent } from './components/scanner/scanner.component';
 import { AddScannerComponent } from './components/scanner/add-scanner/add-scanner.component';
 import { VariationComponent } from './components/variation/variation.component';
 import { AddVariationComponent } from './components/variation/add-variation/add-variation.component';
+import { VariantImageUploadComponent } from './components/shared/variant-image-upload/variant-image-upload.component';
 
 @NgModule({
   declarations: [
@@ -96,7 +97,8 @@ import { AddVariationComponent } from './components/variation/add-variation/add-
     ScannerComponent,
     AddScannerComponent,
     VariationComponent,
-    AddVariationComponent
+    AddVariationComponent,
+    VariantImageUploadComponent
   ],
   imports: [
     BrowserModule,

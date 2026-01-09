@@ -43,58 +43,30 @@
                 </div>
                 
                 <form [formGroup]="productForm" class="user-form" (ngSubmit)="onSubmit()" [class.loading]="isLoading">
-                    <div style="display:flex; gap:32px;">
-                        <!-- Left Column -->
-                        <div style="flex:2;">
-                            <div class="form-group">
-                                <label>Product Name*</label>
-                                <input type="text" formControlName="productName" class="form-control"
-                                    placeholder="Enter product name" />
-                            </div>
-                            
-                            <!-- Universal Product Fields -->
-                            <div *ngIf="universal">
-                                <div class="form-group">
-                                    <label>Description*</label>
-                                    <textarea [(ngModel)]="universalDescription" [ngModelOptions]="{standalone: true}" 
-                                        class="form-control" rows="3" placeholder="Description"></textarea>
-                                </div>
-                            </div>
+                    <div class="form-group">
+                        <label>Product Name*</label>
+                        <input type="text" formControlName="productName" class="form-control"
+                            placeholder="Enter product name" />
+                    </div>
+                    
+                    <!-- Universal Product Fields -->
+                    <div *ngIf="universal">
+                        <div class="form-group">
+                            <label>Description*</label>
+                            <textarea [(ngModel)]="universalDescription" [ngModelOptions]="{standalone: true}" 
+                                class="form-control" rows="3" placeholder="Description"></textarea>
                         </div>
-                        <!-- Right Column: Upload Image -->
-                        <div style="flex:1;">
-                            <label style="font-weight:500;">Upload Image</label>
-                            
-                            <!-- Image Preview -->
-                            <div *ngIf="imagePreview" class="image-preview-container">
-                                <img [src]="imagePreview" alt="Product Preview" class="image-preview">
-                                <button type="button" class="remove-image-btn" (click)="removeImage()" title="Remove Image">
-                                    <mat-icon>close</mat-icon>
-                                </button>
-                            </div>
-                            
-                            <!-- Upload Area -->
-                            <div *ngIf="!imagePreview" 
-                                class="upload-area" 
-                                [class.uploading]="isUploadingImage"
-                                (click)="fileInput.click()">
-                                <input #fileInput type="file" accept="image/*" (change)="onImageSelected($event)" style="display: none;">
-                                
-                                <div *ngIf="!isUploadingImage" class="upload-content">
-                                    <mat-icon class="upload-icon" style="height: fit-content; width: fit-content;">cloud_upload</mat-icon>
-                                    <span class="upload-text">Click to browse or drag & drop</span>
-                                    <span class="upload-hint">Supports: JPEG, PNG, GIF, WebP (Max 5MB)</span>
-                                </div>
-                                
-                                <div *ngIf="isUploadingImage" class="upload-loading">
-                                    <div class="upload-spinner"></div>
-                                    <span>Processing image...</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Universal Image Note -->
-                            <div *ngIf="universal" class="universal-note">
-                                <small class="text-muted">This image will be used for the universal product variant</small>
+                        
+                        <!-- Universal Product Image Upload -->
+                        <div class="form-group">
+                            <label>Product Image</label>
+                            <div class="universal-image-container">
+                                <app-variant-image-upload
+                                    variantId="universal"
+                                    [currentImageUrl]="universalImageUrl"
+                                    (imageUploaded)="onUniversalImageUploaded($event)"
+                                    (imageRemoved)="onUniversalImageRemoved()">
+                                </app-variant-image-upload>
                             </div>
                         </div>
                     </div>
@@ -413,7 +385,7 @@
                                         <th style="width: 120px;">Price*</th>
                                         <th style="width: 150px;">SKU</th>
                                         <th style="width: 150px;">Barcode</th>
-                                        <th style="width: 150px;">Image URL</th>
+                                        <th style="width: 150px;">Image</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -462,13 +434,16 @@
                                                    placeholder="Barcode"
                                                    [disabled]="!combo.enabled" />
                                         </td>
-                                        <td>
-                                            <input type="text" 
-                                                   class="form-control-sm" 
-                                                   [(ngModel)]="combo.imageUrl"
-                                                   [ngModelOptions]="{standalone: true}"
-                                                   placeholder="Image URL"
-                                                   [disabled]="!combo.enabled" />
+                                        <td class="image-upload-cell">
+                                            <app-variant-image-upload
+                                                [variantId]="'combo-' + i"
+                                                [currentImageUrl]="combo.imageUrl"
+                                                [disabled]="!combo.enabled"
+                                                (imageUploaded)="onVariantImageUploaded(i, $event)"
+                                                (imageRemoved)="onVariantImageRemoved(i)"
+                                                (uploadStarted)="onVariantImageUploadStarted(i)"
+                                                (uploadErrorOccurred)="onVariantImageUploadError(i, $event)">
+                                            </app-variant-image-upload>
                                         </td>
                                     </tr>
                                 </tbody>

@@ -29,16 +29,12 @@ export class AddProductComponent implements OnInit {
   showVariationDropdown = false;
   showInCatalogue = false;
   universal = false;
-  imageFile: File | null = null;
-  imagePreview: string | null = null;
-  imageUrl: string = '';
   showSuccess = false;
   addVariation = false;
   variationNm: string = '';
   isLoading = false;
   productVariations: any[] = [];
   isLoadingDropdowns = false;
-  isUploadingImage = false;
   isEditMode = false;
   productId: number | null = null;
   isLoadingProduct = false;
@@ -50,6 +46,7 @@ export class AddProductComponent implements OnInit {
   // Universal product fields (when universal mode is enabled)
   universalDescription: string = '';
   universalPrice: number | null = null;
+  universalImageUrl: string = '';
   universalBarcodeSKU: string = '';
   universalBarcodeSKU2: string = '';
   universalBarcodeSKU3: string = '';
@@ -136,7 +133,7 @@ export class AddProductComponent implements OnInit {
   }
 
   getImageUrlValidationError(imageUrl: string): string | null {
-    if (!imageUrl.trim()) return null;
+    if (!imageUrl || !imageUrl.trim()) return null; // Empty URLs are allowed (optional)
     
     if (!this.validateImageUrl(imageUrl)) {
       return 'Please enter a valid image URL';
@@ -356,16 +353,11 @@ export class AddProductComponent implements OnInit {
       const firstVariant = product.variants[0];
       this.universalDescription = firstVariant.description || '';
       this.universalPrice = firstVariant.price || null;
+      this.universalImageUrl = firstVariant.imageUrl || '';
       this.universalBarcodeSKU = firstVariant.barcodeSKU || '';
       this.universalBarcodeSKU2 = firstVariant.barcodeSKU2 || '';
       this.universalBarcodeSKU3 = firstVariant.barcodeSKU3 || '';
       this.universalBarcodeSKU4 = firstVariant.barcodeSKU4 || '';
-      
-      // Set image URL and preview from first variant
-      if (firstVariant.imageUrl) {
-        this.imageUrl = firstVariant.imageUrl;
-        this.imagePreview = firstVariant.imageUrl;
-      }
     }
 
     // Set variants - load from new ProductVariants system
@@ -475,6 +467,14 @@ export class AddProductComponent implements OnInit {
       return;
     }
 
+    // Check for uploading images
+    if (this.hasUploadingImages()) {
+      const count = this.getUploadingImagesCount();
+      this.toastService.warning('Upload in Progress', 
+        `Please wait for ${count} image(s) to finish uploading before submitting.`);
+      return;
+    }
+
     // Validate universal product fields
     if (this.universal) {
       const descError = this.getDescriptionValidationError(this.universalDescription);
@@ -487,6 +487,15 @@ export class AddProductComponent implements OnInit {
       if (priceError) {
         this.toastService.warning('Validation Error', priceError);
         return;
+      }
+      
+      // Validate universal image URL if provided
+      if (this.universalImageUrl && this.universalImageUrl.trim()) {
+        const imageError = this.getImageUrlValidationError(this.universalImageUrl);
+        if (imageError) {
+          this.toastService.warning('Validation Error', imageError);
+          return;
+        }
       }
       
       // Validate universal barcodes uniqueness
@@ -541,13 +550,13 @@ export class AddProductComponent implements OnInit {
         }
         
         // Validate image URL if provided
-        if (combo.imageUrl) {
-          const imageError = this.getImageUrlValidationError(combo.imageUrl);
-          if (imageError) {
-            this.toastService.warning('Validation Error', `${imageError} for variant: ${this.getCombinationName(combo)}`);
-            return;
-          }
-        }
+        // if (combo.imageUrl && combo.imageUrl.trim()) {
+        //   const imageError = this.getImageUrlValidationError(combo.imageUrl);
+        //   if (imageError) {
+        //     this.toastService.warning('Validation Error', `${imageError} for variant: ${this.getCombinationName(combo)}`);
+        //     return;
+        //   }
+        // }
       }
       
       // Validate barcode uniqueness across all variants
@@ -585,7 +594,7 @@ export class AddProductComponent implements OnInit {
           sku: null,
           price: this.universalPrice,
           description: this.universalDescription,
-          imageUrl: this.imageUrl || '',
+          imageUrl: this.universalImageUrl || '',
           barcodeSKU: this.universalBarcodeSKU || '',
           barcodeSKU2: this.universalBarcodeSKU2 || '',
           barcodeSKU3: this.universalBarcodeSKU3 || '',
@@ -682,65 +691,6 @@ export class AddProductComponent implements OnInit {
         });
       }
     }
-  }
-
-  onImageSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-      if (!allowedTypes.includes(file.type)) {
-        this.toastService.error('Invalid File Type', 'Please select a valid image file (JPEG, PNG, GIF, WebP)');
-        return;
-      }
-
-      // Validate file size (max 5MB)
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (file.size > maxSize) {
-        this.toastService.error('File Too Large', 'Please select an image smaller than 5MB');
-        return;
-      }
-
-      this.imageFile = file;
-      this.isUploadingImage = true;
-
-      // Create preview first
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.imagePreview = e.target.result;
-      };
-      reader.readAsDataURL(file);
-
-      // Upload image to server
-      this.productService.uploadImage(file).subscribe({
-        next: (response: { imageUrl: string }) => {
-          this.imageUrl = response.imageUrl;
-          this.isUploadingImage = false;
-          this.toastService.success('Success', 'Image uploaded successfully');
-        },
-        error: (error) => {
-          this.isUploadingImage = false;
-          console.error('Failed to upload image', error);
-          this.toastService.error('Error', 'Failed to upload image. Please try again.');
-          // Reset image state on upload failure
-          this.imageFile = null;
-          this.imagePreview = null;
-          this.imageUrl = '';
-        }
-      });
-    }
-  }
-
-  removeImage() {
-    this.imageFile = null;
-    this.imagePreview = null;
-    this.imageUrl = '';
-    // Reset the file input
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
-    }
-    this.toastService.info('Info', 'Image removed');
   }
 
   addVariationClick() {
@@ -890,11 +840,9 @@ export class AddProductComponent implements OnInit {
     this.productForm.reset();
     this.selectedVariations = [];
     this.variationCombinations = [];
-    this.imageFile = null;
-    this.imagePreview = null;
-    this.imageUrl = '';
     this.universalDescription = '';
     this.universalPrice = null;
+    this.universalImageUrl = '';
     this.universalBarcodeSKU = '';
     this.universalBarcodeSKU2 = '';
     this.universalBarcodeSKU3 = '';
@@ -918,12 +866,11 @@ export class AddProductComponent implements OnInit {
       // Clear universal data when switching to variants
       this.universalDescription = '';
       this.universalPrice = null;
+      this.universalImageUrl = '';
       this.universalBarcodeSKU = '';
       this.universalBarcodeSKU2 = '';
       this.universalBarcodeSKU3 = '';
       this.universalBarcodeSKU4 = '';
-      this.imageUrl = '';
-      this.imagePreview = null;
     }
   }
 
@@ -1160,6 +1107,10 @@ export class AddProductComponent implements OnInit {
         price: 0,
         description: '',
         imageUrl: '',
+        imageFile: undefined,
+        imagePreview: undefined,
+        isImageUploading: false,
+        imageUploadError: undefined,
         barcodeSKU: '',
         barcodeSKU2: '',
         barcodeSKU3: '',
@@ -1204,6 +1155,73 @@ export class AddProductComponent implements OnInit {
     this.variationCombinations[index][field] = value;
   }
 
+  // Variant image upload handlers
+  onVariantImageUploaded(variantIndex: number, imageUrl: string): void {
+    if (this.variationCombinations[variantIndex]) {
+      this.variationCombinations[variantIndex].imageUrl = imageUrl;
+      this.variationCombinations[variantIndex].isImageUploading = false;
+      this.variationCombinations[variantIndex].imageUploadError = undefined;
+    }
+  }
+
+  onVariantImageRemoved(variantIndex: number): void {
+    if (this.variationCombinations[variantIndex]) {
+      this.variationCombinations[variantIndex].imageUrl = '';
+      this.variationCombinations[variantIndex].imageFile = undefined;
+      this.variationCombinations[variantIndex].imagePreview = undefined;
+      this.variationCombinations[variantIndex].isImageUploading = false;
+      this.variationCombinations[variantIndex].imageUploadError = undefined;
+    }
+  }
+
+  // Called when variant image upload starts
+  onVariantImageUploadStarted(variantIndex: number): void {
+    if (this.variationCombinations[variantIndex]) {
+      this.variationCombinations[variantIndex].isImageUploading = true;
+      this.variationCombinations[variantIndex].imageUploadError = undefined;
+    }
+  }
+
+  // Called when variant image upload fails
+  onVariantImageUploadError(variantIndex: number, error: string): void {
+    if (this.variationCombinations[variantIndex]) {
+      this.variationCombinations[variantIndex].isImageUploading = false;
+      this.variationCombinations[variantIndex].imageUploadError = error;
+    }
+  }
+
+  updateVariantImageState(variantIndex: number, state: any): void {
+    if (this.variationCombinations[variantIndex]) {
+      Object.assign(this.variationCombinations[variantIndex], state);
+    }
+  }
+
+  // Universal product image handlers
+  onUniversalImageUploaded(imageUrl: string): void {
+    this.universalImageUrl = imageUrl;
+  }
+
+  onUniversalImageRemoved(): void {
+    this.universalImageUrl = '';
+  }
+
+  // Check if any images are still uploading
+  hasUploadingImages(): boolean {
+    // Check variant combinations for uploading images
+    if (this.variationCombinations.some(combo => combo.isImageUploading)) {
+      return true;
+    }
+    
+    // For universal products, we don't track upload state in the component
+    // The variant-image-upload component handles its own state
+    return false;
+  }
+
+  // Get uploading images count for user feedback
+  getUploadingImagesCount(): number {
+    return this.variationCombinations.filter(combo => combo.isImageUploading).length;
+  }
+
   isVariationSelected(variation: Variation): boolean {
     return this.selectedVariations.some(v => v.id === variation.id);
   }
@@ -1244,9 +1262,6 @@ export class AddProductComponent implements OnInit {
       return;
     }
     this.productForm.reset();
-    this.imageFile = null;
-    this.imagePreview = null;
-    this.imageUrl = '';
     this.productVariations = [];
     this.selectedCategory = null;
     this.selectedBrand = null;
@@ -1258,6 +1273,7 @@ export class AddProductComponent implements OnInit {
     this.variationCombinations = [];
     this.universalDescription = '';
     this.universalPrice = null;
+    this.universalImageUrl = '';
     this.universalBarcodeSKU = '';
     this.universalBarcodeSKU2 = '';
     this.universalBarcodeSKU3 = '';
