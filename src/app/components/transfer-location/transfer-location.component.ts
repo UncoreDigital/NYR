@@ -172,7 +172,7 @@ export class TransferLocationComponent implements OnInit {
           value: p.id,
           name: p.name,
           id: p.id,
-          sku: p.barcodeSKU || ''
+          sku: (p.variants && p.variants.length > 0) ? (p.variants[0].barcodeSKU || '') : ''
         }));
         this.isLoadingProducts = false;
       },

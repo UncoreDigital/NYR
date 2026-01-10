@@ -29,16 +29,12 @@ export class AddProductComponent implements OnInit {
   showVariationDropdown = false;
   showInCatalogue = false;
   universal = false;
-  imageFile: File | null = null;
-  imagePreview: string | null = null;
-  imageUrl: string = '';
   showSuccess = false;
   addVariation = false;
   variationNm: string = '';
   isLoading = false;
   productVariations: any[] = [];
   isLoadingDropdowns = false;
-  isUploadingImage = false;
   isEditMode = false;
   productId: number | null = null;
   isLoadingProduct = false;
@@ -46,6 +42,121 @@ export class AddProductComponent implements OnInit {
   // Variation combinations (like Amazon)
   variationCombinations: any[] = [];
   selectedOptions: Map<string, string[]> = new Map();
+
+  // Universal product fields (when universal mode is enabled)
+  universalDescription: string = '';
+  universalPrice: number | null = null;
+  universalImageUrl: string = '';
+  universalBarcodeSKU: string = '';
+  universalBarcodeSKU2: string = '';
+  universalBarcodeSKU3: string = '';
+  universalBarcodeSKU4: string = '';
+
+  // Validation methods
+  validateBarcodeUniqueness(barcode: string, excludeComboIndex?: number): boolean {
+    if (!barcode.trim()) return true; // Empty barcodes are allowed
+    
+    // Check against universal barcodes
+    if (this.universal) {
+      const universalBarcodes = [
+        this.universalBarcodeSKU,
+        this.universalBarcodeSKU2,
+        this.universalBarcodeSKU3,
+        this.universalBarcodeSKU4
+      ].filter(b => b.trim());
+      
+      if (universalBarcodes.includes(barcode)) return false;
+    }
+    
+    // Check against other variant combinations
+    for (let i = 0; i < this.variationCombinations.length; i++) {
+      if (excludeComboIndex !== undefined && i === excludeComboIndex) continue;
+      
+      const combo = this.variationCombinations[i];
+      if (!combo.enabled) continue;
+      
+      const comboBarcodes = [
+        combo.barcodeSKU,
+        combo.barcodeSKU2,
+        combo.barcodeSKU3,
+        combo.barcodeSKU4
+      ].filter(b => b && b.trim());
+      
+      if (comboBarcodes.includes(barcode)) return false;
+    }
+    
+    return true;
+  }
+
+  validateDescriptionLength(description: string): boolean {
+    if (!description || !description.trim()) return false;
+    const length = description.trim().length;
+    return length >= 10 && length <= 1000;
+  }
+
+  validateImageUrl(imageUrl: string): boolean {
+    if (!imageUrl.trim()) return true; // Empty URLs are allowed
+    
+    try {
+      new URL(imageUrl);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  validatePrice(price: number | null): boolean {
+    return price !== null && price > 0;
+  }
+
+  // Validation error messages
+  getBarcodeValidationError(barcode: string, excludeComboIndex?: number): string | null {
+    if (!barcode.trim()) return null;
+    
+    if (!this.validateBarcodeUniqueness(barcode, excludeComboIndex)) {
+      return 'This barcode is already used by another variant';
+    }
+    
+    return null;
+  }
+
+  getDescriptionValidationError(description: string): string | null {
+    if (!description || !description.trim()) {
+      return 'Description is required';
+    }
+    
+    // if (description.trim() != "") {
+    //   return 'Description must be between 10 and 1000 characters';
+    // }
+    
+    return null;
+  }
+
+  getImageUrlValidationError(imageUrl: string): string | null {
+    if (!imageUrl || !imageUrl.trim()) return null; // Empty URLs are allowed (optional)
+    
+    if (!this.validateImageUrl(imageUrl)) {
+      return 'Please enter a valid image URL';
+    }
+    
+    return null;
+  }
+
+  getPriceValidationError(price: number | null): string | null {
+    if (!this.validatePrice(price)) {
+      return 'Price must be greater than 0';
+    }
+    
+    return null;
+  }
+
+  // Helper method for template
+  hasEnabledCombinations(): boolean {
+    return this.variationCombinations.some(c => c.enabled);
+  }
+
+  // Store original variants for edit mode
+  originalVariants: any[] = [];
 
   // Category dropdown properties
   categorySearchTerm: string = '';
@@ -84,15 +195,9 @@ export class AddProductComponent implements OnInit {
   ) {
     this.productForm = this.fb.group({
       productName: ['', [Validators.required, Validators.minLength(2)]],
-      description: ['', [Validators.required]],
-      sku1: [''],
-      sku2: [''],
-      sku3: [''],
-      sku4: [''],
       category: ['', [Validators.required]],
       brand: ['', [Validators.required]],
       supplier: ['', [Validators.required]],
-      price: ['', [Validators.required, Validators.min(0.01)]],
       showInCatalogue: [false],
       universal: [false],
       variation: ['']
@@ -211,12 +316,6 @@ export class AddProductComponent implements OnInit {
   populateFormWithProduct(product: ProductApiModel): void {
     this.productForm.patchValue({
       productName: product.name,
-      description: product.description,
-      sku1: product.barcodeSKU,
-      sku2: product.barcodeSKU2,
-      sku3: product.barcodeSKU3,
-      sku4: product.barcodeSKU4,
-      price: product.price,
       showInCatalogue: product.showInCatalogue,
       universal: product.isUniversal
     });
@@ -243,34 +342,29 @@ export class AddProductComponent implements OnInit {
       this.productForm.patchValue({ supplier: supplier.name });
     }
 
-    // Set image URL and preview
-    if (product.imageUrl) {
-      this.imageUrl = product.imageUrl;
-      this.imagePreview = product.imageUrl;
-    }
-
-    // Set category, brand, and supplier after dropdowns are loaded
-    setTimeout(() => {
-      const category = this.categories.find(c => c.id === product.categoryId);
-      const brand = this.brands.find(b => b.id === product.brandId);
-      const supplier = this.suppliers.find(s => s.id === product.supplierId);
-
-      if (category) {
-        this.productForm.patchValue({ category: category.name });
-      }
-      if (brand) {
-        this.productForm.patchValue({ brand: brand.name });
-      }
-      if (supplier) {
-        this.productForm.patchValue({ supplier: supplier.name });
-      }
-    }, 1000); // Wait for dropdowns to load
-
     // Set universal flag
     this.universal = product.isUniversal;
 
+    // Handle universal product fields
+    if (product.isUniversal && product.variants && product.variants.length > 0) {
+      // Store original variants for edit mode
+      this.originalVariants = [...product.variants];
+      
+      const firstVariant = product.variants[0];
+      this.universalDescription = firstVariant.description || '';
+      this.universalPrice = firstVariant.price || null;
+      this.universalImageUrl = firstVariant.imageUrl || '';
+      this.universalBarcodeSKU = firstVariant.barcodeSKU || '';
+      this.universalBarcodeSKU2 = firstVariant.barcodeSKU2 || '';
+      this.universalBarcodeSKU3 = firstVariant.barcodeSKU3 || '';
+      this.universalBarcodeSKU4 = firstVariant.barcodeSKU4 || '';
+    }
+
     // Set variants - load from new ProductVariants system
-    if (product.variants && product.variants.length > 0) {
+    if (product.variants && product.variants.length > 0 && !product.isUniversal) {
+      // Store original variants for edit mode
+      this.originalVariants = [...product.variants];
+      
       // Extract unique variations from variants
       const variationGroups = new Map<string, any>();
       const variationValuesByType = new Map<string, Set<string>>();
@@ -318,13 +412,26 @@ export class AddProductComponent implements OnInit {
           // Find matching variant
           const matchingVariant = product.variants.find((v: any) => v.variantName === this.getCombinationName(combo));
           if (matchingVariant) {
+            combo.id = matchingVariant.id; // Store variant ID for updates
             combo.sku = matchingVariant.sku || '';
-            combo.price = matchingVariant.price || product.price;
+            combo.price = matchingVariant.price || 0;
+            combo.description = matchingVariant.description || '';
+            combo.imageUrl = matchingVariant.imageUrl || '';
+            combo.barcodeSKU = matchingVariant.barcodeSKU || '';
+            combo.barcodeSKU2 = matchingVariant.barcodeSKU2 || '';
+            combo.barcodeSKU3 = matchingVariant.barcodeSKU3 || '';
+            combo.barcodeSKU4 = matchingVariant.barcodeSKU4 || '';
             combo.enabled = matchingVariant.isEnabled;
           } else {
+            combo.id = null; // New variant
             combo.sku = '';
-            combo.price = product.price;
-            combo.stock = 0;
+            combo.price = 0;
+            combo.description = '';
+            combo.imageUrl = '';
+            combo.barcodeSKU = '';
+            combo.barcodeSKU2 = '';
+            combo.barcodeSKU3 = '';
+            combo.barcodeSKU4 = '';
             combo.enabled = true;
           }
         });
@@ -333,7 +440,23 @@ export class AddProductComponent implements OnInit {
       console.log('Loaded variants for edit:', this.selectedVariations);
       console.log('Loaded combinations for edit:', this.variationCombinations);
     }
-    // Note: Old ProductVariation system has been removed
+
+    // Set category, brand, and supplier after dropdowns are loaded
+    setTimeout(() => {
+      const category = this.categories.find(c => c.id === product.categoryId);
+      const brand = this.brands.find(b => b.id === product.brandId);
+      const supplier = this.suppliers.find(s => s.id === product.supplierId);
+
+      if (category) {
+        this.productForm.patchValue({ category: category.name });
+      }
+      if (brand) {
+        this.productForm.patchValue({ brand: brand.name });
+      }
+      if (supplier) {
+        this.productForm.patchValue({ supplier: supplier.name });
+      }
+    }, 1000); // Wait for dropdowns to load
   }
 
   onSubmit() {
@@ -344,30 +467,164 @@ export class AddProductComponent implements OnInit {
       return;
     }
 
+    // Check for uploading images
+    if (this.hasUploadingImages()) {
+      const count = this.getUploadingImagesCount();
+      this.toastService.warning('Upload in Progress', 
+        `Please wait for ${count} image(s) to finish uploading before submitting.`);
+      return;
+    }
+
+    // Validate universal product fields
+    if (this.universal) {
+      const descError = this.getDescriptionValidationError(this.universalDescription);
+      if (descError) {
+        this.toastService.warning('Validation Error', descError);
+        return;
+      }
+      
+      const priceError = this.getPriceValidationError(this.universalPrice);
+      if (priceError) {
+        this.toastService.warning('Validation Error', priceError);
+        return;
+      }
+      
+      // Validate universal image URL if provided
+      if (this.universalImageUrl && this.universalImageUrl.trim()) {
+        const imageError = this.getImageUrlValidationError(this.universalImageUrl);
+        if (imageError) {
+          this.toastService.warning('Validation Error', imageError);
+          return;
+        }
+      }
+      
+      // Validate universal barcodes uniqueness
+      const universalBarcodes = [
+        { value: this.universalBarcodeSKU, name: 'Barcode SKU' },
+        { value: this.universalBarcodeSKU2, name: 'Barcode SKU #2' },
+        { value: this.universalBarcodeSKU3, name: 'Barcode SKU #3' },
+        { value: this.universalBarcodeSKU4, name: 'Barcode SKU #4' }
+      ].filter(b => b.value.trim());
+      
+      const uniqueBarcodes = new Set();
+      for (const barcode of universalBarcodes) {
+        if (uniqueBarcodes.has(barcode.value)) {
+          this.toastService.warning('Validation Error', `Duplicate barcode found: ${barcode.value}`);
+          return;
+        }
+        uniqueBarcodes.add(barcode.value);
+      }
+    }
+
     // Validate variations for non-universal products
     if (!this.universal && this.selectedVariations.length === 0) {
       this.toastService.warning('Validation Error', 'Please select at least one variation for non-universal products.');
       return;
     }
 
+    // Validate variant combinations for non-universal products
+    if (!this.universal && this.variationCombinations.length === 0) {
+      this.toastService.warning('Validation Error', 'Please generate at least one variant combination.');
+      return;
+    }
+
+    // Validate enabled combinations have required fields
+    if (!this.universal) {
+      const enabledCombos = this.variationCombinations.filter(combo => combo.enabled);
+      if (enabledCombos.length === 0) {
+        this.toastService.warning('Validation Error', 'Please enable at least one variant combination.');
+        return;
+      }
+
+      for (const combo of enabledCombos) {
+        const descError = this.getDescriptionValidationError(combo.description);
+        if (descError) {
+          this.toastService.warning('Validation Error', `${descError} for variant: ${this.getCombinationName(combo)}`);
+          return;
+        }
+        
+        const priceError = this.getPriceValidationError(combo.price);
+        if (priceError) {
+          this.toastService.warning('Validation Error', `${priceError} for variant: ${this.getCombinationName(combo)}`);
+          return;
+        }
+        
+        // Validate image URL if provided
+        // if (combo.imageUrl && combo.imageUrl.trim()) {
+        //   const imageError = this.getImageUrlValidationError(combo.imageUrl);
+        //   if (imageError) {
+        //     this.toastService.warning('Validation Error', `${imageError} for variant: ${this.getCombinationName(combo)}`);
+        //     return;
+        //   }
+        // }
+      }
+      
+      // Validate barcode uniqueness across all variants
+      const allBarcodes = new Map<string, string>(); // barcode -> variant name
+      for (const combo of enabledCombos) {
+        const comboBarcodes = [
+          { value: combo.barcodeSKU, name: 'Barcode SKU' },
+          { value: combo.barcodeSKU2, name: 'Barcode SKU #2' },
+          { value: combo.barcodeSKU3, name: 'Barcode SKU #3' },
+          { value: combo.barcodeSKU4, name: 'Barcode SKU #4' }
+        ].filter(b => b.value && b.value.trim());
+        
+        for (const barcode of comboBarcodes) {
+          if (allBarcodes.has(barcode.value)) {
+            this.toastService.warning('Validation Error', 
+              `Duplicate barcode "${barcode.value}" found in variants: ${allBarcodes.get(barcode.value)} and ${this.getCombinationName(combo)}`);
+            return;
+          }
+          allBarcodes.set(barcode.value, this.getCombinationName(combo));
+        }
+      }
+    }
+
     if (this.productForm.valid) {
       this.isLoading = true;
       const formData = this.productForm.value;
       
-      // Map form data to API payload
-      // Generate variants from combinations (new system)
+      // Generate variants from combinations or universal product
       const generatedVariants: any[] = [];
       
-      if (this.variationCombinations.length > 0) {
+      if (this.universal) {
+        // Create single variant for universal product
+        const universalVariant: any = {
+          variantName: 'Universal',
+          sku: null,
+          price: this.universalPrice,
+          description: this.universalDescription,
+          imageUrl: this.universalImageUrl || '',
+          barcodeSKU: this.universalBarcodeSKU || '',
+          barcodeSKU2: this.universalBarcodeSKU2 || '',
+          barcodeSKU3: this.universalBarcodeSKU3 || '',
+          barcodeSKU4: this.universalBarcodeSKU4 || '',
+          isEnabled: true,
+          attributes: []
+        };
+        
+        // Include variant ID if in edit mode
+        if (this.isEditMode && this.originalVariants.length > 0) {
+          universalVariant.id = this.originalVariants[0].id;
+        }
+        
+        generatedVariants.push(universalVariant);
+      } else if (this.variationCombinations.length > 0) {
         // Use enabled combinations only and create variants for each combination
         const enabledCombos = this.variationCombinations.filter(combo => combo.enabled);
         
         enabledCombos.forEach(combo => {
           // Create variant with attributes
-          const variant = {
+          const variant: any = {
             variantName: this.getCombinationName(combo),
             sku: combo.sku || null,
-            price: combo.price ? parseFloat(combo.price) : null,
+            price: parseFloat(combo.price) || 0,
+            description: combo.description || '',
+            imageUrl: combo.imageUrl || '',
+            barcodeSKU: combo.barcodeSKU || '',
+            barcodeSKU2: combo.barcodeSKU2 || '',
+            barcodeSKU3: combo.barcodeSKU3 || '',
+            barcodeSKU4: combo.barcodeSKU4 || '',
             isEnabled: combo.enabled,
             attributes: combo.values.map((val: any) => {
               // Find the variation and option IDs
@@ -381,6 +638,11 @@ export class AddProductComponent implements OnInit {
             })
           };
           
+          // Include variant ID if in edit mode and combo has an ID
+          if (this.isEditMode && combo.id) {
+            variant.id = combo.id;
+          }
+          
           generatedVariants.push(variant);
         });
         
@@ -389,16 +651,9 @@ export class AddProductComponent implements OnInit {
 
       const payload = {
         name: formData.productName,
-        description: formData.description,
-        imageUrl: this.imageUrl || '',
-        barcodeSKU: formData.sku1 || '',
-        barcodeSKU2: formData.sku2 || '',
-        barcodeSKU3: formData.sku3 || '',
-        barcodeSKU4: formData.sku4 || '',
         categoryId: this.getCategoryId(formData.category),
         brandId: this.getBrandId(formData.brand),
         supplierId: this.getSupplierId(formData.supplier),
-        price: parseFloat(formData.price) || 0,
         showInCatalogue: formData.showInCatalogue,
         isUniversal: formData.universal,
         variants: generatedVariants
@@ -436,65 +691,6 @@ export class AddProductComponent implements OnInit {
         });
       }
     }
-  }
-
-  onImageSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-      if (!allowedTypes.includes(file.type)) {
-        this.toastService.error('Invalid File Type', 'Please select a valid image file (JPEG, PNG, GIF, WebP)');
-        return;
-      }
-
-      // Validate file size (max 5MB)
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (file.size > maxSize) {
-        this.toastService.error('File Too Large', 'Please select an image smaller than 5MB');
-        return;
-      }
-
-      this.imageFile = file;
-      this.isUploadingImage = true;
-
-      // Create preview first
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.imagePreview = e.target.result;
-      };
-      reader.readAsDataURL(file);
-
-      // Upload image to server
-      this.productService.uploadImage(file).subscribe({
-        next: (response: { imageUrl: string }) => {
-          this.imageUrl = response.imageUrl;
-          this.isUploadingImage = false;
-          this.toastService.success('Success', 'Image uploaded successfully');
-        },
-        error: (error) => {
-          this.isUploadingImage = false;
-          console.error('Failed to upload image', error);
-          this.toastService.error('Error', 'Failed to upload image. Please try again.');
-          // Reset image state on upload failure
-          this.imageFile = null;
-          this.imagePreview = null;
-          this.imageUrl = '';
-        }
-      });
-    }
-  }
-
-  removeImage() {
-    this.imageFile = null;
-    this.imagePreview = null;
-    this.imageUrl = '';
-    // Reset the file input
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
-    }
-    this.toastService.info('Info', 'Image removed');
   }
 
   addVariationClick() {
@@ -643,9 +839,14 @@ export class AddProductComponent implements OnInit {
     this.showSuccess = false;
     this.productForm.reset();
     this.selectedVariations = [];
-    this.imageFile = null;
-    this.imagePreview = null;
-    this.imageUrl = '';
+    this.variationCombinations = [];
+    this.universalDescription = '';
+    this.universalPrice = null;
+    this.universalImageUrl = '';
+    this.universalBarcodeSKU = '';
+    this.universalBarcodeSKU2 = '';
+    this.universalBarcodeSKU3 = '';
+    this.universalBarcodeSKU4 = '';
   }
 
   goToProductsList() {
@@ -654,6 +855,23 @@ export class AddProductComponent implements OnInit {
 
   onUniversalToggle(event: any) {
     this.universal = !event.checked;
+    
+    // Clear variant-specific data when switching to universal
+    if (this.universal) {
+      this.selectedVariations = [];
+      this.variationCombinations = [];
+      this.selectedOptions.clear();
+      this.updateVariationFormControl();
+    } else {
+      // Clear universal data when switching to variants
+      this.universalDescription = '';
+      this.universalPrice = null;
+      this.universalImageUrl = '';
+      this.universalBarcodeSKU = '';
+      this.universalBarcodeSKU2 = '';
+      this.universalBarcodeSKU3 = '';
+      this.universalBarcodeSKU4 = '';
+    }
   }
 
   // Helper methods for mapping form values to IDs
@@ -886,8 +1104,17 @@ export class AddProductComponent implements OnInit {
         id: index + 1,
         values: combo,
         sku: '',
-        price: this.productForm.get('price')?.value || '',
-        stock: 0,
+        price: 0,
+        description: '',
+        imageUrl: '',
+        imageFile: undefined,
+        imagePreview: undefined,
+        isImageUploading: false,
+        imageUploadError: undefined,
+        barcodeSKU: '',
+        barcodeSKU2: '',
+        barcodeSKU3: '',
+        barcodeSKU4: '',
         enabled: true
       };
     });
@@ -926,6 +1153,73 @@ export class AddProductComponent implements OnInit {
   // Update combination field
   updateCombinationField(index: number, field: string, value: any) {
     this.variationCombinations[index][field] = value;
+  }
+
+  // Variant image upload handlers
+  onVariantImageUploaded(variantIndex: number, imageUrl: string): void {
+    if (this.variationCombinations[variantIndex]) {
+      this.variationCombinations[variantIndex].imageUrl = imageUrl;
+      this.variationCombinations[variantIndex].isImageUploading = false;
+      this.variationCombinations[variantIndex].imageUploadError = undefined;
+    }
+  }
+
+  onVariantImageRemoved(variantIndex: number): void {
+    if (this.variationCombinations[variantIndex]) {
+      this.variationCombinations[variantIndex].imageUrl = '';
+      this.variationCombinations[variantIndex].imageFile = undefined;
+      this.variationCombinations[variantIndex].imagePreview = undefined;
+      this.variationCombinations[variantIndex].isImageUploading = false;
+      this.variationCombinations[variantIndex].imageUploadError = undefined;
+    }
+  }
+
+  // Called when variant image upload starts
+  onVariantImageUploadStarted(variantIndex: number): void {
+    if (this.variationCombinations[variantIndex]) {
+      this.variationCombinations[variantIndex].isImageUploading = true;
+      this.variationCombinations[variantIndex].imageUploadError = undefined;
+    }
+  }
+
+  // Called when variant image upload fails
+  onVariantImageUploadError(variantIndex: number, error: string): void {
+    if (this.variationCombinations[variantIndex]) {
+      this.variationCombinations[variantIndex].isImageUploading = false;
+      this.variationCombinations[variantIndex].imageUploadError = error;
+    }
+  }
+
+  updateVariantImageState(variantIndex: number, state: any): void {
+    if (this.variationCombinations[variantIndex]) {
+      Object.assign(this.variationCombinations[variantIndex], state);
+    }
+  }
+
+  // Universal product image handlers
+  onUniversalImageUploaded(imageUrl: string): void {
+    this.universalImageUrl = imageUrl;
+  }
+
+  onUniversalImageRemoved(): void {
+    this.universalImageUrl = '';
+  }
+
+  // Check if any images are still uploading
+  hasUploadingImages(): boolean {
+    // Check variant combinations for uploading images
+    if (this.variationCombinations.some(combo => combo.isImageUploading)) {
+      return true;
+    }
+    
+    // For universal products, we don't track upload state in the component
+    // The variant-image-upload component handles its own state
+    return false;
+  }
+
+  // Get uploading images count for user feedback
+  getUploadingImagesCount(): number {
+    return this.variationCombinations.filter(combo => combo.isImageUploading).length;
   }
 
   isVariationSelected(variation: Variation): boolean {
@@ -968,9 +1262,6 @@ export class AddProductComponent implements OnInit {
       return;
     }
     this.productForm.reset();
-    this.imageFile = null;
-    this.imagePreview = null;
-    this.imageUrl = '';
     this.productVariations = [];
     this.selectedCategory = null;
     this.selectedBrand = null;
@@ -979,5 +1270,13 @@ export class AddProductComponent implements OnInit {
     this.brandSearchTerm = '';
     this.supplierSearchTerm = '';
     this.selectedVariations = [];
+    this.variationCombinations = [];
+    this.universalDescription = '';
+    this.universalPrice = null;
+    this.universalImageUrl = '';
+    this.universalBarcodeSKU = '';
+    this.universalBarcodeSKU2 = '';
+    this.universalBarcodeSKU3 = '';
+    this.universalBarcodeSKU4 = '';
   }
 }

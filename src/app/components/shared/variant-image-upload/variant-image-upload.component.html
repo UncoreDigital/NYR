@@ -1,0 +1,58 @@
+<div class="variant-image-upload" [class.disabled]="disabled">
+  <!-- Upload Area (when no image) -->
+  <div *ngIf="!imagePreview && !isUploading && !uploadError" 
+       class="upload-area-compact" 
+       (click)="fileInput.click()"
+       [class.disabled]="disabled">
+    <input #fileInput type="file" accept="image/*" 
+           (change)="onImageSelected($event)" 
+           style="display: none;"
+           [disabled]="disabled">
+    <mat-icon class="upload-icon">add_photo_alternate</mat-icon>
+    <span class="upload-text">Upload</span>
+  </div>
+
+  <!-- Upload Progress -->
+  <div *ngIf="isUploading" class="upload-progress">
+    <div class="upload-spinner-small"></div>
+    <span class="progress-text">Uploading...</span>
+  </div>
+
+  <!-- Image Preview -->
+  <div *ngIf="imagePreview && !isUploading && !uploadError" class="image-preview-compact">
+    <img [src]="imagePreview" alt="Variant Image" class="variant-image-thumb">
+    <div class="image-actions" *ngIf="!disabled">
+      <button type="button" class="action-btn replace-btn" 
+              (click)="fileInput.click()" 
+              title="Replace Image">
+        <mat-icon>edit</mat-icon>
+      </button>
+      <button type="button" class="action-btn remove-btn" 
+              (click)="removeImage()" 
+              title="Remove Image">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+    <input #fileInput type="file" accept="image/*" 
+           (change)="onImageSelected($event)" 
+           style="display: none;"
+           [disabled]="disabled">
+  </div>
+
+  <!-- Upload Error -->
+  <div *ngIf="uploadError" class="upload-error">
+    <div class="error-content">
+      <mat-icon class="error-icon">error</mat-icon>
+      <span class="error-message">{{ uploadError }}</span>
+    </div>
+    <div class="error-actions" *ngIf="!disabled">
+      <button type="button" class="retry-btn" (click)="retryUpload()" *ngIf="imageFile">
+        <mat-icon>refresh</mat-icon>
+        Retry
+      </button>
+      <button type="button" class="clear-btn" (click)="clearError()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>

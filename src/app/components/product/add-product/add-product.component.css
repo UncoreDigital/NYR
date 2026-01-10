@@ -1227,3 +1227,71 @@ select:disabled {
 .variations-table .mandatory-cell {
   display: none;
 }
+/* Combinations Table Image Upload Cell */
+.image-upload-cell {
+  padding: 8px !important;
+  vertical-align: middle;
+  width: 150px;
+  min-width: 150px;
+}
+
+.combinations-table .image-upload-cell {
+  text-align: center;
+}
+
+/* Ensure the variant image upload component fits well in the table */
+.combinations-table app-variant-image-upload {
+  display: block;
+  width: 100%;
+}
+
+/* Responsive adjustments for image upload in table */
+@media (max-width: 768px) {
+  .image-upload-cell {
+    width: 120px;
+    min-width: 120px;
+    padding: 6px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .image-upload-cell {
+    width: 100px;
+    min-width: 100px;
+    padding: 4px !important;
+  }
+}
+/* Universal Product Image Upload */
+.universal-image-container {
+  max-width: 300px;
+  margin-top: 8px;
+}
+
+.universal-image-container app-variant-image-upload {
+  display: block;
+  width: 100%;
+}
+
+/* Universal image upload should be larger than table variants */
+.universal-image-container .variant-image-upload {
+  min-height: 120px;
+}
+
+.universal-image-container .upload-area-compact {
+  min-height: 120px;
+  padding: 20px;
+}
+
+.universal-image-container .variant-image-thumb {
+  max-width: 150px;
+  max-height: 120px;
+}
+
+.universal-image-container .upload-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.universal-image-container .upload-text {
+  font-size: 14px;
+}

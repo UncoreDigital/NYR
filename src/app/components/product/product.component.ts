@@ -72,7 +72,7 @@ export class ProductComponent implements OnInit {
           id: p.id,
           category: p.categoryName,
           productName: p.name,
-          description: p.description,
+          description: p.variants && p.variants.length > 0 ? p.variants[0].description : '',
           lastUpdated: this.formatDate(p.createdAt)
         }));
         this.dataSource.data = mapped;
