@@ -383,7 +383,7 @@
                                         <th style="width: 200px;">Variant</th>
                                         <th style="width: 250px;">Description*</th>
                                         <th style="width: 120px;">Price*</th>
-                                        <th style="width: 150px;">SKU</th>
+                                        <!-- <th style="width: 150px;">SKU</th> -->
                                         <th style="width: 150px;">Barcode</th>
                                         <th style="width: 150px;">Image</th>
                                     </tr>
@@ -418,14 +418,14 @@
                                                    step="0.01"
                                                    [disabled]="!combo.enabled" />
                                         </td>
-                                        <td>
+                                        <!-- <td>
                                             <input type="text" 
                                                    class="form-control-sm" 
                                                    [(ngModel)]="combo.sku"
                                                    [ngModelOptions]="{standalone: true}"
                                                    placeholder="SKU"
                                                    [disabled]="!combo.enabled" />
-                                        </td>
+                                        </td> -->
                                         <td>
                                             <input type="text" 
                                                    class="form-control-sm" 
@@ -451,7 +451,7 @@
                         </div>
                         
                         <!-- Additional Barcode Fields for Variants -->
-                        <div class="additional-barcode-section" *ngIf="hasEnabledCombinations()">
+                        <div class="additional-barcode-section" style="margin-top: 1%;" *ngIf="hasEnabledCombinations()">
                             <h4>Additional Barcode Fields (Optional)</h4>
                             <div class="barcode-table-container">
                                 <table class="barcode-table">

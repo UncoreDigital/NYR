@@ -125,9 +125,9 @@ export class AddProductComponent implements OnInit {
       return 'Description is required';
     }
     
-    if (!this.validateDescriptionLength(description)) {
-      return 'Description must be between 10 and 1000 characters';
-    }
+    // if (description.trim() != "") {
+    //   return 'Description must be between 10 and 1000 characters';
+    // }
     
     return null;
   }
