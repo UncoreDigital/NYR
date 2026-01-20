@@ -15,6 +15,10 @@ export class InventoryLocationService {
     return this.http.get<any[]>(`${this.API_URL}/LocationInventoryData`);
   }
 
+  getAllgroupedByLocation(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/LocationInventoryData/grouped-by-location`);
+  }
+
   getInventoryLocationById(id: number): Observable<any> {
     return this.http.get<any>(`${this.API_URL}/LocationInventoryData/by-location/${id}`);
   }

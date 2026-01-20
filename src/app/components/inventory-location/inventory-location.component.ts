@@ -63,7 +63,7 @@ export class InventoryLocationComponent implements OnInit {
 
   loadLocations(): void {
     this.isLoading = true;
-    this.inventoryLocationService.getAllInventoryLocation().subscribe({
+    this.inventoryLocationService.getAllgroupedByLocation().subscribe({
     next: (summary) => {
         this.inventoryLocation = summary?.map(loc => ({
           locationId: loc.locationId,

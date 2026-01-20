@@ -27,9 +27,6 @@ export class InventoryDetailComponent implements OnInit {
   displayedColumns: string[] = ['productName', 'skucode', 'variantName', 'quantity'];
   dataSource = new MatTableDataSource<inventoryLocation>();
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
-
   inventoryLocation: inventoryLocation[] = [];
   selectedVan: string = '';
   searchValue: string = '';
@@ -40,6 +37,23 @@ export class InventoryDetailComponent implements OnInit {
   breadcrumbItems: any[] = [];
   warehouseId: number | null = null;
   locationId: number | null = null;
+  pageSizeOptions: number[] = [25, 50, 75, 100];
+  private _paginator!: MatPaginator;
+  private _sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    if (paginator) {
+      this._paginator = paginator;
+      this.dataSource.paginator = this._paginator;
+    }
+  }
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) {
+      this._sort = sort;
+      this.dataSource.sort = this._sort;
+    }
+  }
 
   constructor(
     private router: Router, 
@@ -123,6 +137,8 @@ export class InventoryDetailComponent implements OnInit {
             quantity: item.quantity
           }));
           this.dataSource.data = this.inventoryLocation;
+          this.dataSource.paginator = this.paginator;
+          this.dataSource.sort = this.sort;
           this.loading = false;
         },
         error: (error) => {
@@ -145,6 +161,8 @@ export class InventoryDetailComponent implements OnInit {
           }));
           this.inventoryLocation = allItems;
           this.dataSource.data = this.inventoryLocation;
+          this.dataSource.paginator = this.paginator;
+          this.dataSource.sort = this.sort;
           this.loading = false;
         },
         error: (error) => {
@@ -165,6 +183,8 @@ export class InventoryDetailComponent implements OnInit {
             quantity: item.quantity
           }));
           this.dataSource.data = this.inventoryLocation;
+          this.dataSource.paginator = this.paginator;
+          this.dataSource.sort = this.sort;
           this.loading = false;
         },
         error: (error) => {
@@ -175,14 +195,11 @@ export class InventoryDetailComponent implements OnInit {
     } else {
       // Fallback to empty data
       this.dataSource.data = [];
+      this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.sort;
     }
   }
 
-
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
