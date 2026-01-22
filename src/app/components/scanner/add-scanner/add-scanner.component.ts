@@ -40,7 +40,7 @@ export class AddScannerComponent implements OnInit {
   ) {
     this.scannerForm = this.fb.group({
       scannerName: ['', Validators.required],
-      location: ['', Validators.required],
+      location: [''],
       serialNo: ['', Validators.required],
       scannerPin: ['0000'],
       scannerUrl: ['']
@@ -152,7 +152,7 @@ export class AddScannerComponent implements OnInit {
           scannerName: formValue.scannerName,
           scannerPIN: formValue.scannerPin,
           scannerUrl: formValue.scannerUrl,
-          locationId: formValue.location
+          locationId: formValue.location == "" ? null : formValue.location
         };
 
         this.scannerService.createScanner(createData).subscribe({
