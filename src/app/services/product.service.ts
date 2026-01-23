@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ProductApiModel } from '../models/product.model';
+import { PaginationParams, PagedResult } from '../models/pagination.model';
 import { environment } from 'environment';
 
 @Injectable({ providedIn: 'root' })
@@ -12,6 +13,24 @@ export class ProductService {
 
   getProducts(): Observable<ProductApiModel[]> {
     return this.http.get<ProductApiModel[]>(`${this.API_URL}/Products`);
+  }
+
+  getProductsPaged(params: PaginationParams): Observable<PagedResult<ProductApiModel>> {
+    let httpParams = new HttpParams()
+      .set('pageNumber', params.pageNumber.toString())
+      .set('pageSize', params.pageSize.toString());
+
+    if (params.sortBy) {
+      httpParams = httpParams.set('sortBy', params.sortBy);
+    }
+    if (params.sortOrder) {
+      httpParams = httpParams.set('sortOrder', params.sortOrder);
+    }
+    if (params.search) {
+      httpParams = httpParams.set('search', params.search);
+    }
+
+    return this.http.get<PagedResult<ProductApiModel>>(`${this.API_URL}/Products`, { params: httpParams });
   }
 
   getProductById(id: number): Observable<ProductApiModel> {
