@@ -1,14 +1,13 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ToastService } from 'src/app/services/toast.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { ScannerService } from '../../services/scanner.service';
 import { ScannerResponse } from '../../models/scanner.model';
-import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface Scanner {
   id: number;
@@ -27,37 +26,42 @@ export interface Scanner {
 
 export class ScannerComponent implements OnInit {
   displayedColumns: string[] = ['serialNo', 'scannerName', 'scannerPin', 'location', 'scannerUrl', 'actions'];
-  dataSource = new MatTableDataSource<Scanner>();
-
-  isLoading = false;
-  errorMessage = '';
   scanners: Scanner[] = [];
   deletingScannerId: number | null = null;
 
-  private _paginator!: MatPaginator;
-  private _sort!: MatSort;
-
-  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
-    if (paginator) {
-      this._paginator = paginator;
-      this.dataSource.paginator = this._paginator;
-    }
-  }
-
-  @ViewChild(MatSort) set sort(sort: MatSort) {
-    if (sort) {
-      this._sort = sort;
-      this.dataSource.sort = this._sort;
-    }
-  }
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  
+  isLoading = false;
+  errorMessage = '';
   pageSizeOptions: number[] = [25, 50, 75, 100];
+
+  // Pagination state
+  pageIndex: number = 0;
+  pageSize: number = 25;
+  totalCount: number = 0;
+  sortBy: string = 'name';
+  sortOrder: 'asc' | 'desc' = 'asc';
+  searchTerm: string = '';
+
+  // Debounce subject for search
+  private searchSubject = new Subject<string>();
   
   constructor(
     private router: Router,
     private toastService: ToastService,
     private dialog: MatDialog,
     private scannerService: ScannerService
-  ) { }
+  ) {
+    // Setup debounced search
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.pageIndex = 0;
+      this.loadScanners();
+    });
+  }
 
   ngOnInit(): void {
     this.loadScanners();
@@ -67,12 +71,18 @@ export class ScannerComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     
-    this.scannerService.getScanners().subscribe({
-      next: (apiScanners: ScannerResponse[]) => {
-        this.scanners = this.mapApiResponseToScanner(apiScanners);
-        this.dataSource.data = this.scanners;
-        const computedOptions = computePageSizeOptions(this.dataSource.data.length);
-        this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
+    const params = {
+      pageNumber: this.pageIndex + 1,
+      pageSize: this.pageSize,
+      sortBy: this.mapColumnToSortField(this.sortBy),
+      sortOrder: this.sortOrder,
+      search: this.searchTerm || undefined
+    };
+
+    this.scannerService.getScannersPaged(params).subscribe({
+      next: (result) => {
+        this.scanners = this.mapApiResponseToScanner(result.data);
+        this.totalCount = result.totalCount;
         this.isLoading = false;
       },
       error: (error: any) => {
@@ -82,6 +92,15 @@ export class ScannerComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  private mapColumnToSortField(column: string): string {
+    const columnMap: { [key: string]: string } = {
+      'scannerName': 'name',
+      'serialNo': 'serialNumber',
+      'location': 'locationName'
+    };
+    return columnMap[column] || 'name';
   }
 
   private mapApiResponseToScanner(apiScanners: ScannerResponse[]): Scanner[] {
@@ -95,14 +114,26 @@ export class ScannerComponent implements OnInit {
     }));
   }
 
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
-
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.searchSubject.next(filterValue.trim());
+  }
+
+  onPageChange(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadScanners();
+  }
+
+  onSortChange(column: string) {
+    if (this.sortBy === column) {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = column;
+      this.sortOrder = 'asc';
+    }
+    this.pageIndex = 0;
+    this.loadScanners();
   }
 
   addScanner() {

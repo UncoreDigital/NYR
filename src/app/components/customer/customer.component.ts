@@ -1,13 +1,12 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CustomerService, CustomerApiModel } from '../../services/customer.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
-import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface Customer {
   id: number;
@@ -24,24 +23,9 @@ export interface Customer {
 })
 export class CustomerComponent implements OnInit {
   displayedColumns: string[] = ['companyName', 'contactName', 'address', 'phoneNumber', 'actions'];
-  dataSource = new MatTableDataSource<Customer>();
+  customers: Customer[] = [];
 
-  private _paginator!: MatPaginator;
-  private _sort!: MatSort;
-
-  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
-    if (paginator) {
-      this._paginator = paginator;
-      this.dataSource.paginator = this._paginator;
-    }
-  }
-
-  @ViewChild(MatSort) set sort(sort: MatSort) {
-    if (sort) {
-      this._sort = sort;
-      this.dataSource.sort = this._sort;
-    }
-  }
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   isLoading = false;
   showCreditCardModal = false;
@@ -69,36 +53,58 @@ export class CustomerComponent implements OnInit {
   };
   pageSizeOptions: number[] = [25, 50, 75, 100];
 
+  // Pagination state
+  pageIndex: number = 0;
+  pageSize: number = 25;
+  totalCount: number = 0;
+  sortBy: string = 'companyName';
+  sortOrder: 'asc' | 'desc' = 'asc';
+  searchTerm: string = '';
+
+  // Debounce subject for search
+  private searchSubject = new Subject<string>();
+
   constructor(
     private router: Router,
     private customerService: CustomerService,
     private toastService: ToastService,
     private dialog: MatDialog
-  ) { }
+  ) {
+    // Setup debounced search
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.pageIndex = 0;
+      this.fetchCustomers();
+    });
+  }
 
   ngOnInit(): void {
     this.fetchCustomers();
   }
 
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
-
   fetchCustomers(): void {
     this.isLoading = true;
-    this.customerService.getCustomers().subscribe({
-      next: (customers: CustomerApiModel[]) => {
-        const mapped: Customer[] = customers.map(c => ({
+    const params = {
+      pageNumber: this.pageIndex + 1,
+      pageSize: this.pageSize,
+      sortBy: this.mapColumnToSortField(this.sortBy),
+      sortOrder: this.sortOrder,
+      search: this.searchTerm || undefined
+    };
+
+    this.customerService.getCustomersPaged(params).subscribe({
+      next: (result) => {
+        this.customers = result.data.map(c => ({
           id: c.id,
           companyName: c.companyName,
           contactName: c.contactName,
           address: this.composeAddress(c),
           phoneNumber: this.composePhone(c)
         }));
-        this.dataSource.data = mapped;
-        const computedOptions = computePageSizeOptions(this.dataSource.data.length);
-        this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
+        this.totalCount = result.totalCount;
         this.isLoading = false;
       },
       error: (error) => {
@@ -107,6 +113,16 @@ export class CustomerComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  private mapColumnToSortField(column: string): string {
+    const columnMap: { [key: string]: string } = {
+      'companyName': 'companyName',
+      'contactName': 'contactName',
+      'address': 'address',
+      'phoneNumber': 'phoneNumber'
+    };
+    return columnMap[column] || 'companyName';
   }
 
   composeAddress(c: CustomerApiModel): string {
@@ -126,7 +142,24 @@ export class CustomerComponent implements OnInit {
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.searchSubject.next(filterValue.trim());
+  }
+
+  onPageChange(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.fetchCustomers();
+  }
+
+  onSortChange(column: string) {
+    if (this.sortBy === column) {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = column;
+      this.sortOrder = 'asc';
+    }
+    this.pageIndex = 0;
+    this.fetchCustomers();
   }
 
   addCustomer() {

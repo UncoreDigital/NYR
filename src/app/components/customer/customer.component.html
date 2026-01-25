@@ -41,61 +41,68 @@
 
       <ng-template #contentTemplate>
         <!-- Customer Table -->
-        <div class="table-container" *ngIf="dataSource.data?.length; else emptyTemplate">
-          <table mat-table [dataSource]="dataSource" matSort class="customer-table">
-            <!-- Company Name Column -->
-            <ng-container matColumnDef="companyName">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>COMPANY NAME</th>
-              <td mat-cell *matCellDef="let customer">{{customer.companyName}}</td>
-            </ng-container>
-
-            <!-- Contact Name Column -->
-            <ng-container matColumnDef="contactName">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>CONTACT NAME</th>
-              <td mat-cell *matCellDef="let customer">{{customer.contactName}}</td>
-            </ng-container>
-
-            <!-- Address Column -->
-            <ng-container matColumnDef="address">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>ADDRESS</th>
-              <td mat-cell *matCellDef="let customer">{{customer.address}}</td>
-            </ng-container>
-
-            <!-- Phone Number Column -->
-            <ng-container matColumnDef="phoneNumber">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>PHONE NUMBER</th>
-              <td mat-cell *matCellDef="let customer">{{customer.phoneNumber}}</td>
-            </ng-container>
-
-            <!-- Actions Column -->
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef>ACTION</th>
-              <td mat-cell *matCellDef="let customer">
-                <div class="action-group">
-                  <!-- <button class="group-btn edit" (click)="openCreditCardModal(customer)" title="Credit Card Info">
-                    <mat-icon style="color: black;">credit_card</mat-icon>
-                  </button> -->
-                  <button class="group-btn edit" (click)="editCustomer(customer)" title="Edit">
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  <span class="group-divider"></span>
-                  <button class="group-btn delete" (click)="deleteCustomer(customer)" title="Delete">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </div>
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        <div class="table-container" *ngIf="customers.length > 0; else emptyTemplate">
+          <table class="customer-table">
+            <thead>
+              <tr>
+                <th (click)="onSortChange('companyName')" class="sortable">
+                  COMPANY NAME
+                  <mat-icon *ngIf="sortBy === 'companyName'">
+                    {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                  </mat-icon>
+                </th>
+                <th (click)="onSortChange('contactName')" class="sortable">
+                  CONTACT NAME
+                  <mat-icon *ngIf="sortBy === 'contactName'">
+                    {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                  </mat-icon>
+                </th>
+                <th (click)="onSortChange('address')" class="sortable">
+                  ADDRESS
+                  <mat-icon *ngIf="sortBy === 'address'">
+                    {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                  </mat-icon>
+                </th>
+                <th (click)="onSortChange('phoneNumber')" class="sortable">
+                  PHONE NUMBER
+                  <mat-icon *ngIf="sortBy === 'phoneNumber'">
+                    {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                  </mat-icon>
+                </th>
+                <th>ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let customer of customers">
+                <td>{{customer.companyName}}</td>
+                <td>{{customer.contactName}}</td>
+                <td>{{customer.address}}</td>
+                <td>{{customer.phoneNumber}}</td>
+                <td>
+                  <div class="action-group">
+                    <button class="group-btn edit" (click)="editCustomer(customer)" title="Edit">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <span class="group-divider"></span>
+                    <button class="group-btn delete" (click)="deleteCustomer(customer)" title="Delete">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
           </table>
 
           <!-- Paginator -->
           <mat-paginator 
+            *ngIf="!isLoading"
+            [length]="totalCount"
+            [pageIndex]="pageIndex"
+            [pageSize]="pageSize"
             [pageSizeOptions]="pageSizeOptions" 
-            [length]="dataSource.filteredData.length || 0"
             showFirstLastButtons
-            class="table-paginator">
+            class="table-paginator"
+            (page)="onPageChange($event)">
           </mat-paginator>
         </div>
 

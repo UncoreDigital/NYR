@@ -1,14 +1,13 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { SupplierService } from '../../services/supplier.service';
 import { SupplierApiModel } from '../../models/supplier.model';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
-import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface Supplier {
   id: number;
@@ -25,54 +24,61 @@ export interface Supplier {
 })
 export class SupplierComponent implements OnInit {
   displayedColumns: string[] = ['supplierName', 'phoneNumber', 'email', 'status', 'actions'];
-  dataSource = new MatTableDataSource<Supplier>();
-
-  private _paginator!: MatPaginator;
-  private _sort!: MatSort;
-
-  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
-    if (paginator) {
-      this._paginator = paginator;
-      this.dataSource.paginator = this._paginator;
-    }
-  }
-
-  @ViewChild(MatSort) set sort(sort: MatSort) {
-    if (sort) {
-      this._sort = sort;
-      this.dataSource.sort = this._sort;
-    }
-  }
-  pageSizeOptions: number[] = [25, 50, 75, 100];
-
-  isLoading = false;
   suppliers: Supplier[] = [];
   filteredSuppliers: Supplier[] = [];
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  
+  isLoading = false;
   selectedStatus = '';
   selectedSupplierName = '';
-  searchTerm = '';
+  pageSizeOptions: number[] = [25, 50, 75, 100];
+
+  // Pagination state
+  pageIndex: number = 0;
+  pageSize: number = 25;
+  totalCount: number = 0;
+  sortBy: string = 'name';
+  sortOrder: 'asc' | 'desc' = 'asc';
+  searchTerm: string = '';
+
+  // Debounce subject for search
+  private searchSubject = new Subject<string>();
 
   constructor(
     private router: Router,
     private supplierService: SupplierService,
     private toastService: ToastService,
     private dialog: MatDialog
-  ) { }
+  ) {
+    // Setup debounced search
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.pageIndex = 0;
+      this.fetchSuppliers();
+    });
+  }
 
   ngOnInit(): void {
     this.fetchSuppliers();
   }
 
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
-
   fetchSuppliers(): void {
     this.isLoading = true;
-    this.supplierService.getSuppliers().subscribe({
-      next: (suppliers: SupplierApiModel[]) => {
-        const mapped: Supplier[] = suppliers.map(s => ({
+    const params = {
+      pageNumber: this.pageIndex + 1,
+      pageSize: this.pageSize,
+      sortBy: this.mapColumnToSortField(this.sortBy),
+      sortOrder: this.sortOrder,
+      search: this.searchTerm || undefined
+    };
+
+    this.supplierService.getSuppliersPaged(params).subscribe({
+      next: (result) => {
+        const mapped: Supplier[] = result.data.map(s => ({
           id: s.id,
           supplierName: s.name,
           phoneNumber: s.phoneNumber,
@@ -80,8 +86,8 @@ export class SupplierComponent implements OnInit {
           status: s.isActive ? 'Active' : 'Inactive'
         }));
         this.suppliers = mapped;
-        this.filteredSuppliers = [...this.suppliers];
         this.applyFilters();
+        this.totalCount = result.totalCount;
         this.isLoading = false;
       },
       error: (error) => {
@@ -92,43 +98,39 @@ export class SupplierComponent implements OnInit {
     });
   }
 
+  private mapColumnToSortField(column: string): string {
+    const columnMap: { [key: string]: string } = {
+      'supplierName': 'name',
+      'phoneNumber': 'phoneNumber',
+      'email': 'email',
+      'status': 'isActive'
+    };
+    return columnMap[column] || 'name';
+  }
+
   applyFilter(event: Event) {
-    this.searchTerm = (event.target as HTMLInputElement).value;
-    this.applyFilters();
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(filterValue.trim());
   }
 
   applyFilters() {
     let filtered = [...this.suppliers];
 
-    // Apply supplier name filter
+    // Apply supplier name filter (client-side)
     if (this.selectedSupplierName) {
       filtered = filtered.filter(supplier => 
         supplier.supplierName === this.selectedSupplierName
       );
     }
 
-    // Apply status filter
+    // Apply status filter (client-side)
     if (this.selectedStatus) {
       filtered = filtered.filter(supplier => 
         supplier.status.toLowerCase() === this.selectedStatus.toLowerCase()
       );
     }
 
-    // Apply search filter
-    if (this.searchTerm) {
-      const searchLower = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(supplier =>
-        supplier.supplierName.toLowerCase().includes(searchLower) ||
-        supplier.email.toLowerCase().includes(searchLower) ||
-        supplier.phoneNumber.toLowerCase().includes(searchLower) ||
-        supplier.status.toLowerCase().includes(searchLower)
-      );
-    }
-
     this.filteredSuppliers = filtered;
-    this.dataSource.data = this.filteredSuppliers;
-    const computedOptions = computePageSizeOptions(this.dataSource.data.length);
-    this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
   }
 
   onSupplierNameFilterChange() {
@@ -147,7 +149,25 @@ export class SupplierComponent implements OnInit {
     this.selectedStatus = '';
     this.selectedSupplierName = '';
     this.searchTerm = '';
-    this.applyFilters();
+    this.pageIndex = 0;
+    this.fetchSuppliers();
+  }
+
+  onPageChange(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.fetchSuppliers();
+  }
+
+  onSortChange(column: string) {
+    if (this.sortBy === column) {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = column;
+      this.sortOrder = 'asc';
+    }
+    this.pageIndex = 0;
+    this.fetchSuppliers();
   }
 
   addSupplier() {

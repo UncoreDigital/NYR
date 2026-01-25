@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { LocationResponse, CreateLocationRequest } from '../models/location.model';
+import { PaginationParams, PagedResult } from '../models/pagination.model';
 import { environment } from 'environment';
 
 @Injectable({
@@ -14,6 +15,24 @@ export class LocationService {
 
   getLocations(): Observable<LocationResponse[]> {
     return this.http.get<LocationResponse[]>(`${this.API_URL}/Locations`);
+  }
+
+  getLocationsPaged(params: PaginationParams): Observable<PagedResult<LocationResponse>> {
+    let httpParams = new HttpParams()
+      .set('pageNumber', params.pageNumber.toString())
+      .set('pageSize', params.pageSize.toString());
+
+    if (params.sortBy) {
+      httpParams = httpParams.set('sortBy', params.sortBy);
+    }
+    if (params.sortOrder) {
+      httpParams = httpParams.set('sortOrder', params.sortOrder);
+    }
+    if (params.search) {
+      httpParams = httpParams.set('search', params.search);
+    }
+
+    return this.http.get<PagedResult<LocationResponse>>(`${this.API_URL}/Locations`, { params: httpParams });
   }
 
   getLocationsDetails(): Observable<LocationResponse[]> {

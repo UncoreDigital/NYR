@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { UserResponse, User, CreateUserRequest, UpdateUserRequest } from '../models/user.model';
 import { DriverAvailability, DriverAvailabilityBulkRequest } from '../models/driver-availability.model';
+import { PaginationParams, PagedResult } from '../models/pagination.model';
 import { environment } from 'environment';
 
 @Injectable({
@@ -16,6 +17,24 @@ export class UserService {
 
   getUsers(): Observable<UserResponse[]> {
     return this.http.get<UserResponse[]>(`${this.API_URL}/Users`);
+  }
+
+  getUsersPaged(params: PaginationParams): Observable<PagedResult<UserResponse>> {
+    let httpParams = new HttpParams()
+      .set('pageNumber', params.pageNumber.toString())
+      .set('pageSize', params.pageSize.toString());
+
+    if (params.sortBy) {
+      httpParams = httpParams.set('sortBy', params.sortBy);
+    }
+    if (params.sortOrder) {
+      httpParams = httpParams.set('sortOrder', params.sortOrder);
+    }
+    if (params.search) {
+      httpParams = httpParams.set('search', params.search);
+    }
+
+    return this.http.get<PagedResult<UserResponse>>(`${this.API_URL}/Users`, { params: httpParams });
   }
 
   /**

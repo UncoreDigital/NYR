@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CreateCustomerRequest, CustomerResponse } from '../models/customer.model';
+import { PaginationParams, PagedResult } from '../models/pagination.model';
 import { environment } from 'environment';
 
 export interface CustomerApiModel {
@@ -33,6 +34,24 @@ export class CustomerService {
 
   getCustomers(): Observable<CustomerApiModel[]> {
     return this.http.get<CustomerApiModel[]>(`${this.API_URL}/Customers`);
+  }
+
+  getCustomersPaged(params: PaginationParams): Observable<PagedResult<CustomerApiModel>> {
+    let httpParams = new HttpParams()
+      .set('pageNumber', params.pageNumber.toString())
+      .set('pageSize', params.pageSize.toString());
+
+    if (params.sortBy) {
+      httpParams = httpParams.set('sortBy', params.sortBy);
+    }
+    if (params.sortOrder) {
+      httpParams = httpParams.set('sortOrder', params.sortOrder);
+    }
+    if (params.search) {
+      httpParams = httpParams.set('search', params.search);
+    }
+
+    return this.http.get<PagedResult<CustomerApiModel>>(`${this.API_URL}/Customers`, { params: httpParams });
   }
 
   getCustomerById(id: number): Observable<CustomerResponse> {

@@ -66,54 +66,63 @@
 
       <ng-template #contentTemplate>
         <!-- Supplier Table -->
-        <div class="table-container" *ngIf="dataSource.data?.length; else emptyTemplate">
-          <table mat-table [dataSource]="dataSource" matSort class="customer-table">
-          <!-- Company Name Column -->
-          <ng-container matColumnDef="supplierName">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>SUPPLIER NAME</th>
-            <td mat-cell *matCellDef="let supplier">{{supplier.supplierName}}</td>
-          </ng-container>
-
-          <!-- Contact Name Column -->
-          <ng-container matColumnDef="phoneNumber">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>PHONE NUMBER</th>
-            <td mat-cell *matCellDef="let supplier">{{supplier.phoneNumber}}</td>
-          </ng-container>
-
-          <!-- Address Column -->
-          <ng-container matColumnDef="email">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>EMAIL</th>
-            <td mat-cell *matCellDef="let supplier">{{supplier.email}}</td>
-          </ng-container>
-
-          <!-- Phone Number Column -->
-          <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>STATUS</th>
-            <td mat-cell *matCellDef="let supplier">{{supplier.status}}</td>
-          </ng-container>
-
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>ACTION</th>
-            <td mat-cell *matCellDef="let supplier">
-              <div class="action-group">
-                <button class="group-btn edit" (click)="editSupplier(supplier)" title="Edit">
-                  <mat-icon>edit</mat-icon>
-                </button>
-                <span class="group-divider"></span>
-                <button class="group-btn delete" (click)="deleteSupplier(supplier)" title="Delete">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </div>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
+        <div class="table-container" *ngIf="filteredSuppliers.length > 0; else emptyTemplate">
+          <table class="customer-table">
+            <thead>
+              <tr>
+                <th (click)="onSortChange('supplierName')" class="sortable">
+                  SUPPLIER NAME
+                  <mat-icon *ngIf="sortBy === 'supplierName'">
+                    {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                  </mat-icon>
+                </th>
+                <th (click)="onSortChange('phoneNumber')" class="sortable">
+                  PHONE NUMBER
+                  <mat-icon *ngIf="sortBy === 'phoneNumber'">
+                    {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                  </mat-icon>
+                </th>
+                <th (click)="onSortChange('email')" class="sortable">
+                  EMAIL
+                  <mat-icon *ngIf="sortBy === 'email'">
+                    {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                  </mat-icon>
+                </th>
+                <th>STATUS</th>
+                <th>ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let supplier of filteredSuppliers">
+                <td>{{supplier.supplierName}}</td>
+                <td>{{supplier.phoneNumber}}</td>
+                <td>{{supplier.email}}</td>
+                <td>{{supplier.status}}</td>
+                <td>
+                  <div class="action-group">
+                    <button class="group-btn edit" (click)="editSupplier(supplier)" title="Edit">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <span class="group-divider"></span>
+                    <button class="group-btn delete" (click)="deleteSupplier(supplier)" title="Delete">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
           <!-- Paginator -->
-          <mat-paginator [pageSizeOptions]="pageSizeOptions" showFirstLastButtons class="table-paginator">
+          <mat-paginator 
+            *ngIf="!isLoading"
+            [length]="totalCount"
+            [pageIndex]="pageIndex"
+            [pageSize]="pageSize"
+            [pageSizeOptions]="pageSizeOptions" 
+            showFirstLastButtons
+            class="table-paginator"
+            (page)="onPageChange($event)">
           </mat-paginator>
         </div>
 

@@ -1,14 +1,13 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { UserService } from '../../services/user.service';
 import { UserResponse } from '../../models/user.model';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { ToastService } from '../../services/toast.service';
-import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface User {
   id: number;
@@ -25,39 +24,43 @@ export interface User {
 })
 export class UserComponent implements OnInit {
   displayedColumns: string[] = ['role', 'name', 'email', 'phoneNumber', 'actions'];
-  dataSource = new MatTableDataSource<User>();
+  users: User[] = [];
+  filteredUsers: User[] = [];
+  
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
   
   isLoading = false;
   errorMessage = '';
-  users: User[] = [];
-  filteredUsers: User[] = [];
   selectedRole = '';
-  searchTerm = '';
-
-  private _paginator!: MatPaginator;
-  private _sort!: MatSort;
-
-  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
-    if (paginator) {
-      this._paginator = paginator;
-      this.dataSource.paginator = this._paginator;
-    }
-  }
-
-  @ViewChild(MatSort) set sort(sort: MatSort) {
-    if (sort) {
-      this._sort = sort;
-      this.dataSource.sort = this._sort;
-    }
-  }
   pageSizeOptions: number[] = [25, 50, 75, 100];
+
+  // Pagination state
+  pageIndex: number = 0;
+  pageSize: number = 25;
+  totalCount: number = 0;
+  sortBy: string = 'name';
+  sortOrder: 'asc' | 'desc' = 'asc';
+  searchTerm: string = '';
+
+  // Debounce subject for search
+  private searchSubject = new Subject<string>();
 
   constructor(
     private router: Router,
     private userService: UserService,
     private dialog: MatDialog,
     private toastService: ToastService
-  ) { }
+  ) {
+    // Setup debounced search
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.pageIndex = 0;
+      this.loadUsers();
+    });
+  }
 
   ngOnInit(): void {
     this.loadUsers();
@@ -67,11 +70,19 @@ export class UserComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     
-    this.userService.getUsers().subscribe({
-      next: (apiUsers: UserResponse[]) => {
-        this.users = this.mapApiResponseToUser(apiUsers);
-        this.filteredUsers = [...this.users];
-        this.applyFilters();
+    const params = {
+      pageNumber: this.pageIndex + 1,
+      pageSize: this.pageSize,
+      sortBy: this.mapColumnToSortField(this.sortBy),
+      sortOrder: this.sortOrder,
+      search: this.searchTerm || undefined
+    };
+
+    this.userService.getUsersPaged(params).subscribe({
+      next: (result) => {
+        this.users = this.mapApiResponseToUser(result.data);
+        this.applyRoleFilter();
+        this.totalCount = result.totalCount;
         this.isLoading = false;
       },
       error: (error: any) => {
@@ -80,6 +91,16 @@ export class UserComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  private mapColumnToSortField(column: string): string {
+    const columnMap: { [key: string]: string } = {
+      'name': 'name',
+      'email': 'email',
+      'phoneNumber': 'phoneNumber',
+      'role': 'role'
+    };
+    return columnMap[column] || 'name';
   }
 
   private mapApiResponseToUser(apiUsers: UserResponse[]): User[] {
@@ -92,51 +113,47 @@ export class UserComponent implements OnInit {
     }));
   }
 
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
-
   applyFilter(event: Event) {
-    this.searchTerm = (event.target as HTMLInputElement).value;
-    this.applyFilters();
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(filterValue.trim());
   }
 
-  applyFilters() {
-    let filtered = [...this.users];
-
-    // Apply role filter
+  applyRoleFilter() {
     if (this.selectedRole) {
-      filtered = filtered.filter(user => 
+      this.filteredUsers = this.users.filter(user => 
         user.role.toLowerCase() === this.selectedRole.toLowerCase()
       );
+    } else {
+      this.filteredUsers = [...this.users];
     }
-
-    // Apply search filter
-    if (this.searchTerm) {
-      const searchLower = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(user =>
-        user.name.toLowerCase().includes(searchLower) ||
-        user.email.toLowerCase().includes(searchLower) ||
-        user.role.toLowerCase().includes(searchLower) ||
-        user.phoneNumber.toLowerCase().includes(searchLower)
-      );
-    }
-
-    this.filteredUsers = filtered;
-    this.dataSource.data = this.filteredUsers;
-    const computedOptions = computePageSizeOptions(this.dataSource.data.length);
-    this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
   }
 
   onRoleFilterChange() {
-    this.applyFilters();
+    this.applyRoleFilter();
   }
 
   resetFilters() {
     this.selectedRole = '';
     this.searchTerm = '';
-    this.applyFilters();
+    this.pageIndex = 0;
+    this.loadUsers();
+  }
+
+  onPageChange(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadUsers();
+  }
+
+  onSortChange(column: string) {
+    if (this.sortBy === column) {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = column;
+      this.sortOrder = 'asc';
+    }
+    this.pageIndex = 0;
+    this.loadUsers();
   }
 
   addUser() {

@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Variation, CreateVariationRequest, UpdateVariationRequest } from '../models/variation.model';
+import { PaginationParams, PagedResult } from '../models/pagination.model';
 import { environment } from 'environment';
 
 @Injectable({ providedIn: 'root' })
@@ -12,6 +13,24 @@ export class VariationService {
 
   getVariations(): Observable<Variation[]> {
     return this.http.get<Variation[]>(`${this.API_URL}/Variations`);
+  }
+
+  getVariationsPaged(params: PaginationParams): Observable<PagedResult<Variation>> {
+    let httpParams = new HttpParams()
+      .set('pageNumber', params.pageNumber.toString())
+      .set('pageSize', params.pageSize.toString());
+
+    if (params.sortBy) {
+      httpParams = httpParams.set('sortBy', params.sortBy);
+    }
+    if (params.sortOrder) {
+      httpParams = httpParams.set('sortOrder', params.sortOrder);
+    }
+    if (params.search) {
+      httpParams = httpParams.set('search', params.search);
+    }
+
+    return this.http.get<PagedResult<Variation>>(`${this.API_URL}/Variations`, { params: httpParams });
   }
 
   getActiveVariations(): Observable<Variation[]> {

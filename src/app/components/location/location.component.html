@@ -42,59 +42,59 @@
 
       <!-- Location Table -->
       <div class="table-container" *ngIf="!isLoading">
-        <table mat-table [dataSource]="dataSource" matSort class="customer-table">
-          <!-- Company Name Column -->
-          <ng-container matColumnDef="locationName">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>LOCATION NAME</th>
-            <td mat-cell *matCellDef="let location">{{location.locationName}}</td>
-          </ng-container>
-
-          <!-- Contact Name Column -->
-          <ng-container matColumnDef="customerName">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>CUSTOMER NAME</th>
-            <td mat-cell *matCellDef="let location">{{location.customerName}}</td>
-          </ng-container>
-
-          <!-- Address Column -->
-          <ng-container matColumnDef="contactPerson">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>CONTACT PERSON</th>
-            <td mat-cell *matCellDef="let location">{{location.contactPerson}}</td>
-          </ng-container>
-
-          <!-- Phone Number Column -->
-          <ng-container matColumnDef="phoneNumber">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>PHONE NUMBER</th>
-            <td mat-cell *matCellDef="let location">{{location.phoneNumber}}</td>
-          </ng-container>
-
-          <!-- Location Address Column -->
-          <ng-container matColumnDef="locationAddress">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>LOCATION ADDRESS</th>
-            <td mat-cell *matCellDef="let location">{{location.locationAddress}}</td>
-          </ng-container>
-
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>ACTION</th>
-            <td mat-cell *matCellDef="let location">
-              <div class="action-group">
-                <button class="group-btn edit" (click)="editLocation(location)" title="Edit">
-                  <mat-icon>edit</mat-icon>
-                </button>
-                <span class="group-divider"></span>
-                <button class="group-btn delete" (click)="deleteLocation(location)" title="Delete">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </div>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        <table class="customer-table">
+          <thead>
+            <tr>
+              <th (click)="onSortChange('locationName')" class="sortable">
+                LOCATION NAME
+                <mat-icon *ngIf="sortBy === 'locationName'">
+                  {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                </mat-icon>
+              </th>
+              <th>CUSTOMER NAME</th>
+              <th>CONTACT PERSON</th>
+              <th>PHONE NUMBER</th>
+              <th (click)="onSortChange('locationAddress')" class="sortable">
+                LOCATION ADDRESS
+                <mat-icon *ngIf="sortBy === 'locationAddress'">
+                  {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                </mat-icon>
+              </th>
+              <th>ACTION</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let location of locations">
+              <td>{{location.locationName}}</td>
+              <td>{{location.customerName}}</td>
+              <td>{{location.contactPerson}}</td>
+              <td>{{location.phoneNumber}}</td>
+              <td>{{location.locationAddress}}</td>
+              <td>
+                <div class="action-group">
+                  <button class="group-btn edit" (click)="editLocation(location)" title="Edit">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <span class="group-divider"></span>
+                  <button class="group-btn delete" (click)="deleteLocation(location)" title="Delete">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
         </table>
 
         <!-- Paginator -->
-        <mat-paginator [pageSizeOptions]="pageSizeOptions" showFirstLastButtons class="table-paginator">
+        <mat-paginator 
+          *ngIf="!isLoading"
+          [length]="totalCount"
+          [pageIndex]="pageIndex"
+          [pageSize]="pageSize"
+          [pageSizeOptions]="pageSizeOptions" 
+          showFirstLastButtons
+          class="table-paginator"
+          (page)="onPageChange($event)">
         </mat-paginator>
       </div>
     </div>

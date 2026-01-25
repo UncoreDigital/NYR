@@ -1,14 +1,13 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { VanService } from '../../services/van.service';
 import { VanResponse } from '../../models/van.model';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
-import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface Van {
   id: number;
@@ -25,36 +24,41 @@ export interface Van {
 })
 export class VanComponent implements OnInit {
   displayedColumns: string[] = ['vanName', 'vanNumber', 'actions'];
-  dataSource = new MatTableDataSource<Van>();
+  vans: Van[] = [];
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
   
   isLoading = false;
   errorMessage = '';
-  vans: Van[] = [];
-
-  private _paginator!: MatPaginator;
-  private _sort!: MatSort;
-
-  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
-    if (paginator) {
-      this._paginator = paginator;
-      this.dataSource.paginator = this._paginator;
-    }
-  }
-
-  @ViewChild(MatSort) set sort(sort: MatSort) {
-    if (sort) {
-      this._sort = sort;
-      this.dataSource.sort = this._sort;
-    }
-  }
   pageSizeOptions: number[] = [25, 50, 75, 100];
+
+  // Pagination state
+  pageIndex: number = 0;
+  pageSize: number = 25;
+  totalCount: number = 0;
+  sortBy: string = 'name';
+  sortOrder: 'asc' | 'desc' = 'asc';
+  searchTerm: string = '';
+
+  // Debounce subject for search
+  private searchSubject = new Subject<string>();
 
   constructor(
     private router: Router,
     private vanService: VanService,
     private toastService: ToastService,
     private dialog: MatDialog
-  ) { }
+  ) {
+    // Setup debounced search
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.pageIndex = 0;
+      this.loadVans();
+    });
+  }
 
   ngOnInit(): void {
     this.loadVans();
@@ -64,12 +68,18 @@ export class VanComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     
-    this.vanService.getVans().subscribe({
-      next: (apiVans: VanResponse[]) => {
-        this.vans = this.mapApiResponseToVan(apiVans);
-        this.dataSource.data = this.vans;
-        const computedOptions = computePageSizeOptions(this.dataSource.data.length);
-        this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
+    const params = {
+      pageNumber: this.pageIndex + 1,
+      pageSize: this.pageSize,
+      sortBy: this.mapColumnToSortField(this.sortBy),
+      sortOrder: this.sortOrder,
+      search: this.searchTerm || undefined
+    };
+
+    this.vanService.getVansPaged(params).subscribe({
+      next: (result) => {
+        this.vans = this.mapApiResponseToVan(result.data);
+        this.totalCount = result.totalCount;
         this.isLoading = false;
       },
       error: (error: any) => {
@@ -78,6 +88,14 @@ export class VanComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  private mapColumnToSortField(column: string): string {
+    const columnMap: { [key: string]: string } = {
+      'vanName': 'name',
+      'vanNumber': 'vanNumber'
+    };
+    return columnMap[column] || 'name';
   }
 
   private mapApiResponseToVan(apiVans: VanResponse[]): Van[] {
@@ -90,14 +108,26 @@ export class VanComponent implements OnInit {
     }));
   }
 
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
-
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.searchSubject.next(filterValue.trim());
+  }
+
+  onPageChange(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadVans();
+  }
+
+  onSortChange(column: string) {
+    if (this.sortBy === column) {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = column;
+      this.sortOrder = 'asc';
+    }
+    this.pageIndex = 0;
+    this.loadVans();
   }
 
   addVan() {

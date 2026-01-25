@@ -1,10 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { computePageSizeOptions } from '../../utils/paginator-utils';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { LocationService } from '../../services/location.service';
 import { LocationResponse } from '../../models/location.model';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
@@ -25,35 +24,40 @@ export interface Location {
 })
 export class LocationComponent implements OnInit {
   displayedColumns: string[] = ['locationName', 'customerName', 'contactPerson', 'phoneNumber', 'locationAddress', 'actions'];
-  dataSource = new MatTableDataSource<Location>();
+  locations: Location[] = [];
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
   
   isLoading = false;
   errorMessage = '';
-  locations: Location[] = [];
-
-  private _paginator!: MatPaginator;
-  private _sort!: MatSort;
-
-  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
-    if (paginator) {
-      this._paginator = paginator;
-      this.dataSource.paginator = this._paginator;
-    }
-  }
-
-  @ViewChild(MatSort) set sort(sort: MatSort) {
-    if (sort) {
-      this._sort = sort;
-      this.dataSource.sort = this._sort;
-    }
-  }
   pageSizeOptions: number[] = [25, 50, 75, 100];
+
+  // Pagination state
+  pageIndex: number = 0;
+  pageSize: number = 25;
+  totalCount: number = 0;
+  sortBy: string = 'name';
+  sortOrder: 'asc' | 'desc' = 'asc';
+  searchTerm: string = '';
+
+  // Debounce subject for search
+  private searchSubject = new Subject<string>();
 
   constructor(
     private router: Router,
     private locationService: LocationService,
     private dialog: MatDialog
-  ) { }
+  ) {
+    // Setup debounced search
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.pageIndex = 0;
+      this.loadLocations();
+    });
+  }
 
   ngOnInit(): void {
     this.loadLocations();
@@ -63,12 +67,18 @@ export class LocationComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     
-    this.locationService.getLocations().subscribe({
-      next: (apiLocations: LocationResponse[]) => {
-        this.locations = this.mapApiResponseToLocation(apiLocations);
-        this.dataSource.data = this.locations;
-        const computedOptions = computePageSizeOptions(this.dataSource.data.length);
-        this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
+    const params = {
+      pageNumber: this.pageIndex + 1,
+      pageSize: this.pageSize,
+      sortBy: this.mapColumnToSortField(this.sortBy),
+      sortOrder: this.sortOrder,
+      search: this.searchTerm || undefined
+    };
+
+    this.locationService.getLocationsPaged(params).subscribe({
+      next: (result) => {
+        this.locations = this.mapApiResponseToLocation(result.data);
+        this.totalCount = result.totalCount;
         this.isLoading = false;
       },
       error: (error: any) => {
@@ -77,6 +87,17 @@ export class LocationComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  private mapColumnToSortField(column: string): string {
+    const columnMap: { [key: string]: string } = {
+      'locationName': 'name',
+      'customerName': 'customerName',
+      'contactPerson': 'contactPerson',
+      'phoneNumber': 'phoneNumber',
+      'locationAddress': 'address'
+    };
+    return columnMap[column] || 'name';
   }
 
   private mapApiResponseToLocation(apiLocations: LocationResponse[]): Location[] {
@@ -90,14 +111,26 @@ export class LocationComponent implements OnInit {
     }));
   }
 
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
-
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.searchSubject.next(filterValue.trim());
+  }
+
+  onPageChange(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadLocations();
+  }
+
+  onSortChange(column: string) {
+    if (this.sortBy === column) {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = column;
+      this.sortOrder = 'asc';
+    }
+    this.pageIndex = 0;
+    this.loadLocations();
   }
 
   addLocation() {
