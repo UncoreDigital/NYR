@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { 
   VanWithInventorySummaryResponse, 
@@ -9,6 +9,7 @@ import {
   TransferTrackingResponse,
   UpdateTransferStatusRequest
 } from '../models/van-inventory.model';
+import { PaginationParams, PagedResult } from '../models/pagination.model';
 import { environment } from 'environment';
 
 @Injectable({
@@ -21,6 +22,24 @@ export class VanInventoryService {
 
   getVansWithTransfers(): Observable<VanWithInventorySummaryResponse[]> {
     return this.http.get<VanWithInventorySummaryResponse[]>(`${this.API_URL}/VanInventory/vans`);
+  }
+
+  getVansWithTransfersPaged(params: PaginationParams): Observable<PagedResult<VanWithInventorySummaryResponse>> {
+    let httpParams = new HttpParams()
+      .set('pageNumber', params.pageNumber.toString())
+      .set('pageSize', params.pageSize.toString());
+
+    if (params.sortBy) {
+      httpParams = httpParams.set('sortBy', params.sortBy);
+    }
+    if (params.sortOrder) {
+      httpParams = httpParams.set('sortOrder', params.sortOrder);
+    }
+    if (params.search) {
+      httpParams = httpParams.set('search', params.search);
+    }
+
+    return this.http.get<PagedResult<VanWithInventorySummaryResponse>>(`${this.API_URL}/VanInventory/vans`, { params: httpParams });
   }
 
   getAllTransfers(): Observable<VanInventoryResponse[]> {

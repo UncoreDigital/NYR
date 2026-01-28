@@ -1,9 +1,8 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { Component, OnInit } from '@angular/core';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { Router } from '@angular/router';
-import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { VanInventoryService } from '../../services/van-inventory.service';
 import { VanWithInventorySummaryResponse } from '../../models/van-inventory.model';
 import { ToastService } from '../../services/toast.service';
@@ -22,37 +21,39 @@ export interface Van {
 })
 export class InventoryVanComponent implements OnInit {
   displayedColumns: string[] = ['vanName', 'vanNumber', 'driverName', 'actions'];
-  dataSource = new MatTableDataSource<Van>();
+  vans: Van[] = [];
 
-  private _paginator!: MatPaginator;
-  private _sort!: MatSort;
-
-  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
-    if (paginator) {
-      this._paginator = paginator;
-      this.dataSource.paginator = this._paginator;
-    }
-  }
-
-  @ViewChild(MatSort) set sort(sort: MatSort) {
-    if (sort) {
-      this._sort = sort;
-      this.dataSource.sort = this._sort;
-    }
-  }
   pageSizeOptions: number[] = [25, 50, 75, 100];
 
-  vans: Van[] = [];
-  filteredVans: Van[] = [];
+  // Pagination state
+  pageIndex: number = 0;
+  pageSize: number = 25;
+  totalCount: number = 0;
+  sortBy: string = 'vanName';
+  sortOrder: 'asc' | 'desc' = 'asc';
+
   selectedVanName = '';
   searchTerm = '';
   isLoading = false;
+
+  // Debounce subject for search
+  private searchSubject = new Subject<string>();
 
   constructor(
     private router: Router,
     private vanInventoryService: VanInventoryService,
     private toastService: ToastService
-  ) { }
+  ) {
+    // Setup debounced search
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.pageIndex = 0;
+      this.loadVans();
+    });
+  }
 
   ngOnInit(): void {
     this.loadVans();
@@ -61,17 +62,38 @@ export class InventoryVanComponent implements OnInit {
   loadVans(): void {
     this.isLoading = true;
     
-    this.vanInventoryService.getVansWithTransfers().subscribe({
-      next: (vans: VanWithInventorySummaryResponse[]) => {
-        this.vans = vans.map(van => ({
+    const searchParts: string[] = [];
+    if (this.selectedVanName) {
+      searchParts.push(this.selectedVanName);
+    }
+    if (this.searchTerm) {
+      searchParts.push(this.searchTerm);
+    }
+    const search = searchParts.join(' ');
+
+    const params = {
+      pageNumber: this.pageIndex + 1, // Backend uses 1-based indexing
+      pageSize: this.pageSize,
+      sortBy: this.mapColumnToSortField(this.sortBy),
+      sortOrder: this.sortOrder,
+      search: search || undefined
+    };
+
+    this.vanInventoryService.getVansWithTransfersPaged(params).subscribe({
+      next: (result) => {
+        if (!result || !result.data) {
+          console.error('Invalid response structure:', result);
+          this.toastService.error('Error', 'Invalid response from server');
+          this.isLoading = false;
+          return;
+        }
+        this.vans = result.data.map((van: VanWithInventorySummaryResponse) => ({
           id: van.vanId,
           vanName: van.vanName,
           vanNumber: van.vanNumber,
           driverName: van.driverName
         }));
-        this.filteredVans = [...this.vans];
-        this.dataSource.data = this.filteredVans;
-        this.updatePagination();
+        this.totalCount = result.totalCount;
         this.isLoading = false;
       },
       error: (error) => {
@@ -83,42 +105,13 @@ export class InventoryVanComponent implements OnInit {
   }
 
   applyFilter(event: Event) {
-    this.searchTerm = (event.target as HTMLInputElement).value;
-    this.applyFilters();
-  }
-
-  applyFilters() {
-    let filtered = [...this.vans];
-
-    // Apply van name filter
-    if (this.selectedVanName) {
-      filtered = filtered.filter(van => 
-        van.vanName === this.selectedVanName
-      );
-    }
-
-    // Apply search filter
-    if (this.searchTerm) {
-      const searchLower = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(van =>
-        van.vanName.toLowerCase().includes(searchLower) ||
-        van.vanNumber.toLowerCase().includes(searchLower) ||
-        van.driverName.toLowerCase().includes(searchLower)
-      );
-    }
-
-    this.filteredVans = filtered;
-    this.dataSource.data = this.filteredVans;
-    this.updatePagination();
-  }
-
-  updatePagination() {
-    const computedOptions = computePageSizeOptions(this.dataSource.data.length);
-    this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
+    const value = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(value.trim());
   }
 
   onVanNameFilterChange() {
-    this.applyFilters();
+    this.pageIndex = 0;
+    this.loadVans();
   }
 
   getUniqueVanNames(): string[] {
@@ -128,7 +121,34 @@ export class InventoryVanComponent implements OnInit {
   resetFilters() {
     this.selectedVanName = '';
     this.searchTerm = '';
-    this.applyFilters();
+    this.pageIndex = 0;
+    this.loadVans();
+  }
+
+  onPageChange(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadVans();
+  }
+
+  onSortChange(column: string) {
+    if (this.sortBy === column) {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = column;
+      this.sortOrder = 'asc';
+    }
+    this.pageIndex = 0;
+    this.loadVans();
+  }
+
+  private mapColumnToSortField(column: string): string {
+    const columnMap: { [key: string]: string } = {
+      vanName: 'vanName',
+      vanNumber: 'vanNumber',
+      driverName: 'driverName'
+    };
+    return columnMap[column] || 'vanName';
   }
 
   transferToVan() {
