@@ -1,8 +1,8 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { Component, OnInit } from '@angular/core';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { RestockRequestService } from '../../services/restock-request.service';
 import { ToastService } from '../../services/toast.service';
 import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
@@ -23,39 +23,41 @@ export interface inventoryLocation {
 })
 export class InventoryLocationComponent implements OnInit {
   displayedColumns: string[] = ['location', 'customer', 'contactPerson', 'locationNumber', 'actions'];
-  dataSource = new MatTableDataSource<inventoryLocation>();
-
-  private _paginator!: MatPaginator;
-  private _sort!: MatSort;
-
-  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
-    if (paginator) {
-      this._paginator = paginator;
-      this.dataSource.paginator = this._paginator;
-    }
-  }
-
-  @ViewChild(MatSort) set sort(sort: MatSort) {
-    if (sort) {
-      this._sort = sort;
-      this.dataSource.sort = this._sort;
-    }
-  }
-  pageSizeOptions: number[] = [25, 50, 75, 100];
+  locations: inventoryLocation[] = [];
 
   inventoryLocation: inventoryLocation[] = [];
-  filteredLocations: inventoryLocation[] = [];
   selectedCustomerName = '';
   selectedLocation = '';
   searchTerm = '';
   isLoading = false;
+
+  // Pagination state
+  pageSizeOptions: number[] = [25, 50, 75, 100];
+  pageIndex: number = 0;
+  pageSize: number = 25;
+  totalCount: number = 0;
+  sortBy: string = 'location';
+  sortOrder: 'asc' | 'desc' = 'asc';
+
+  // Debounce subject for search
+  private searchSubject = new Subject<string>();
 
   constructor(
     private router: Router,
     private restockRequestService: RestockRequestService,
     private inventoryLocationService: InventoryLocationService,
     private toastService: ToastService
-  ) { }
+  ) {
+    // Setup debounced search
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.pageIndex = 0;
+      this.loadLocations();
+    });
+  }
 
   ngOnInit(): void {
     this.loadLocations();
@@ -63,18 +65,37 @@ export class InventoryLocationComponent implements OnInit {
 
   loadLocations(): void {
     this.isLoading = true;
-    this.inventoryLocationService.getAllgroupedByLocation().subscribe({
-    next: (summary) => {
-        this.inventoryLocation = summary?.map(loc => ({
+    const searchParts: string[] = [];
+    if (this.selectedCustomerName) {
+      searchParts.push(this.selectedCustomerName);
+    }
+    if (this.selectedLocation) {
+      searchParts.push(this.selectedLocation);
+    }
+    if (this.searchTerm) {
+      searchParts.push(this.searchTerm);
+    }
+    const search = searchParts.join(' ');
+
+    const params = {
+      pageNumber: this.pageIndex + 1, // Backend uses 1-based indexing
+      pageSize: this.pageSize,
+      sortBy: this.mapColumnToSortField(this.sortBy),
+      sortOrder: this.sortOrder,
+      search: search || undefined
+    };
+
+    this.inventoryLocationService.getAllgroupedByLocationPaged(params).subscribe({
+      next: (result) => {
+        this.inventoryLocation = result.data?.map((loc: any) => ({
           locationId: loc.locationId,
           location: loc.locationName || '-',
           customer: loc.customerName || '-',
           contactPerson: loc.contactPerson || '-',
           locationNumber: loc.locationNumber || '-'
-        }));
-        this.filteredLocations = [...this.inventoryLocation];
-        this.dataSource.data = this.filteredLocations;
-        this.updatePagination();
+        })) ?? [];
+        this.locations = [...this.inventoryLocation];
+        this.totalCount = result.totalCount;
         this.isLoading = false;
       },
       error: (error) => {
@@ -85,47 +106,14 @@ export class InventoryLocationComponent implements OnInit {
     });
   }
 
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
-
   applyFilter(event: Event) {
-    this.searchTerm = (event.target as HTMLInputElement).value;
-    this.applyFilters();
+    const value = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(value.trim());
   }
 
   applyFilters() {
-    let filtered = [...this.inventoryLocation];
-
-    // Apply customer name filter
-    if (this.selectedCustomerName) {
-      filtered = filtered.filter(location => 
-        location.customer === this.selectedCustomerName
-      );
-    }
-
-    // Apply location filter
-    if (this.selectedLocation) {
-      filtered = filtered.filter(location => 
-        location.location === this.selectedLocation
-      );
-    }
-
-    // Apply search filter
-    if (this.searchTerm) {
-      const searchLower = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(location =>
-        location.location.toLowerCase().includes(searchLower) ||
-        location.customer.toLowerCase().includes(searchLower) ||
-        location.contactPerson.toLowerCase().includes(searchLower) ||
-        location.locationNumber.toLowerCase().includes(searchLower)
-      );
-    }
-
-    this.filteredLocations = filtered;
-    this.dataSource.data = this.filteredLocations;
-    this.updatePagination();
+    this.pageIndex = 0;
+    this.loadLocations();
   }
 
   onCustomerNameFilterChange() {
@@ -166,9 +154,31 @@ export class InventoryLocationComponent implements OnInit {
     });
   }
 
-  updatePagination() {
-    const computedOptions = computePageSizeOptions(this.dataSource.data.length);
-    this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
+  onPageChange(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadLocations();
+  }
+
+  onSortChange(column: string) {
+    if (this.sortBy === column) {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = column;
+      this.sortOrder = 'asc';
+    }
+    this.pageIndex = 0;
+    this.loadLocations();
+  }
+
+  private mapColumnToSortField(column: string): string {
+    const columnMap: { [key: string]: string } = {
+      location: 'locationName',
+      customer: 'customerName',
+      contactPerson: 'contactPerson',
+      locationNumber: 'locationNumber'
+    };
+    return columnMap[column] || 'locationName';
   }
 }
 
