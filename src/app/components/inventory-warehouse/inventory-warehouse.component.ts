@@ -1,11 +1,10 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { Component, OnInit } from '@angular/core';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { WarehouseInventoryService } from '../../services/warehouse-inventory.service';
 import { WarehouseListResponse } from '../../models/warehouse-inventory.model';
-import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 
 export interface inventoryWarehouse {
   warehouseName: string;
@@ -24,37 +23,38 @@ export interface inventoryWarehouse {
 })
 export class InventoryWarehouseComponent implements OnInit {
   displayedColumns: string[] = ['warehouseName', 'warehouseAddress', 'city', 'state', 'zipCode', 'actions'];
-  dataSource = new MatTableDataSource<inventoryWarehouse>();
+  warehouses: inventoryWarehouse[] = [];
 
-  private _paginator!: MatPaginator;
-  private _sort!: MatSort;
-
-  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
-    if (paginator) {
-      this._paginator = paginator;
-      this.dataSource.paginator = this._paginator;
-    }
-  }
-
-  @ViewChild(MatSort) set sort(sort: MatSort) {
-    if (sort) {
-      this._sort = sort;
-      this.dataSource.sort = this._sort;
-    }
-  }
   pageSizeOptions: number[] = [25, 50, 75, 100];
 
-  filteredWarehouses: inventoryWarehouse[] = [];
+  // Pagination state
+  pageIndex: number = 0;
+  pageSize: number = 25;
+  totalCount: number = 0;
+  sortBy: string = 'warehouseName';
+  sortOrder: 'asc' | 'desc' = 'asc';
+
   selectedWarehouseName = '';
   searchTerm = '';
   loading = false;
 
-  inventoryWarehouse: inventoryWarehouse[] = [];
+  // Debounce subject for search
+  private searchSubject = new Subject<string>();
 
   constructor(
     private router: Router,
     private warehouseInventoryService: WarehouseInventoryService
-  ) { }
+  ) {
+    // Setup debounced search
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.pageIndex = 0;
+      this.loadWarehouses();
+    });
+  }
 
   ngOnInit(): void {
     this.loadWarehouses();
@@ -62,9 +62,26 @@ export class InventoryWarehouseComponent implements OnInit {
 
   loadWarehouses(): void {
     this.loading = true;
-    this.warehouseInventoryService.getWarehouseList().subscribe({
-      next: (warehouses: WarehouseListResponse[]) => {
-        this.inventoryWarehouse = warehouses.map(warehouse => ({
+    const searchParts: string[] = [];
+    if (this.selectedWarehouseName) {
+      searchParts.push(this.selectedWarehouseName);
+    }
+    if (this.searchTerm) {
+      searchParts.push(this.searchTerm);
+    }
+    const search = searchParts.join(' ');
+
+    const params = {
+      pageNumber: this.pageIndex + 1, // Backend uses 1-based indexing
+      pageSize: this.pageSize,
+      sortBy: this.mapColumnToSortField(this.sortBy),
+      sortOrder: this.sortOrder,
+      search: search || undefined
+    };
+
+    this.warehouseInventoryService.getWarehouseListPaged(params).subscribe({
+      next: (result) => {
+        this.warehouses = result.data.map((warehouse: WarehouseListResponse) => ({
           id: warehouse.id,
           warehouseName: warehouse.name,
           warehouseAddress: warehouse.addressLine1,
@@ -73,9 +90,7 @@ export class InventoryWarehouseComponent implements OnInit {
           zipCode: warehouse.zipCode,
           country: 'USA' // Default country
         }));
-        this.filteredWarehouses = [...this.inventoryWarehouse];
-        this.dataSource.data = this.filteredWarehouses;
-        this.updatePagination();
+        this.totalCount = result.totalCount;
         this.loading = false;
       },
       error: (error) => {
@@ -86,49 +101,24 @@ export class InventoryWarehouseComponent implements OnInit {
   }
 
   applyFilter(event: Event) {
-    this.searchTerm = (event.target as HTMLInputElement).value;
-    this.applyFilters();
-  }
-
-  applyFilters() {
-    let filtered = [...this.inventoryWarehouse];
-
-    // Apply warehouse name filter
-    if (this.selectedWarehouseName) {
-      filtered = filtered.filter(warehouse => 
-        warehouse.warehouseName === this.selectedWarehouseName
-      );
-    }
-
-    // Apply search filter
-    if (this.searchTerm) {
-      const searchLower = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(warehouse =>
-        warehouse.warehouseName.toLowerCase().includes(searchLower) ||
-        warehouse.warehouseAddress.toLowerCase().includes(searchLower) ||
-        warehouse.city.toLowerCase().includes(searchLower) ||
-        warehouse.state.toLowerCase().includes(searchLower) ||
-        warehouse.zipCode.toLowerCase().includes(searchLower)
-      );
-    }
-
-    this.filteredWarehouses = filtered;
-    this.dataSource.data = this.filteredWarehouses;
-    this.updatePagination();
+    const value = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(value.trim());
   }
 
   onWarehouseNameFilterChange() {
-    this.applyFilters();
+    this.pageIndex = 0;
+    this.loadWarehouses();
   }
 
   getUniqueWarehouseNames(): string[] {
-    return [...new Set(this.inventoryWarehouse.map(warehouse => warehouse.warehouseName))].sort();
+    return [...new Set(this.warehouses.map(warehouse => warehouse.warehouseName))].sort();
   }
 
   resetFilters() {
     this.selectedWarehouseName = '';
     this.searchTerm = '';
-    this.applyFilters();
+    this.pageIndex = 0;
+    this.loadWarehouses();
   }
 
   addInventory() {
@@ -152,9 +142,32 @@ export class InventoryWarehouseComponent implements OnInit {
     this.router.navigate(['/inwarehouse/edit', inventoryWarehouse.id]);
   }
 
-  updatePagination() {
-    const computedOptions = computePageSizeOptions(this.dataSource.data.length);
-    this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
+  onPageChange(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadWarehouses();
+  }
+
+  onSortChange(column: string) {
+    if (this.sortBy === column) {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = column;
+      this.sortOrder = 'asc';
+    }
+    this.pageIndex = 0;
+    this.loadWarehouses();
+  }
+
+  private mapColumnToSortField(column: string): string {
+    const columnMap: { [key: string]: string } = {
+      warehouseName: 'name',
+      warehouseAddress: 'addressLine1',
+      city: 'city',
+      state: 'state',
+      zipCode: 'zipCode'
+    };
+    return columnMap[column] || 'name';
   }
 }
 

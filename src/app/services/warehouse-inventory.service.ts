@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { 
   WarehouseInventoryResponse, 
@@ -9,6 +9,7 @@ import {
   AddBulkInventoryRequest,
   UpdateInventoryRequest 
 } from '../models/warehouse-inventory.model';
+import { PaginationParams, PagedResult } from '../models/pagination.model';
 import { environment } from 'environment';
 
 @Injectable({
@@ -22,6 +23,25 @@ export class WarehouseInventoryService {
   // Get list of warehouses with inventory summary
   getWarehouseList(): Observable<WarehouseListResponse[]> {
     return this.http.get<WarehouseListResponse[]>(`${this.API_URL}/WarehouseInventory/warehouses`);
+  }
+
+  // Get list of warehouses with inventory summary (paged)
+  getWarehouseListPaged(params: PaginationParams): Observable<PagedResult<WarehouseListResponse>> {
+    let httpParams = new HttpParams()
+      .set('pageNumber', params.pageNumber.toString())
+      .set('pageSize', params.pageSize.toString());
+
+    if (params.sortBy) {
+      httpParams = httpParams.set('sortBy', params.sortBy);
+    }
+    if (params.sortOrder) {
+      httpParams = httpParams.set('sortOrder', params.sortOrder);
+    }
+    if (params.search) {
+      httpParams = httpParams.set('search', params.search);
+    }
+
+    return this.http.get<PagedResult<WarehouseListResponse>>(`${this.API_URL}/WarehouseInventory/warehouses`, { params: httpParams });
   }
 
   // Get detailed inventory for a specific warehouse
