@@ -1,8 +1,8 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { Component, OnInit } from '@angular/core';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { computePageSizeOptions } from 'src/app/utils/paginator-utils';
 import { ToastService } from 'src/app/services/toast.service';
 import { LocationService } from 'src/app/services/location.service';
@@ -27,30 +27,11 @@ export interface Transfers {
 })
 export class TransfersComponent implements OnInit {
   displayedColumns: string[] = ['locationName', 'customerName', 'deliveryDate', 'driver', 'status'];
-  dataSource = new MatTableDataSource<Transfers>();
-
-  private _paginator!: MatPaginator;
-  private _sort!: MatSort;
-
-  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
-    if (paginator) {
-      this._paginator = paginator;
-      this.dataSource.paginator = this._paginator;
-    }
-  }
-
-  @ViewChild(MatSort) set sort(sort: MatSort) {
-    if (sort) {
-      this._sort = sort;
-      this.dataSource.sort = this._sort;
-    }
-  }
+  transfers: Transfers[] = [];
   pageSizeOptions: number[] = [25, 50, 75, 100];
 
   // Expose shared formatter to template
   formatToMMDDYYYY = formatToMMDDYYYY;
-
-  transfers: Transfers[] = [];
   
   // Filter properties
   filteredTransfers: Transfers[] = [];
@@ -70,13 +51,33 @@ export class TransfersComponent implements OnInit {
   // Location data array - will be populated from API
   locations: any[] = [];
 
+  // Pagination state
+  pageIndex: number = 0;
+  pageSize: number = 25;
+  totalCount: number = 0;
+  sortBy: string = 'deliveryDate';
+  sortOrder: 'asc' | 'desc' = 'desc';
+
+  // Debounce subject for search
+  private searchSubject = new Subject<string>();
+
   constructor(
     private router: Router,
     private transferService: TransferService,
     private locationService: LocationService,
     private followupRequestService: FollowupRequestService,
     private toastService: ToastService
-  ) { }
+  ) {
+    // Setup debounced search
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.pageIndex = 0;
+      this.loadTransfers();
+    });
+  }
 
   ngOnInit(): void {
     this.loadTransfers();
@@ -107,9 +108,20 @@ export class TransfersComponent implements OnInit {
   loadTransfers(): void {
     this.isLoading = true;
     
-    // Load only RestockRequest transfers (exclude VanTransfer)
-    this.transferService.getTransfersByType('RestockRequest').subscribe({
-      next: (response: TransferResponse[]) => {
+    const search = this.searchTerm || undefined;
+
+    const params = {
+      pageNumber: this.pageIndex + 1, // Backend uses 1-based indexing
+      pageSize: this.pageSize,
+      sortBy: this.mapColumnToSortField(this.sortBy),
+      sortOrder: this.sortOrder,
+      search
+    };
+
+    // Load only RestockRequest transfers (exclude VanTransfer) with pagination
+    this.transferService.getTransfersByTypePaged('RestockRequest', params).subscribe({
+      next: (result) => {
+        const response = result.data || [];
         this.transfers = response.map(transfer => ({
           id: transfer.id,
           locationName: transfer.locationName || '-',
@@ -123,7 +135,8 @@ export class TransfersComponent implements OnInit {
         }));
         
         this.filteredTransfers = [...this.transfers];
-        this.applyFilters();
+        this.applyFilters(false);
+        this.totalCount = result.totalCount;
         this.isLoading = false;
       },
       error: (error) => {
@@ -157,11 +170,11 @@ export class TransfersComponent implements OnInit {
   }
 
   applyFilter(event: Event) {
-    this.searchTerm = (event.target as HTMLInputElement).value;
-    this.applyFilters();
+    const value = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(value.trim());
   }
 
-  applyFilters() {
+  applyFilters(reload: boolean = true) {
     let filtered = [...this.transfers];
 
     // Apply warehouse filter
@@ -192,9 +205,10 @@ export class TransfersComponent implements OnInit {
     }
 
     this.filteredTransfers = filtered;
-    this.dataSource.data = this.filteredTransfers;
-    const computedOptions = computePageSizeOptions(this.dataSource.data.length);
-    this.pageSizeOptions = computedOptions.length ? computedOptions : [25];
+    if (reload) {
+      this.pageIndex = 0;
+      this.loadTransfers();
+    }
   }
 
   onWarehouseNameFilterChange() {
@@ -369,5 +383,33 @@ export class TransfersComponent implements OnInit {
     this.selectedLocation = null;
     this.locationSearchTerm = '';
     this.showLocationDropdown = false;
+  }
+
+  onPageChange(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadTransfers();
+  }
+
+  onSortChange(column: string) {
+    if (this.sortBy === column) {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = column;
+      this.sortOrder = column === 'deliveryDate' ? 'desc' : 'asc';
+    }
+    this.pageIndex = 0;
+    this.loadTransfers();
+  }
+
+  private mapColumnToSortField(column: string): string {
+    const columnMap: { [key: string]: string } = {
+      locationName: 'locationName',
+      customerName: 'customerName',
+      deliveryDate: 'deliveryDate',
+      driver: 'driverName',
+      status: 'status'
+    };
+    return columnMap[column] || 'deliveryDate';
   }
 }

@@ -49,53 +49,77 @@
         <div *ngIf="isLoading" class="loading-spinner">
           <mat-spinner diameter="50"></mat-spinner>
         </div>
-        <table mat-table [dataSource]="dataSource" matSort class="customer-table" *ngIf="!isLoading">
-          <ng-container matColumnDef="locationName">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Location Name</th>
-            <td mat-cell *matCellDef="let transfer">{{transfer.locationName}}</td>
-          </ng-container>
 
-          <ng-container matColumnDef="customerName">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>CUSTOMER NAME</th>
-            <td mat-cell *matCellDef="let transfer">{{transfer.customerName}}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="deliveryDate">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>REQUESTED DATE</th>
-            <td mat-cell *matCellDef="let transfer">{{ formatToMMDDYYYY(transfer.deliveryDate) }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="driver">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>DRIVER</th>
-            <td mat-cell *matCellDef="let transfer">{{transfer.driver}}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>STATUS</th>
-            <td mat-cell *matCellDef="let transfer">
-              <span class="status-badge mr-8" [class]="getStatusClass(transfer.status)">
-                {{ getStatusDisplayText(transfer.status) }}
-              </span>
-              <mat-icon *ngIf="getStatusIcon(transfer.status)" 
-                        style="color: #02C3B4;" 
-                        class="status-icon"
-                        [matTooltip]="transfer.status === 'follow-up-completed' ? getTooltipText() : ''"
-                        [matTooltipClass]="transfer.status === 'follow-up-completed' ? 'custom-tooltip' : ''"
-                        matTooltipPosition="above"
-                        [matTooltipShowDelay]="300"
-                        [matTooltipHideDelay]="300"
-                        (click)="transferDetail(transfer)">
-                {{ getStatusIcon(transfer.status) }}
-              </mat-icon>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        <table class="customer-table" *ngIf="!isLoading">
+          <thead>
+            <tr>
+              <th (click)="onSortChange('locationName')" class="sortable">
+                Location Name
+                <mat-icon *ngIf="sortBy === 'locationName'">
+                  {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                </mat-icon>
+              </th>
+              <th (click)="onSortChange('customerName')" class="sortable">
+                CUSTOMER NAME
+                <mat-icon *ngIf="sortBy === 'customerName'">
+                  {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                </mat-icon>
+              </th>
+              <th (click)="onSortChange('deliveryDate')" class="sortable">
+                REQUESTED DATE
+                <mat-icon *ngIf="sortBy === 'deliveryDate'">
+                  {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                </mat-icon>
+              </th>
+              <th (click)="onSortChange('driver')" class="sortable">
+                DRIVER
+                <mat-icon *ngIf="sortBy === 'driver'">
+                  {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                </mat-icon>
+              </th>
+              <th (click)="onSortChange('status')" class="sortable">
+                STATUS
+                <mat-icon *ngIf="sortBy === 'status'">
+                  {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                </mat-icon>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let transfer of filteredTransfers">
+              <td>{{transfer.locationName}}</td>
+              <td>{{transfer.customerName}}</td>
+              <td>{{ formatToMMDDYYYY(transfer.deliveryDate) }}</td>
+              <td>{{transfer.driver}}</td>
+              <td>
+                <span class="status-badge mr-8" [class]="getStatusClass(transfer.status)">
+                  {{ getStatusDisplayText(transfer.status) }}
+                </span>
+                <mat-icon *ngIf="getStatusIcon(transfer.status)" 
+                          style="color: #02C3B4;" 
+                          class="status-icon"
+                          [matTooltip]="transfer.status === 'follow-up-completed' ? getTooltipText() : ''"
+                          [matTooltipClass]="transfer.status === 'follow-up-completed' ? 'custom-tooltip' : ''"
+                          matTooltipPosition="above"
+                          [matTooltipShowDelay]="300"
+                          [matTooltipHideDelay]="300"
+                          (click)="transferDetail(transfer)">
+                  {{ getStatusIcon(transfer.status) }}
+                </mat-icon>
+              </td>
+            </tr>
+          </tbody>
         </table>
 
         <!-- Paginator -->
-        <mat-paginator [pageSizeOptions]="pageSizeOptions" showFirstLastButtons class="table-paginator">
+        <mat-paginator 
+          [pageSizeOptions]="pageSizeOptions"
+          [length]="totalCount"
+          [pageIndex]="pageIndex"
+          [pageSize]="pageSize"
+          showFirstLastButtons 
+          class="table-paginator"
+          (page)="onPageChange($event)">
         </mat-paginator>
       </div>
     </div>
