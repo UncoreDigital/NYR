@@ -1,3 +1,27 @@
+/* Table header alignment */
+.customer-table th {
+  text-align: left;
+}
+
+/* Sortable table headers */
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.sortable:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.sortable mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
 /* Status Badge Styles */
 .status-badge {
   display: inline-flex;

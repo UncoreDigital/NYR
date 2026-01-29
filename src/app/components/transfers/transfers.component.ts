@@ -330,11 +330,9 @@ export class TransfersComponent implements OnInit {
   }
 
   transferDetail(transfer: Transfers) {
-    if (this.getStatusIcon(transfer.status) === 'visibility') {
-      this.router.navigate(['/transferDetail'], {
-        state: { transfer: transfer }
-      });
-    }
+    this.router.navigate(['/transferDetail'], {
+      state: { transfer: transfer }
+    });
   }
 
   transferToVan() {

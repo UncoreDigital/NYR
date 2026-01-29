@@ -13,7 +13,6 @@
       <!-- Page Header -->
       <div class="page-header">
         <h1>Transfers</h1>
-        
       </div>
       
       <!-- Search Bar -->
@@ -30,53 +29,68 @@
         </div>
       </div>
       
-      <!-- User Table -->
+      <!-- Table -->
       <div class="table-container">
-        <table mat-table [dataSource]="dataSource" matSort class="customer-table">
-          <ng-container matColumnDef="productName">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>PRODUCT NAME</th>
-            <td mat-cell *matCellDef="let transferDetail">{{transferDetail.productName}}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="skuCode">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>SKU/CODE</th>
-            <td mat-cell *matCellDef="let transferDetail">{{transferDetail.skuCode}}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="variantName">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>VARIANT NAME</th>
-            <td mat-cell *matCellDef="let transferDetail">
-              <div class="variant-name-container">
-                <span class="variant-name">{{transferDetail.variantName}}</span>
-                <mat-icon 
-                  class="info-icon"
-                  [matTooltip]="getTooltipText(transferDetail)"
-                  matTooltipPosition="above"
-                  matTooltipClass="inventory-tooltip">
-                  info
+        <table class="customer-table">
+          <thead>
+            <tr>
+              <th (click)="onSortChange('productName')" class="sortable">
+                PRODUCT NAME
+                <mat-icon *ngIf="sortBy === 'productName'">
+                  {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
                 </mat-icon>
-              </div>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="quantity">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>QUANTITY</th>
-            <td mat-cell *matCellDef="let transferDetail">
-              <span [class]="getQuantityColorClass(transferDetail)">
-                {{transferDetail.quantity}}
-              </span>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              </th>
+              <th (click)="onSortChange('skuCode')" class="sortable">
+                SKU/CODE
+                <mat-icon *ngIf="sortBy === 'skuCode'">
+                  {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                </mat-icon>
+              </th>
+              <th (click)="onSortChange('variantName')" class="sortable">
+                VARIANT NAME
+                <mat-icon *ngIf="sortBy === 'variantName'">
+                  {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                </mat-icon>
+              </th>
+              <th (click)="onSortChange('quantity')" class="sortable">
+                QUANTITY
+                <mat-icon *ngIf="sortBy === 'quantity'">
+                  {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                </mat-icon>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of paginatedItems">
+              <td>{{item.productName}}</td>
+              <td>{{item.skuCode}}</td>
+              <td>
+                <div class="variant-name-container">
+                  <span class="variant-name">{{item.variantName}}</span>
+                  <mat-icon 
+                    class="info-icon"
+                    [matTooltip]="getTooltipText(item)"
+                    matTooltipPosition="above"
+                    matTooltipClass="inventory-tooltip">
+                    info
+                  </mat-icon>
+                </div>
+              </td>
+              <td>
+                <span [class]="getQuantityColorClass(item)">{{item.quantity}}</span>
+              </td>
+            </tr>
+          </tbody>
         </table>
 
-        <!-- Paginator -->
         <mat-paginator 
-          [pageSizeOptions]="[5, 10, 20]" 
+          [length]="totalCount"
+          [pageIndex]="pageIndex"
+          [pageSize]="pageSize"
+          [pageSizeOptions]="pageSizeOptions" 
           showFirstLastButtons
-          class="table-paginator">
+          class="table-paginator"
+          (page)="onPageChange($event)">
         </mat-paginator>
       </div>
     </div>

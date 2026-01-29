@@ -5,13 +5,6 @@
         <div class="content">
 
             <!-- Breadcrumb -->
-            <!-- <div class="breadcrumb">
-                <span class="breadcrumb-item active">Inventory</span>
-                <mat-icon class="breadcrumb-separator active">chevron_right</mat-icon>
-                <span class="breadcrumb-item active">Locations</span>
-            </div> -->
-
-            <!-- Breadcrumb -->
             <div class="breadcrumb">
                 <ng-container *ngFor="let item of breadcrumbItems; let last = last">
                     <a *ngIf="item.route" 
@@ -48,44 +41,55 @@
                 <p>Loading inventory...</p>
             </div>
 
+            <!-- Table -->
             <div class="table-container" *ngIf="!loading">
-                <table mat-table [dataSource]="dataSource" matSort class="customer-table">
-                    <ng-container matColumnDef="productName">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>PRODUCT NAME</th>
-                        <td mat-cell *matCellDef="let detail">{{detail.productName}}</td>
-                    </ng-container>
-
-                    <ng-container matColumnDef="skucode">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>SKU/CODE</th>
-                        <td mat-cell *matCellDef="let detail">{{detail.skucode}}</td>
-                    </ng-container>
-
-                    <ng-container matColumnDef="variantName">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>VARIANT</th>
-                        <td mat-cell *matCellDef="let detail">{{detail.variantName}}</td>
-                    </ng-container>
-
-                    <!-- <ng-container matColumnDef="variantSku">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>VARIANT SKU</th>
-                        <td mat-cell *matCellDef="let detail">{{detail.variantSku}}</td>
-                    </ng-container> -->
-
-                    <!-- <ng-container matColumnDef="colour">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>COLOUR</th>
-                        <td mat-cell *matCellDef="let detail">{{detail.colour}}</td>
-                    </ng-container> -->
-
-                    <ng-container matColumnDef="quantity">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>QUANTITY</th>
-                        <td mat-cell *matCellDef="let detail">{{detail.quantity}}</td>
-                    </ng-container>
-
-                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                <table class="customer-table">
+                    <thead>
+                        <tr>
+                            <th (click)="onSortChange('productName')" class="sortable">
+                                PRODUCT NAME
+                                <mat-icon *ngIf="sortBy === 'productName'">
+                                    {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                                </mat-icon>
+                            </th>
+                            <th (click)="onSortChange('skucode')" class="sortable">
+                                SKU/CODE
+                                <mat-icon *ngIf="sortBy === 'skucode'">
+                                    {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                                </mat-icon>
+                            </th>
+                            <th (click)="onSortChange('variantName')" class="sortable">
+                                VARIANT
+                                <mat-icon *ngIf="sortBy === 'variantName'">
+                                    {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                                </mat-icon>
+                            </th>
+                            <th (click)="onSortChange('quantity')" class="sortable">
+                                QUANTITY
+                                <mat-icon *ngIf="sortBy === 'quantity'">
+                                    {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                                </mat-icon>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let detail of inventoryLocation">
+                            <td>{{detail.productName}}</td>
+                            <td>{{detail.skucode}}</td>
+                            <td>{{detail.variantName}}</td>
+                            <td>{{detail.quantity}}</td>
+                        </tr>
+                    </tbody>
                 </table>
 
-                <!-- Paginator -->
-                <mat-paginator [pageSizeOptions]="pageSizeOptions" showFirstLastButtons class="table-paginator">
+                <mat-paginator 
+                    [length]="totalCount"
+                    [pageIndex]="pageIndex"
+                    [pageSize]="pageSize"
+                    [pageSizeOptions]="pageSizeOptions" 
+                    showFirstLastButtons 
+                    class="table-paginator"
+                    (page)="onPageChange($event)">
                 </mat-paginator>
             </div>
         </div>

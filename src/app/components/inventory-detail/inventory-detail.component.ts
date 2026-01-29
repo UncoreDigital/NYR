@@ -1,21 +1,19 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { WarehouseInventoryService } from '../../services/warehouse-inventory.service';
-import { WarehouseInventoryDetailResponse } from '../../models/warehouse-inventory.model';
-import { TransferInventoryService } from '../../services/transfer-inventory.service';
 import { VanInventoryService } from '../../services/van-inventory.service';
-import { RestockRequestService } from '../../services/restock-request.service';
 import { InventoryLocationService } from 'src/app/services/inventoryLocation.service';
+import { PaginationParams } from '../../models/pagination.model';
 
 export interface inventoryLocation {
-  productName: string,
-  skucode: string,
-  variantName: string,
-  variantSku: string,
-  quantity: number,
+  productName: string;
+  skucode: string;
+  variantName: string;
+  variantSku: string;
+  quantity: number;
 }
 
 @Component({
@@ -25,64 +23,71 @@ export interface inventoryLocation {
 })
 export class InventoryDetailComponent implements OnInit {
   displayedColumns: string[] = ['productName', 'skucode', 'variantName', 'quantity'];
-  dataSource = new MatTableDataSource<inventoryLocation>();
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   inventoryLocation: inventoryLocation[] = [];
-  selectedVan: string = '';
-  searchValue: string = '';
+  selectedVan = '';
   loading = false;
-  // Navigation context
-  sourceContext: string = '';
-  sourceTitle: string = '';
+
+  sourceContext = '';
+  sourceTitle = '';
   breadcrumbItems: any[] = [];
   warehouseId: number | null = null;
   locationId: number | null = null;
+  vanId: number | null = null;
+
   pageSizeOptions: number[] = [25, 50, 75, 100];
-  private _paginator!: MatPaginator;
-  private _sort!: MatSort;
+  pageIndex = 0;
+  pageSize = 25;
+  totalCount = 0;
+  sortBy = 'productName';
+  sortOrder: 'asc' | 'desc' = 'asc';
+  searchTerm = '';
 
-  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
-    if (paginator) {
-      this._paginator = paginator;
-      this.dataSource.paginator = this._paginator;
-    }
-  }
-
-  @ViewChild(MatSort) set sort(sort: MatSort) {
-    if (sort) {
-      this._sort = sort;
-      this.dataSource.sort = this._sort;
-    }
-  }
+  private searchSubject = new Subject<string>();
 
   constructor(
-    private router: Router, 
+    private router: Router,
     private route: ActivatedRoute,
     private warehouseInventoryService: WarehouseInventoryService,
-    private transferInventoryService: TransferInventoryService,
     private vanInventoryService: VanInventoryService,
-    private restockRequestService: RestockRequestService,
     private inventoryLocationService: InventoryLocationService,
-  ) { }
+  ) {
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.pageIndex = 0;
+      this.loadInventoryData();
+    });
+  }
 
   ngOnInit(): void {
-    // Initialize with default values
     this.sourceContext = 'warehouse';
     this.sourceTitle = 'Avetis';
     this.setupBreadcrumb();
-    
-    // Override with query params if provided
+
     this.route.queryParams.subscribe((params: any) => {
       if (Object.keys(params).length > 0) {
         this.sourceContext = params['context'] || 'warehouse';
         this.sourceTitle = params['title'] || 'Inventory Details';
-        
+
         if (this.sourceContext === 'location') {
-          this.locationId = params['id'] ? parseInt(params['id']) : null;
+          this.locationId = params['id'] ? parseInt(params['id'], 10) : null;
+          this.warehouseId = null;
+          this.vanId = null;
+        } else if (this.sourceContext === 'van') {
+          this.vanId = params['id'] ? parseInt(params['id'], 10) : null;
+          this.warehouseId = null;
+          this.locationId = null;
         } else {
-          this.warehouseId = params['id'] ? parseInt(params['id']) : null;
+          this.warehouseId = params['id'] ? parseInt(params['id'], 10) : null;
+          this.vanId = null;
+          this.locationId = null;
         }
-        
+
         this.setupBreadcrumb();
         this.loadInventoryData();
       }
@@ -120,126 +125,119 @@ export class InventoryDetailComponent implements OnInit {
     }
   }
 
-  vanId: number | null = null;
+  private getPaginationParams(): PaginationParams {
+    return {
+      pageNumber: this.pageIndex + 1,
+      pageSize: this.pageSize,
+      sortBy: this.mapColumnToSortField(this.sortBy),
+      sortOrder: this.sortOrder,
+      search: this.searchTerm || undefined
+    };
+  }
+
+  private mapColumnToSortField(column: string): string {
+    const map: { [key: string]: string } = {
+      productName: 'productName',
+      skucode: 'skuCode',
+      variantName: 'variantName',
+      quantity: 'quantity'
+    };
+    return map[column] || 'productName';
+  }
 
   loadInventoryData(): void {
-    if (this.sourceContext === 'van' && this.route.snapshot.queryParams['id']) {
-      // Load van inventory items
-      this.vanId = parseInt(this.route.snapshot.queryParams['id']);
+    if (this.sourceContext === 'van' && this.vanId != null) {
       this.loading = true;
-      this.vanInventoryService.getTransferItemsByVanId(this.vanId).subscribe({
-        next: (items) => {
-          this.inventoryLocation = items.map(item => ({
+      this.vanInventoryService.getTransferItemsByVanIdPaged(this.vanId, this.getPaginationParams()).subscribe({
+        next: (result) => {
+          this.inventoryLocation = result.data.map(item => ({
             productName: item.productName,
             skucode: item.skuCode || '',
             variantName: item.variantName || 'Universal Product',
-            variantSku: item.variantSku || '-',
+            variantSku: item.variantSku ?? '-',
             quantity: item.quantity
           }));
-          this.dataSource.data = this.inventoryLocation;
-          this.dataSource.paginator = this.paginator;
-          this.dataSource.sort = this.sort;
+          this.totalCount = result.totalCount;
           this.loading = false;
         },
-        error: (error) => {
-          console.error('Error loading van inventory:', error);
-          this.loading = false;
-        }
+        error: () => { this.loading = false; }
       });
-    } else if (this.sourceContext === 'location' && this.locationId) {
-      // Load restock requests for location
+    } else if (this.sourceContext === 'location' && this.locationId != null) {
       this.loading = true;
-      this.inventoryLocationService.getInventoryLocationById(this.locationId).subscribe({
-        next: (requests) => {
-          // Flatten all items from all requests for this location
-          const allItems = requests?.map((item: any) => ({
-              productName: item.productName,
-              skucode: item.productSKU || '',
-              variantName: item.variantName || 'Universal Product',
-              // variantSku: item.productSKU || '-',
-              quantity: item.quantity
+      this.inventoryLocationService.getInventoryLocationByIdPaged(this.locationId, this.getPaginationParams()).subscribe({
+        next: (result) => {
+          this.inventoryLocation = result.data.map((item: any) => ({
+            productName: item.productName,
+            skucode: item.productSKU || '',
+            variantName: item.variantName || 'Universal Product',
+            variantSku: '-',
+            quantity: item.quantity
           }));
-          this.inventoryLocation = allItems;
-          this.dataSource.data = this.inventoryLocation;
-          this.dataSource.paginator = this.paginator;
-          this.dataSource.sort = this.sort;
+          this.totalCount = result.totalCount;
           this.loading = false;
         },
-        error: (error) => {
-          console.error('Error loading restock requests:', error);
-          this.loading = false;
-        }
+        error: () => { this.loading = false; }
       });
-    } else if (this.sourceContext === 'warehouse' && this.warehouseId) {
-      // Load warehouse inventory details
+    } else if (this.sourceContext === 'warehouse' && this.warehouseId != null) {
       this.loading = true;
-      this.warehouseInventoryService.getWarehouseInventoryDetails(this.warehouseId).subscribe({
-        next: (inventoryDetails: WarehouseInventoryDetailResponse[]) => {
-          this.inventoryLocation = inventoryDetails.map(item => ({
+      this.warehouseInventoryService.getWarehouseInventoryDetailsPaged(this.warehouseId, this.getPaginationParams()).subscribe({
+        next: (result) => {
+          this.inventoryLocation = result.data.map(item => ({
             productName: item.productName,
             skucode: item.productSKU,
             variantName: item.variantName || 'Universal Product',
             variantSku: item.variantSku || '-',
             quantity: item.quantity
           }));
-          this.dataSource.data = this.inventoryLocation;
-          this.dataSource.paginator = this.paginator;
-          this.dataSource.sort = this.sort;
+          this.totalCount = result.totalCount;
           this.loading = false;
         },
-        error: (error) => {
-          console.error('Error loading warehouse inventory details:', error);
-          this.loading = false;
-        }
+        error: () => { this.loading = false; }
       });
     } else {
-      // Fallback to empty data
-      this.dataSource.data = [];
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
+      this.inventoryLocation = [];
+      this.totalCount = 0;
     }
   }
 
-
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-    this.searchValue = filterValue;
+  applyFilter(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(value.trim());
   }
 
-  onVanFilterChange(value: string) {
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadInventoryData();
+  }
+
+  onSortChange(column: string): void {
+    if (this.sortBy === column) {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = column;
+      this.sortOrder = 'asc';
+    }
+    this.pageIndex = 0;
+    this.loadInventoryData();
+  }
+
+  onVanFilterChange(value: string): void {
     this.selectedVan = value;
-    if (value === '') {
-      this.dataSource.filter = '';
-    } else {
-      this.dataSource.filter = value.trim().toLowerCase();
-    }
   }
 
-  resetFilters() {
+  resetFilters(): void {
     this.selectedVan = '';
-    this.searchValue = '';
-    this.dataSource.filter = '';
+    this.searchTerm = '';
+    this.pageIndex = 0;
+    this.loadInventoryData();
   }
 
-  transferToVan() {
-    console.log('Request Inventory clicked');
+  transferToVan(): void {
     if (this.sourceContext === 'location') {
-      // Navigate to request inventory page
       this.router.navigate(['/tolocation']);
     } else {
-      // Navigate to transfer inventory page
       this.router.navigate(['/tolocation']);
     }
-  }
-
-  viewVan(location: any): void {
-    // this.router.navigate(['/inventory-detail'], {
-    //   queryParams: {
-    //     context: 'location',
-    //     title: location.location || 'Location Details',
-    //     id: location.id
-    //   }
-    // });
   }
 }

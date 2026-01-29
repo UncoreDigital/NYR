@@ -54,6 +54,19 @@ export class VanInventoryService {
     return this.http.get<VanInventoryItemResponse[]>(`${this.API_URL}/VanInventory/van/${vanId}/items`);
   }
 
+  getTransferItemsByVanIdPaged(vanId: number, params: PaginationParams): Observable<PagedResult<VanInventoryItemResponse>> {
+    let httpParams = new HttpParams()
+      .set('pageNumber', params.pageNumber.toString())
+      .set('pageSize', params.pageSize.toString());
+    if (params.sortBy) httpParams = httpParams.set('sortBy', params.sortBy);
+    if (params.sortOrder) httpParams = httpParams.set('sortOrder', params.sortOrder);
+    if (params.search) httpParams = httpParams.set('search', params.search);
+    return this.http.get<PagedResult<VanInventoryItemResponse>>(
+      `${this.API_URL}/VanInventory/van/${vanId}/items`,
+      { params: httpParams }
+    );
+  }
+
   createTransfer(payload: CreateVanInventoryRequest): Observable<VanInventoryResponse> {
     return this.http.post<VanInventoryResponse>(`${this.API_URL}/VanInventory`, payload);
   }

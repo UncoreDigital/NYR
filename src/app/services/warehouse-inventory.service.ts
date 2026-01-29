@@ -49,6 +49,19 @@ export class WarehouseInventoryService {
     return this.http.get<WarehouseInventoryDetailResponse[]>(`${this.API_URL}/WarehouseInventory/warehouse/${warehouseId}/inventory`);
   }
 
+  getWarehouseInventoryDetailsPaged(warehouseId: number, params: PaginationParams): Observable<PagedResult<WarehouseInventoryDetailResponse>> {
+    let httpParams = new HttpParams()
+      .set('pageNumber', params.pageNumber.toString())
+      .set('pageSize', params.pageSize.toString());
+    if (params.sortBy) httpParams = httpParams.set('sortBy', params.sortBy);
+    if (params.sortOrder) httpParams = httpParams.set('sortOrder', params.sortOrder);
+    if (params.search) httpParams = httpParams.set('search', params.search);
+    return this.http.get<PagedResult<WarehouseInventoryDetailResponse>>(
+      `${this.API_URL}/WarehouseInventory/warehouse/${warehouseId}/inventory`,
+      { params: httpParams }
+    );
+  }
+
   // Add inventory to warehouse
   addInventory(payload: AddInventoryRequest): Observable<WarehouseInventoryResponse> {
     return this.http.post<WarehouseInventoryResponse>(`${this.API_URL}/WarehouseInventory/add-inventory`, payload);

@@ -115,7 +115,7 @@ export class CreateRouteComponent implements OnInit {
       next: (users: UserResponse[]) => {
         this.driverOptions = users.map((u: any) => ({ id: u.id, value: u.name, name: u.name, warehouseName: u.warehouseName, warehouseId: u.warehouseId }));
         // auto-select first driver
-        this.selectedDriverName = this.driverOptions?.[0].value;
+        this.selectedDriverName = this.driverOptions?.[0]?.value ?? '';
         this.applyFilter();
       },
       error: (err) => {
