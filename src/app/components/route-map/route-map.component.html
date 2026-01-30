@@ -284,22 +284,18 @@
           <tr>
             <th>Product Name</th>
             <th>SKU Code</th>
-            <th>Size</th>
-            <th>Side</th>
-            <th>Colour</th>
+            <th>Variant Name</th>
             <th>Quantity</th>
-            <th>In Stock</th>
+            <!-- <th>In Stock</th> -->
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let product of selectedLocationInventory">
             <td>{{product.productName}}</td>
             <td>{{product.skuCode}}</td>
-            <td>{{product.size}}</td>
-            <td>{{product.side}}</td>
-            <td>{{product.colour}}</td>
+            <td>{{product.variantName}}</td>
             <td>{{product.quantity}}</td>
-            <td>{{product.inStock}}</td>
+            <!-- <td>{{product.inStock}}</td> -->
           </tr>
         </tbody>
       </table>
@@ -327,22 +323,22 @@
           <tr>
             <th>Product Name</th>
             <th>SKU Code</th>
-            <th>Size</th>
-            <th>Side</th>
-            <th>Colour</th>
+            <th>Variant Name</th>
+            <!-- <th>Side</th>
+            <th>Colour</th> -->
             <th>Quantity</th>
-            <th>In Stock</th>
+            <!-- <th>In Stock</th> -->
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let product of selectedShippingInventory">
             <td>{{product.productName}}</td>
             <td>{{product.skuCode}}</td>
-            <td>{{product.size}}</td>
-            <td>{{product.side}}</td>
-            <td>{{product.colour}}</td>
+            <td>{{product.variantName}}</td>
+            <!-- <td>{{product.side}}</td>
+            <td>{{product.colour}}</td> -->
             <td>{{product.quantity}}</td>
-            <td>{{product.inStock}}</td>
+            <!-- <td>{{product.inStock}}</td> -->
           </tr>
         </tbody>
       </table>

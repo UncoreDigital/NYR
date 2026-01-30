@@ -49,6 +49,7 @@ export interface ProductDetail {
   colour: string;
   quantity: number;
   inStock: number;
+  variantName: string;
 }
 
 @Component({
@@ -416,10 +417,11 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   // Location modal inventory handlers (similar to route-detail)
   openLocationInventoryModal(customer: Customer, event: Event) {
     event.stopPropagation(); // Prevent row selection toggle
-    this.selectedLocationInventory = [];
+    this.selectedLocationInventory = customer.locationInventoryData || [];
+    this.selectedLocationInventory.map((x: any) => x.skuCode = x.productSKU || 0);
     this.modalTitle = `Location Inventory - ${customer.locationName}`;
     this.showLocationInventoryModal = true;
-    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
+    this.productDisplayedColumns = ['productName', 'skuCode', 'variantName','quantity'];
   }
 
   closeLocationInventoryModal(): void {
@@ -430,9 +432,10 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   openLocationShippingModal(customer: Customer, event: Event) {
     event.stopPropagation(); // Prevent row selection toggle
     this.selectedShippingInventory = [];
+    this.selectedShippingInventory = customer.shippingInventoryData || [];
     this.modalTitle = `Shipping Inventory - ${customer.locationName}`;
     this.showShippingInventoryModal = true;
-    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
+    this.productDisplayedColumns = ['productName', 'skuCode', 'variantName','quantity'];
   }
 
   closeShippingInventoryModal(): void {
