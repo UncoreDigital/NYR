@@ -42,54 +42,64 @@
 
       <!-- Scanner Table -->
       <div class="table-container" *ngIf="!isLoading">
-        <table class="customer-table">
-          <thead>
-            <tr>
-              <th (click)="onSortChange('serialNo')" class="sortable">
-                SERIAL NUMBER
-                <mat-icon *ngIf="sortBy === 'serialNo'">
-                  {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
-                </mat-icon>
-              </th>
-              <th (click)="onSortChange('scannerName')" class="sortable">
-                SCANNER NAME
-                <mat-icon *ngIf="sortBy === 'scannerName'">
-                  {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
-                </mat-icon>
-              </th>
-              <th>SCANNER PIN</th>
-              <th (click)="onSortChange('location')" class="sortable">
-                LOCATION
-                <mat-icon *ngIf="sortBy === 'location'">
-                  {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
-                </mat-icon>
-              </th>
-              <th>MDM URL</th>
-              <th>ACTION</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let scanner of scanners">
-              <td>{{scanner.serialNo}}</td>
-              <td>{{scanner.scannerName}}</td>
-              <td>{{scanner.scannerPin}}</td>
-              <td>{{scanner.location}}</td>
-              <td><a [href]="scanner.scannerUrl" target="_blank">{{scanner.scannerUrl}}</a></td>
-              <td>
-                <div class="action-group">
-                  <button class="group-btn edit" (click)="editScanner(scanner)" title="Edit">
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  <span class="group-divider"></span>
-                  <button class="group-btn delete" (click)="deleteScanner(scanner)" title="Delete" [disabled]="deletingScannerId === scanner.id">
-                    <mat-icon *ngIf="deletingScannerId !== scanner.id">delete</mat-icon>
-                    <mat-spinner *ngIf="deletingScannerId === scanner.id" diameter="16"></mat-spinner>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-wrapper">
+          <table class="customer-table">
+            <thead>
+              <tr>
+                <th (click)="onSortChange('serialNo')" class="sortable serial-number-col">
+                  SERIAL NUMBER
+                  <mat-icon *ngIf="sortBy === 'serialNo'">
+                    {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                  </mat-icon>
+                </th>
+                <th (click)="onSortChange('scannerName')" class="sortable">
+                  SCANNER NAME
+                  <mat-icon *ngIf="sortBy === 'scannerName'">
+                    {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                  </mat-icon>
+                </th>
+                <th>SCANNER PIN</th>
+                <th (click)="onSortChange('location')" class="sortable">
+                  LOCATION
+                  <mat-icon *ngIf="sortBy === 'location'">
+                    {{sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward'}}
+                  </mat-icon>
+                </th>
+                <th class="url-col">MDM URL</th>
+                <th class="action-col">ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let scanner of scanners">
+                <td class="serial-number-col">
+                  <span class="serial-text" [title]="scanner.serialNo">{{scanner.serialNo}}</span>
+                </td>
+                <td class="serial-number-col">
+                  <span class="serial-text" [title]="scanner.scannerName">{{scanner.scannerName}}</span>
+                </td>
+                <td>{{scanner.scannerPin}}</td>
+                <td>{{scanner.location}}</td>
+                <td class="url-col">
+                  <a [href]="scanner.scannerUrl" target="_blank" class="url-link" [title]="scanner.scannerUrl">
+                    {{scanner.scannerUrl}}
+                  </a>
+                </td>
+                <td class="action-col">
+                  <div class="action-group">
+                    <button class="group-btn edit" (click)="editScanner(scanner)" title="Edit">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <span class="group-divider"></span>
+                    <button class="group-btn delete" (click)="deleteScanner(scanner)" title="Delete" [disabled]="deletingScannerId === scanner.id">
+                      <mat-icon *ngIf="deletingScannerId !== scanner.id">delete</mat-icon>
+                      <mat-spinner *ngIf="deletingScannerId === scanner.id" diameter="16"></mat-spinner>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
         <!-- Paginator -->
         <mat-paginator 
