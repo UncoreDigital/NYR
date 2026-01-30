@@ -162,54 +162,67 @@
             </div>
         </div>
         
-        <div class="location-modal-header">
-            <div class="header-column">
-                <span class="header-text">LOCATION NAME</span>
+        <div class="location-modal-table-wrapper">
+            <div class="location-modal-header">
+                <div class="header-column">
+                    <span class="header-text">LOCATION NAME</span>
+                </div>
+                <div class="header-column">
+                    <span class="header-text">LOCATION ADDRESS</span>
+                </div>
+                <div class="header-column header-desktop-only">
+                    <span class="header-text">DRIVER NAME</span>
+                </div>
+                <div class="header-column header-desktop-only">
+                    <span class="header-text">LOCATION INVENTORY</span>
+                </div>
+                <div class="header-column header-desktop-only">
+                    <span class="header-text">SHIPPING INVENTORY</span>
+                </div>
+                <div class="header-column">
+                    <span class="header-text">STATUS</span>
+                </div>
             </div>
-            <div class="header-column">
-                <span class="header-text">LOCATION ADDRESS</span>
-            </div>
-            <div class="header-column">
-                <span class="header-text">DRIVER NAME</span>
-            </div>
-            <div class="header-column">
-                <span class="header-text">LOCATION INVENTORY</span>
-            </div>
-            <div class="header-column">
-                <span class="header-text">SHIPPING INVENTORY</span>
-            </div>
-            <div class="header-column">
-                <span class="header-text">STATUS</span>
-            </div>
-        </div>
 
-        <div class="location-modal-content">
-            <div class="customer-list">
-                <div class="customer-item" *ngFor="let customer of customers"
-                    (click)="toggleCustomerSelection(customer)">
-                    <div class="location-name-column">
-                        <mat-icon class="checkbox-icon" [class.checked]="customer.selected">
-                            {{customer.selected ? 'check_box' : 'check_box_outline_blank'}}
-                        </mat-icon>
-                        <span class="location-name">{{customer.locationName}}</span>
-                    </div>
-                    <div class="location-address-column">
-                        <span class="location-address">{{customer.locationAddress}}</span>
-                    </div>
-                    <div class="driver-name-column">
-                        <span class="driver-name">{{customer.driverName}}</span>
-                    </div>
-                    <div class="location-inventory-column">
-                        <span class="inventory-count inventory-link" (click)="openLocationInventoryModal(customer, $event)">{{customer.locationInventory}}</span>
-                    </div>
-                    <div class="shipping-inventory-column">
-                        <span class="shipping-count shipping-link" (click)="openLocationShippingModal(customer, $event)">{{customer.shippingInventory}}</span>
-                    </div>
-                    <div class="customer-status-column">
-                        <span class="status-badge" [class.ready-to-ship]="customer.status === 'Ready To Ship'"
-                            [class.follow-up]="customer.status === 'Follow up'">
-                            {{customer.status}}
-                        </span>
+            <div class="location-modal-content">
+                <div class="customer-list">
+                    <div class="customer-item" *ngFor="let customer of customers"
+                        (click)="toggleCustomerSelection(customer)">
+                        <div class="location-name-column">
+                            <mat-icon class="checkbox-icon" [class.checked]="customer.selected">
+                                {{customer.selected ? 'check_box' : 'check_box_outline_blank'}}
+                            </mat-icon>
+                            <div class="location-info">
+                                <span class="location-name">{{customer.locationName}}</span>
+                                <span class="location-mobile-info">{{customer.driverName}}</span>
+                            </div>
+                        </div>
+                        <div class="location-address-column">
+                            <span class="location-address">{{customer.locationAddress}}</span>
+                            <div class="mobile-inventory-info">
+                                <span class="mobile-inventory" (click)="openLocationInventoryModal(customer, $event)">
+                                    Loc: {{customer.locationInventory}}
+                                </span>
+                                <span class="mobile-shipping" (click)="openLocationShippingModal(customer, $event)">
+                                    Ship: {{customer.shippingInventory}}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="driver-name-column desktop-only">
+                            <span class="driver-name">{{customer.driverName}}</span>
+                        </div>
+                        <div class="location-inventory-column desktop-only">
+                            <span class="inventory-count inventory-link" (click)="openLocationInventoryModal(customer, $event)">{{customer.locationInventory}}</span>
+                        </div>
+                        <div class="shipping-inventory-column desktop-only">
+                            <span class="shipping-count shipping-link" (click)="openLocationShippingModal(customer, $event)">{{customer.shippingInventory}}</span>
+                        </div>
+                        <div class="customer-status-column">
+                            <span class="status-badge" [class.ready-to-ship]="customer.status === 'Ready To Ship'"
+                                [class.follow-up]="customer.status === 'Follow up'">
+                                {{customer.status}}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
