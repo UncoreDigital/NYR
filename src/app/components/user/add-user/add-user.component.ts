@@ -6,7 +6,7 @@ import { CustomerService, CustomerApiModel } from '../../../services/customer.se
 import { LocationService } from '../../../services/location.service';
 import { WarehouseService } from '../../../services/warehouse.service';
 import { CreateUserRequest, UserResponse, UpdateUserRequest } from '../../../models/user.model';
-import { sanitizePhone, handlePhoneInput } from 'src/app/utils/phone-utils';
+import { sanitizePhone, handlePhoneInput, sanitizeDigits, handleDigitsInput } from 'src/app/utils/phone-utils';
 import { DriverAvailability, DriverAvailabilityBulkRequest } from '../../../models/driver-availability.model';
 import { WarehouseResponse } from '../../../models/warehouse.model';
 import { ToastService } from '../../../services/toast.service';
@@ -80,6 +80,10 @@ export class AddUserComponent implements OnInit {
 
   onPhoneInput(controlName: string, event: Event): void {
     handlePhoneInput(this.userForm, controlName, event);
+  }
+
+  onDigitsInput(controlName: string, event: Event): void {
+    handleDigitsInput(this.userForm, controlName, event, 10);
   }
 
   private initializeForm(): void {

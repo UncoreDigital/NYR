@@ -6,7 +6,7 @@ import { CustomerService, CustomerApiModel } from '../../../services/customer.se
 import { UserService } from '../../../services/user.service';
 import { ToastService } from '../../../services/toast.service';
 import { CreateLocationRequest, LocationResponse } from '../../../models/location.model';
-import { sanitizePhone, handlePhoneInput } from 'src/app/utils/phone-utils';
+import { sanitizePhone, handlePhoneInput, sanitizeDigits, handleDigitsInput } from 'src/app/utils/phone-utils';
 import { UserResponse } from '../../../models/user.model';
 
 @Component({
@@ -68,6 +68,10 @@ export class AddLocationComponent implements OnInit {
 
   onPhoneInput(controlName: string, event: Event): void {
     handlePhoneInput(this.locationForm, controlName, event);
+  }
+
+  onDigitsInput(controlName: string, event: Event): void {
+    handleDigitsInput(this.locationForm, controlName, event, 10);
   }
 
   ngOnInit(): void {

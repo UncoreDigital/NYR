@@ -270,7 +270,7 @@
                         </div>
                         <div class="form-group">
                             <label>Zip Code</label>
-                            <input formControlName="zipCode" type="text" placeholder="Enter Zip" />
+                            <input formControlName="zipCode" type="text" inputmode="numeric" maxlength="10" pattern="\d+" placeholder="Enter Zip" (input)="onDigitsInput('zipCode', $event)" />
                         </div>
                     </div>
                     <div class="form-row" *ngIf="userForm.get('roleId')?.value == 4">

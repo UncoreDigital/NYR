@@ -8,6 +8,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CustomerService } from '../../../services/customer.service';
 import { CreateCustomerRequest, CustomerResponse } from '../../../models/customer.model';
 import { sanitizePhone, handlePhoneInput } from 'src/app/utils/phone-utils';
+import { sanitizeDigits, handleDigitsInput } from 'src/app/utils/phone-utils';
 import { ToastService } from '../../../services/toast.service';
 
 @Component({
@@ -61,6 +62,10 @@ export class AddCustomerComponent {
 
   onPhoneInput(controlName: string, event: Event): void {
     handlePhoneInput(this.customerForm, controlName, event);
+  }
+
+  onDigitsInput(controlName: string, event: Event): void {
+    handleDigitsInput(this.customerForm, controlName, event, 10);
   }
 
   private loadCustomer(id: number): void {

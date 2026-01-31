@@ -113,7 +113,7 @@
                         </div>
                         <div class="form-group">
                             <label>Zip Code*</label>
-                            <input formControlName="zip" type="text" placeholder="Enter Zip" />
+                            <input formControlName="zip" type="text" inputmode="numeric" maxlength="10" pattern="\d+" placeholder="Enter Zip" (input)="onDigitsInput('zip', $event)" />
                         </div>
                     </div>
 
