@@ -45,10 +45,14 @@
               <label>Phone Number</label>
               <div class="input-with-icon">
                 <input 
-                  type="text" 
+                  type="tel" 
+                  inputmode="numeric"
+                  maxlength="10"
+                  pattern="\d{10}"
                   formControlName="phoneNumber"
                   [readonly]="!isEditing"
-                  [class.editing]="isEditing" />
+                  [class.editing]="isEditing"
+                  (input)="onPhoneInput('phoneNumber', $event)" />
                 <button 
                   type="button" 
                   (click)="toggleEdit()"

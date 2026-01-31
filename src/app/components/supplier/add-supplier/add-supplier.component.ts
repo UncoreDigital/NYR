@@ -4,6 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { SupplierService } from '../../../services/supplier.service';
 import { CreateSupplierRequest, UpdateSupplierRequest, SupplierApiModel } from '../../../models/supplier.model';
 import { ToastService } from '../../../services/toast.service';
+import { sanitizePhone, handlePhoneInput } from 'src/app/utils/phone-utils';
 
 @Component({
   selector: 'app-add-supplier',
@@ -27,7 +28,7 @@ export class AddSupplierComponent {
     this.supplierForm = this.fb.group({
       supplierName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', Validators.required],
+      phoneNumber: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
       address: [''],
       contactPerson: ['']
     });
@@ -38,6 +39,10 @@ export class AddSupplierComponent {
       this.supplierId = Number(idParam);
       this.loadSupplier(this.supplierId);
     }
+  }
+
+  onPhoneInput(controlName: string, event: Event): void {
+    handlePhoneInput(this.supplierForm, controlName, event);
   }
 
   private loadSupplier(id: number): void {
@@ -74,7 +79,7 @@ export class AddSupplierComponent {
       const updatePayload: UpdateSupplierRequest = {
         name: form.supplierName || '',
         email: form.email || '',
-        phoneNumber: form.phoneNumber || '',
+        phoneNumber: sanitizePhone(form.phoneNumber) || '',
         address: form.address || '',
         contactPerson: form.contactPerson || '',
         isActive: true
@@ -97,7 +102,7 @@ export class AddSupplierComponent {
       const createPayload: CreateSupplierRequest = {
         name: form.supplierName || '',
         email: form.email || '',
-        phoneNumber: form.phoneNumber || '',
+          phoneNumber: sanitizePhone(form.phoneNumber) || '',
         address: form.address || '',
         contactPerson: form.contactPerson || ''
       };

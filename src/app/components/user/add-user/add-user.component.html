@@ -241,7 +241,7 @@
                         </div>
                         <div class="form-group">
                             <label>Phone Number*</label>
-                            <input formControlName="phoneNumber" type="text" placeholder="Enter Phone Number" />
+                            <input formControlName="phoneNumber" type="tel" inputmode="numeric" maxlength="10" pattern="\d{10}" placeholder="Enter Phone Number" (input)="onPhoneInput('phoneNumber', $event)" />
                         </div>
                         <div class="form-group">
                             <label>Password{{ isEditMode ? ' (Optional)' : '' }}</label>

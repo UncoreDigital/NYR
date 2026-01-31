@@ -7,6 +7,7 @@ import { HeaderComponent } from '../../header/header.component';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CustomerService } from '../../../services/customer.service';
 import { CreateCustomerRequest, CustomerResponse } from '../../../models/customer.model';
+import { sanitizePhone, handlePhoneInput } from 'src/app/utils/phone-utils';
 import { ToastService } from '../../../services/toast.service';
 
 @Component({
@@ -43,9 +44,9 @@ export class AddCustomerComponent {
       contactName: ['', Validators.required],
       contactLastName: [''],
       jobTitle: [''],
-      businessPhone: [''],
-      mobilePhone: [''],
-      faxNumber: [''],
+      businessPhone: ['', Validators.pattern(/^\d{10}$/)],
+      mobilePhone: ['', Validators.pattern(/^\d{10}$/)],
+      faxNumber: ['', Validators.pattern(/^\d{10}$/)],
       email: ['', [Validators.required, Validators.email]],
       website: ['']
     });
@@ -56,6 +57,10 @@ export class AddCustomerComponent {
       this.customerId = Number(idParam);
       this.loadCustomer(this.customerId);
     }
+  }
+
+  onPhoneInput(controlName: string, event: Event): void {
+    handlePhoneInput(this.customerForm, controlName, event);
   }
 
   private loadCustomer(id: number): void {
@@ -113,9 +118,9 @@ export class AddCustomerComponent {
       zipCode: form.zip || '',
       contactName: [form.contactName, form.contactLastName].filter(Boolean).join(' ').trim(),
       jobTitle: form.jobTitle || '',
-      businessPhone: form.businessPhone || '',
-      mobilePhone: form.mobilePhone || '',
-      faxNumber: form.faxNumber || '',
+      businessPhone: sanitizePhone(form.businessPhone),
+      mobilePhone: sanitizePhone(form.mobilePhone),
+      faxNumber: sanitizePhone(form.faxNumber),
       email: form.email || '',
       website: form.website || ''
     };

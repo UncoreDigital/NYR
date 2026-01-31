@@ -6,6 +6,7 @@ import { CustomerService, CustomerApiModel } from '../../../services/customer.se
 import { LocationService } from '../../../services/location.service';
 import { WarehouseService } from '../../../services/warehouse.service';
 import { CreateUserRequest, UserResponse, UpdateUserRequest } from '../../../models/user.model';
+import { sanitizePhone, handlePhoneInput } from 'src/app/utils/phone-utils';
 import { DriverAvailability, DriverAvailabilityBulkRequest } from '../../../models/driver-availability.model';
 import { WarehouseResponse } from '../../../models/warehouse.model';
 import { ToastService } from '../../../services/toast.service';
@@ -77,6 +78,10 @@ export class AddUserComponent implements OnInit {
     this.initializeForm();
   }
 
+  onPhoneInput(controlName: string, event: Event): void {
+    handlePhoneInput(this.userForm, controlName, event);
+  }
+
   private initializeForm(): void {
     this.userForm = this.fb.group({
       roleId: ['', Validators.required],
@@ -84,7 +89,7 @@ export class AddUserComponent implements OnInit {
       locationId: [''],
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', Validators.required],
+      phoneNumber: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
       password: ['', Validators.required], // Will be updated based on mode
       addressLine1: [''],
       addressLine2: [''],
@@ -349,7 +354,7 @@ export class AddUserComponent implements OnInit {
         const updateData: UpdateUserRequest = {
           name: formValue.name,
           email: formValue.email,
-          phoneNumber: formValue.phoneNumber,
+          phoneNumber: sanitizePhone(formValue.phoneNumber),
           addressLine1: formValue.addressLine1,
           addressLine2: formValue.addressLine2,
           city: formValue.city,
@@ -383,7 +388,7 @@ export class AddUserComponent implements OnInit {
         const userData: CreateUserRequest = {
           name: formValue.name,
           email: formValue.email,
-          phoneNumber: formValue.phoneNumber,
+          phoneNumber: sanitizePhone(formValue.phoneNumber),
           addressLine1: formValue.addressLine1,
           addressLine2: formValue.addressLine2,
           city: formValue.city,

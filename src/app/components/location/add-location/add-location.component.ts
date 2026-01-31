@@ -6,6 +6,7 @@ import { CustomerService, CustomerApiModel } from '../../../services/customer.se
 import { UserService } from '../../../services/user.service';
 import { ToastService } from '../../../services/toast.service';
 import { CreateLocationRequest, LocationResponse } from '../../../models/location.model';
+import { sanitizePhone, handlePhoneInput } from 'src/app/utils/phone-utils';
 import { UserResponse } from '../../../models/user.model';
 
 @Component({
@@ -56,13 +57,17 @@ export class AddLocationComponent implements OnInit {
       state: ['', Validators.required],
       zip: ['', Validators.required],
       title: ['', Validators.required],
-      locationPhone: [''],
-      mobilePhone: [''],
-      faxNumber: [''],
+      locationPhone: ['', Validators.pattern(/^\d{10}$/)],
+      mobilePhone: ['', Validators.pattern(/^\d{10}$/)],
+      faxNumber: ['', Validators.pattern(/^\d{10}$/)],
       email: [''],
       comments: [''],
       followUpDays: ['']
     });
+  }
+
+  onPhoneInput(controlName: string, event: Event): void {
+    handlePhoneInput(this.locationForm, controlName, event);
   }
 
   ngOnInit(): void {
@@ -171,9 +176,9 @@ export class AddLocationComponent implements OnInit {
         zipCode: formValue.zip,
         contactPerson: formValue.contactPerson,
         title: formValue.title,
-        locationPhone: formValue.locationPhone,
-        mobilePhone: formValue.mobilePhone,
-        faxNumber: formValue.faxNumber,
+        locationPhone: sanitizePhone(formValue.locationPhone),
+        mobilePhone: sanitizePhone(formValue.mobilePhone),
+        faxNumber: sanitizePhone(formValue.faxNumber),
         email: formValue?.email?.trim() == "" ? formValue?.email?.trim() : null,
         comments: formValue.comments,
         userId: formValue.userId,

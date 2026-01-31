@@ -88,15 +88,15 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Business Phone</label>
-                            <input formControlName="businessPhone" type="text" placeholder="Enter Business Phone" />
+                            <input formControlName="businessPhone" type="tel" inputmode="numeric" maxlength="10" pattern="\d{10}" placeholder="Enter Business Phone" (input)="onPhoneInput('businessPhone', $event)" />
                         </div>
                         <div class="form-group">
                             <label>Mobile Phone</label>
-                            <input formControlName="mobilePhone" type="text" placeholder="Enter Mobile Phone" />
+                            <input formControlName="mobilePhone" type="tel" inputmode="numeric" maxlength="10" pattern="\d{10}" placeholder="Enter Mobile Phone" (input)="onPhoneInput('mobilePhone', $event)" />
                         </div>
                         <div class="form-group">
                             <label>Fax Number</label>
-                            <input formControlName="faxNumber" type="text" placeholder="Enter Fax Number" />
+                            <input formControlName="faxNumber" type="tel" inputmode="numeric" maxlength="10" pattern="\d{10}" placeholder="Enter Fax Number" (input)="onPhoneInput('faxNumber', $event)" />
                         </div>
                     </div>
                     <div class="form-row">

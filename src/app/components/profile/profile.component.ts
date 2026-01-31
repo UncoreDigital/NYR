@@ -4,6 +4,7 @@ import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { User, UpdateUserRequest, UserResponse } from '../../models/user.model';
+import { sanitizePhone, handlePhoneInput } from 'src/app/utils/phone-utils';
 
 @Component({
   selector: 'app-profile',
@@ -25,7 +26,7 @@ export class ProfileComponent implements OnInit {
     this.profileForm = this.formBuilder.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9+\-\s()]+$/)]],
+      phoneNumber: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
       // Default fields from storage - read-only
       roleName: [''],
       customerName: [''],
@@ -33,6 +34,10 @@ export class ProfileComponent implements OnInit {
       createdAt: [''],
       isActive: ['']
     });
+  }
+
+  onPhoneInput(controlName: string, event: Event): void {
+    handlePhoneInput(this.profileForm, controlName, event);
   }
 
   ngOnInit(): void {
@@ -107,7 +112,7 @@ export class ProfileComponent implements OnInit {
       const updatedData: UpdateUserRequest = {
         name: this.profileForm.value.name,
         email: this.profileForm.value.email,
-        phoneNumber: this.profileForm.value.phoneNumber,
+        phoneNumber: sanitizePhone(this.profileForm.value.phoneNumber),
         roleId: this.user.roleId || 0,
         customerId: this.user.customerId && this.user.customerId > 0 ? this.user.customerId : null,
         locationId: this.user.locationId && this.user.locationId > 0 ? this.user.locationId : null,
