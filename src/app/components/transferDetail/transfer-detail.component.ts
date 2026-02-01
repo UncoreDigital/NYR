@@ -3,6 +3,7 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { TransferService } from 'src/app/services/transfer.service';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { RestockRequestService } from 'src/app/services/restock-request.service';
 
 export interface TransferDetail {
   productName: string;
@@ -38,8 +39,9 @@ export class TransferDetailComponent implements OnInit {
   searchTerm = '';
 
   private searchSubject = new Subject<string>();
+  loading = false;
 
-  constructor(private transferService: TransferService) {
+  constructor(private transferService: TransferService, private restockRequestService: RestockRequestService) {
     this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged()
@@ -52,10 +54,19 @@ export class TransferDetailComponent implements OnInit {
   ngOnInit(): void {
     const transfer = history.state.transfer;
     this.transferAllDetail = transfer;
-    this.transferDetail = transfer?.shippingInventory || [];
-    if (transfer?.driverId != null) {
+    // this.transferDetail = transfer?.shippingInventory || [];
+    if (this.transferAllDetail?.driverId != null) {
       this.getInventoryCounts();
     }
+    this.getRestockRequestsId();
+  }
+
+  getRestockRequestsId() {
+    this.loading = true;
+    this.restockRequestService.getRequestById(this.transferAllDetail?.id).subscribe((data: any) => {
+      this.loading = false;
+      this.transferDetail = data?.items || [];      
+    });
   }
 
   get filteredList(): TransferDetail[] {

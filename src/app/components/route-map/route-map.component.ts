@@ -549,6 +549,15 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
         this.allLocations = apiLocations;
         this.driverLocations.map(loc => loc.selected = this.routeStops.find((stop:any) => stop.locationId === loc.id) ? true : false);
         this.allLocations.map(loc => loc.selected = this.routeStops.find((stop:any) => stop.locationId === loc.id) ? true : false);
+
+        this.routeStops.forEach((stop: any) => {
+          const matchedLocation = apiLocations?.find(loc => loc.id === stop.locationId);
+          stop.locationInventory = `${matchedLocation?.locationInventoryData?.length || 0} Items`;
+          stop.locationInventoryData = matchedLocation?.locationInventoryData ?? [];
+          stop.shippingInventory = `${matchedLocation?.shippingInventoryData?.length || 0} Items`;
+          stop.shippingInventoryData = matchedLocation?.shippingInventoryData ?? [];
+        });
+        console.log('Locations loaded:', this.routeStops);
       },
       error: (error: any) => {
         console.error('Error loading locations:', error);

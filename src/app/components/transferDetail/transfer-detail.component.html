@@ -28,7 +28,11 @@
           <button class="btn btn-primary">Add Follow Up</button>
         </div>
       </div>
-      
+      <!-- Loading Spinner -->
+      <div *ngIf="loading" class="loading-container">
+          <mat-spinner diameter="50"></mat-spinner>
+          <p>Loading inventory...</p>
+      </div>
       <!-- Table -->
       <div class="table-container">
         <table class="customer-table">
