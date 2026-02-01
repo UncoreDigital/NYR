@@ -557,7 +557,6 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
           stop.shippingInventory = `${matchedLocation?.shippingInventoryData?.length || 0} Items`;
           stop.shippingInventoryData = matchedLocation?.shippingInventoryData ?? [];
         });
-        console.log('Locations loaded:', this.routeStops);
       },
       error: (error: any) => {
         console.error('Error loading locations:', error);

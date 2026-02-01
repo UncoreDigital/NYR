@@ -95,8 +95,8 @@ export class RouteDetailComponent implements OnInit {
   
   // Radio button properties for location modal
   locationViewType: 'assigned' | 'all' = 'assigned';
-  assignedLocations: Customer[] = [];
-  allLocations: Customer[] = [];
+  assignedLocations: any[] = [];
+  allLocations: any[] = [];
   driverLocations: Customer[] = [];
   isLoading = false;
 
@@ -182,7 +182,7 @@ export class RouteDetailComponent implements OnInit {
     this.deliveryDate = this.routeCreationData.selectedDate || this.routeCreationData.shippingDate || new Date().toISOString().slice(0, 10).split('-').reverse().join('-');
     // Initialize button states
     this.initializeButtonStates();
-    this.loadLocationsDetails();    
+    // this.loadLocationsDetails();    
   }
 
 
@@ -241,7 +241,7 @@ export class RouteDetailComponent implements OnInit {
         });
       }
     });
-    this.selectedLocations = locationData;
+    this.selectedLocations = locationData;    
     //End
   }
 
@@ -377,22 +377,22 @@ export class RouteDetailComponent implements OnInit {
     event.stopPropagation(); // Prevent row selection toggle
     
     // Sample product data for location inventory - in real app, this would come from API based on customer.id
-    this.productDetails = [];
+    this.productDetails = customer.locationInventoryData || [];
     this.modalTitle = `Location Inventory - ${customer.locationName}`;
     this.isModalFromLocationPopup = true; // Set flag for higher z-index
     this.showModal = true;
-    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity'];
+    this.productDisplayedColumns = ['productName', 'skuCode', 'variantName','quantity'];
   }
 
   openLocationShippingModal(customer: Customer, event: Event) {
     event.stopPropagation(); // Prevent row selection toggle
     
     // Sample product data for shipping inventory - in real app, this would come from API based on customer.id
-    this.productDetails = []
+    this.productDetails = customer.shippingInventoryData || [];
     this.modalTitle = `Shipping Inventory - ${customer.locationName}`;
     this.isModalFromLocationPopup = true; // Set flag for higher z-index
     this.showModal = true;
-    this.productDisplayedColumns = ['productName', 'skuCode', 'size', 'side', 'colour', 'quantity', 'inStock'];
+    this.productDisplayedColumns = ['productName', 'skuCode', 'variantName','quantity'];
   }
 
   openApprovalModal() {
@@ -637,7 +637,10 @@ export class RouteDetailComponent implements OnInit {
     // When switching to table view, sync data from route-map component
     if (view === 'table' && this.routeMapComponent) {
       // this.syncWithRouteMapData(this.routeMapComponent.routeStops);
-      this.syncWithRouteMapData(this.dataSource.data);
+      // this.dataSource.data = this.routeMapComponent.routeStops;
+      this.assignedLocations = this.routeMapComponent.assignedLocations;
+      this.allLocations = this.routeMapComponent.allLocations;
+      this.syncWithRouteMapData(this.routeMapComponent.routeStops);
     }
   }
 

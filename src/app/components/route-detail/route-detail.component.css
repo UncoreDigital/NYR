@@ -31,6 +31,8 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 /* High Z-index Modal Overlay for inventory/product modals that appear above location modal */
@@ -156,8 +158,8 @@
   background: white;
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  max-width: 95%;
-  max-height: 90%;
+  max-width: 100%;
+  max-height: 100%;
   width: 1200px;
   display: flex;
   flex-direction: column;
@@ -787,9 +789,10 @@
 
 /* Radio Button Section */
 .radio-button-section {
-  padding: 14px 24px;
+  padding: 16px 24px;
   border-bottom: 1px solid #e0e0e0;
   background-color: #f8f9fa;
+  flex-shrink: 0;
 }
 
 .radio-group {
@@ -824,15 +827,24 @@
   color: #02C3B4;
 }
 
+/* Location Modal Table Wrapper */
+.location-modal-table-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 /* Location Modal Header */
 .location-modal-header {
   display: grid;
-  grid-template-columns: 2fr 2.5fr 1.5fr 1.5fr 1.5fr 1.2fr;
+  grid-template-columns: 2.5fr 2.5fr 1.5fr 1.5fr 1.5fr 1.2fr;
   gap: 16px;
-  padding: 6px 24px;
+  padding: 16px 24px;
   background-color: #f8f9fa;
   border-bottom: 2px solid #e0e0e0;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .header-column {
@@ -852,7 +864,7 @@
 .location-modal-content {
   flex: 1;
   overflow-y: auto;
-  max-height: 400px;
+  max-height: hidden;
 }
 
 .customer-list {
@@ -889,6 +901,7 @@
   cursor: pointer;
   transition: color 0.2s ease;
   font-size: 20px;
+  flex-shrink: 0;
 }
 
 .checkbox-icon.checked {
@@ -906,7 +919,9 @@
 
 .location-address-column {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 
 .location-address {
@@ -955,7 +970,6 @@
 .inventory-count.inventory-link:hover {
   color: #047857;
   background-color: rgba(5, 150, 105, 0.1);
-  text-decoration: underline;
 }
 
 .shipping-inventory-column {
@@ -987,6 +1001,7 @@
 .customer-status-column {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
 }
 
 .status-badge {
@@ -1107,7 +1122,7 @@
 }
 
 /* Responsive Design for Location Modal */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .location-modal-dialog {
     width: 95%;
     max-height: 85%;
@@ -1236,4 +1251,58 @@
 /* Ensure spacing between buttons */
 .mr-15 {
   margin-right: 15px;
+}
+
+.location-modal-content .customer-item {
+  display: grid;
+  grid-template-columns: 2.5fr 2.5fr 1.5fr 1.5fr 1.5fr 1.2fr;
+  gap: 16px;
+  padding: 9px 9px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  align-items: center;
+}
+
+.location-modal-content .customer-item:hover {
+  background-color: #f8f9fa;
+}
+
+.location-modal-content .customer-item:last-child {
+  border-bottom: none;
+}
+
+.location-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.location-mobile-info {
+  font-size: 12px;
+  color: #6b7280;
+  display: none;
+}
+
+.mobile-inventory-info {
+  display: none;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.mobile-inventory,
+.mobile-shipping {
+  color: #02c3b4;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.desktop-only {
+  display: flex;
+}
+
+.header-desktop-only {
+  display: flex;
 }
