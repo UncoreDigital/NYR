@@ -112,4 +112,10 @@ export class UserService {
     // Convert "HH:mm" to "HH:mm:ss" format for TimeSpan
     return timeString + ':00';
   }
+
+  uploadProfileImage(userId: number, imageFile: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    return this.http.post<any>(`${this.API_URL}/Users/upload-image/${userId}`, formData);
+  }
 }

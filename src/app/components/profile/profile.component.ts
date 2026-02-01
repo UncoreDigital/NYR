@@ -5,6 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { User, UpdateUserRequest, UserResponse } from '../../models/user.model';
 import { sanitizePhone, handlePhoneInput } from 'src/app/utils/phone-utils';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-profile',
@@ -40,6 +41,63 @@ export class ProfileComponent implements OnInit {
     handlePhoneInput(this.profileForm, controlName, event);
   }
 
+  getImageUrl(): string {
+    if (this.user?.imageUrl) {
+      // If it's a full URL, return as is
+      if (this.user.imageUrl.startsWith('http')) {
+        return this.user.imageUrl;
+      }
+      // If it's a relative path, combine with API base URL
+      const apiBase = environment.apiUrl.replace('/api', ''); // Remove '/api' to get base URL
+      return `${apiBase}${this.user.imageUrl}`;
+    }
+    return './assets/loginImg.png';
+  }
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    
+    if (file) {
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        this.toastService.error('Invalid File', 'Please select a valid image file');
+        return;
+      }
+      
+      // Check file size (e.g., max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        this.toastService.error('File Too Large', 'Image size must be less than 5MB');
+        return;
+      }
+      
+      // Upload the image
+      this.isLoading = true;
+      const userId = this.user?.id;
+      
+      if (userId) {
+        this.userService.uploadProfileImage(userId, file).subscribe({
+          next: (response) => {
+            this.toastService.success('Success', 'Profile image updated successfully');
+            this.isLoading = false;
+            this.loadUserProfile();
+            // Notify header component to update the profile image
+            this.authService.notifyImageUpdated();
+          },
+          error: (error) => {
+            this.toastService.error('Error', 'Failed to upload image');
+            this.isLoading = false;
+            console.error('Image upload error:', error);
+          }
+        });
+      } else {
+        this.toastService.error('Error', 'User ID not found');
+        this.isLoading = false;
+      }
+    }
+  }
+
   ngOnInit(): void {
     this.loadUserProfile();
   }
@@ -64,7 +122,8 @@ export class ProfileComponent implements OnInit {
             locationId: userResponse.locationId && userResponse.locationId > 0 ? userResponse.locationId : null,
             locationName: userResponse.locationName,
             createdAt: userResponse.createdAt,
-            isActive: userResponse.isActive
+            isActive: userResponse.isActive,
+            imageUrl: userResponse.imageUrl
           };
           this.profileForm.patchValue({
             name: userResponse.name,

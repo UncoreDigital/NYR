@@ -12,10 +12,16 @@
       <div class="profile-card" *ngIf="user; else loadingTemplate">
         <div class="profile-header">
           <!-- <img class="avatar" src="./assets/loginImg.png" alt="avatar" /> -->
-          <img class="avatar" src="./assets/loginImg.png" alt="avatar" />
-          <span class="avatar-badge" (click)="toggleEdit()">
+          <img class="avatar" [src]="getImageUrl()" alt="avatar" />
+          <span class="avatar-badge" (click)="fileInput.click()">
             <mat-icon class="breadcrumb-separator active">edit_square</mat-icon>
           </span>
+          <input 
+            #fileInput 
+            type="file" 
+            accept="image/*" 
+            style="display: none;" 
+            (change)="onImageSelected($event)" />
         </div>
 
         <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">

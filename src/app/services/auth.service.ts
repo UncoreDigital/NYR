@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { User, LoginRequest, LoginResponse, AuthState } from '../models/user.model';
@@ -22,6 +22,10 @@ export class AuthService {
   });
 
   public authState$ = this.authStateSubject.asObservable();
+
+  // Subject to emit when user image is updated
+  private imageUpdatedSubject = new Subject<void>();
+  public imageUpdated$ = this.imageUpdatedSubject.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -135,5 +139,10 @@ export class AuthService {
           return throwError(() => error);
         })
       );
+  }
+
+  // Emit image updated event
+  notifyImageUpdated(): void {
+    this.imageUpdatedSubject.next();
   }
 }

@@ -14,7 +14,7 @@
         <mat-icon>notifications</mat-icon>
       </button> -->
       <div class="user-profile" (click)="toggleUserMenu()" [class.active]="showUserMenu">
-        <img src="./assets/loginImg.png" 
+        <img [src]="getImageUrl()" 
              alt="User" class="user-avatar">
         <mat-icon class="dropdown-arrow">keyboard_arrow_down</mat-icon>
         

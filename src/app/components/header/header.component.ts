@@ -2,6 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { UserService } from '../../services/user.service';
+import { environment } from 'src/environments/environment';
+import { User } from '../../models/user.model';
 
 @Component({
   selector: 'app-header',
@@ -12,14 +16,61 @@ import { Router } from '@angular/router';
 })
 export class HeaderComponent implements OnInit {
   showUserMenu = false;
+  user: User | null = null;
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private userService: UserService
+  ) { }
 
   ngOnInit(): void {
-    // Close user menu when clicking outside
-    // document.addEventListener('click', () => {
-    //   this.showUserMenu = false;
-    // });
+    this.loadUserProfile();
+    
+    // Subscribe to image update events from profile component
+    this.authService.imageUpdated$.subscribe(() => {
+      this.loadUserProfile();
+    });
+  }
+
+  loadUserProfile(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.userService.getUserById(currentUser.id).subscribe({
+        next: (userResponse: any) => {
+          this.user = {
+            id: userResponse.id,
+            name: userResponse.name,
+            email: userResponse.email,
+            phoneNumber: userResponse.phoneNumber,
+            role: userResponse.roleName,
+            roleName: userResponse.roleName,
+            roleId: userResponse.roleId,
+            customerId: userResponse.customerId,
+            customerName: userResponse.customerName,
+            locationId: userResponse.locationId,
+            locationName: userResponse.locationName,
+            imageUrl: userResponse.imageUrl
+          };
+        },
+        error: (error) => {
+          console.error('Error loading user profile:', error);
+        }
+      });
+    }
+  }
+
+  getImageUrl(): string {
+    if (this.user?.imageUrl) {
+      // If it's a full URL, return as is
+      if (this.user.imageUrl.startsWith('http')) {
+        return this.user.imageUrl;
+      }
+      // If it's a relative path, combine with API base URL
+      const apiBase = environment.apiUrl.replace('/api', ''); // Remove '/api' to get base URL
+      return `${apiBase}${this.user.imageUrl}`;
+    }
+    return './assets/loginImg.png';
   }
 
   toggleMobileMenu(): void {

@@ -21,6 +21,7 @@ export interface UserResponse {
   driverAvailabilities?: DriverAvailability[];
   warehouseId?: number | null;
   warehouseName?: string | '';
+  imageUrl?: string | null;
 }
 
 export interface User {
@@ -38,6 +39,7 @@ export interface User {
   createdAt?: string;
   isActive?: boolean;
   warehouseId?: number | null;
+  imageUrl?: string | null;
 }
 
 export interface LoginRequest {
