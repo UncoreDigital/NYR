@@ -40,9 +40,16 @@
 </div>
 
 <!-- Component-only layout when used within other components -->
-<div class="route-content" *ngIf="!showFullLayout">
-    <ng-container *ngTemplateOutlet="mapContent"></ng-container>
-</div>
+ <ng-container *ngIf="!showFullLayout">
+    <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+    </div>
+    <div class="route-content" *ngIf="!showFullLayout">
+    <!-- Loader -->
+        <ng-container *ngTemplateOutlet="mapContent"></ng-container>
+    </div>
+ </ng-container>
+
 
 <!-- Map Content Template -->
 <ng-template #mapContent>
