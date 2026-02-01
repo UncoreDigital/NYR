@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
 import { LocationService } from 'src/app/services/location.service';
@@ -55,7 +56,7 @@ export interface ProductDetail {
 @Component({
   selector: 'app-route-map',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, MatTooltipModule, MatTableModule, SidebarComponent, HeaderComponent, RouterModule],
+  imports: [CommonModule, FormsModule, MatIconModule, MatTooltipModule, MatTableModule, MatProgressSpinnerModule, SidebarComponent, HeaderComponent, RouterModule],
   templateUrl: './route-map.component.html',
   styleUrl: './route-map.component.css'
 })
@@ -101,6 +102,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
 
   // Directions error state for UI
   public directionsError: string | null = null;
+  isLoading = false;
 
   constructor(
     private router: Router,
@@ -537,8 +539,10 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   loadLocationsDetails(): void {
+    this.isLoading = true;
     this.locationService.getLocationsDetails().subscribe({
       next: (apiLocations: any[]) => {
+        this.isLoading = false;
         apiLocations.map(loc => loc.locationAddress = loc.addressLine1);
         apiLocations.map(loc => loc.driverName = loc.userName);
         apiLocations.map(x => x.shippingInventoryData = x.transferItems);
@@ -559,6 +563,7 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
         });
       },
       error: (error: any) => {
+        this.isLoading = false;
         console.error('Error loading locations:', error);
       }
     });
