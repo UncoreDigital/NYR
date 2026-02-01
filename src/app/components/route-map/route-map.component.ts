@@ -9,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
 import { LocationService } from 'src/app/services/location.service';
+import { RouteService } from 'src/app/services/route.service';
 
 export interface RouteStop {
   locationName: string;
@@ -106,43 +107,54 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
 
   constructor(
     private router: Router,
-    private locationService: LocationService
+    private locationService: LocationService,
+    private routeService: RouteService
   ) {}
 
   ngOnInit(): void {
     const state = history.state;
-    this.prepareLocationData(state.selectedLocations || state.routeData?.routeStops || [])
-    //Temp Solution to get route data from state
-    this.getInventoryobyLocation();
+    this.getRouteStopsById(state.routeData?.id || 0);
+  }
 
-     if (state.routeData['selectedDriver'] || state.routeData?.routeStops) {
-        this.routeData = {
-          driverName: state.routeData['selectedDriver'],
-          totalStops: state.routeData['totalLocations'],
-          shippingDate: state.routeData['selectedDate'],
-          driverid: state.routeData['selectedDriverId'],
-          routeStatus: state.routeData['status'] || ''
-        };
-        // Check if this is a draft route
-        this.isDraftRoute = state.routeData['status']?.toLowerCase() === 'draft';
-        this.isCompletedRoute = state.routeData['status']?.toLowerCase() === 'completed';
-        this.isNotStartedRoute = state.routeData['status']?.toLowerCase() === 'not started';
-        this.isNotStartedRoute = this.isNotStartedRoute === false && this.isDraftRoute === false && this.isCompletedRoute === false ? true : this.isNotStartedRoute;
+  async getRouteStopsById(routeId: number) {
+    await this.routeService.getRouteStopsById(routeId).subscribe({
+      next: (res: any) => {
+        const state = history.state;
+        this.prepareLocationData(state.selectedLocations || res?.routeStops || [])
+        //Temp Solution to get route data from state
+        this.getInventoryobyLocation();
+
+        if (state.routeData['selectedDriver'] || state.routeData?.routeStops) {
+          this.routeData = {
+            driverName: state.routeData['selectedDriver'],
+            totalStops: state.routeData['totalLocations'],
+            shippingDate: state.routeData['selectedDate'],
+            driverid: state.routeData['selectedDriverId'],
+            routeStatus: state.routeData['status'] || ''
+          };
+          // Check if this is a draft route
+          this.isDraftRoute = state.routeData['status']?.toLowerCase() === 'draft';
+          this.isCompletedRoute = state.routeData['status']?.toLowerCase() === 'completed';
+          this.isNotStartedRoute = state.routeData['status']?.toLowerCase() === 'not started';
+          this.isNotStartedRoute = this.isNotStartedRoute === false && this.isDraftRoute === false && this.isCompletedRoute === false ? true : this.isNotStartedRoute;
+        }
+
+        // Check route data status if available
+        if (this.routeData?.status) {
+          this.isDraftRoute = this.routeData.status.toLowerCase() === 'draft';
+          this.isCompletedRoute = this.routeData.status.toLowerCase() === 'completed';
+          this.isNotStartedRoute = this.routeData.status.toLowerCase() === 'not started';
+        }
+
+        // Update route stops status based on route completion status
+        this.updateRouteStopsStatus();
+
+        // Initialize customer data for location modal
+        this.initializeCustomers();
+        this.loadLocationsDetails();
+      }, error: (err: any) => {
       }
-    
-    // Check route data status if available
-    if (this.routeData?.status) {
-      this.isDraftRoute = this.routeData.status.toLowerCase() === 'draft';
-      this.isCompletedRoute = this.routeData.status.toLowerCase() === 'completed';
-      this.isNotStartedRoute = this.routeData.status.toLowerCase() === 'not started';
-    }
-
-    // Update route stops status based on route completion status
-    this.updateRouteStopsStatus();
-
-    // Initialize customer data for location modal
-    this.initializeCustomers();
-    this.loadLocationsDetails();
+    });
   }
 
   prepareLocationData(selectedLocations: any) {

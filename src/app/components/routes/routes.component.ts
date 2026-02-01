@@ -59,12 +59,12 @@ export class RoutesComponent implements OnInit {
   ngOnInit(): void {
     this.isLoading = true;
     // Load routes from API. If API fails, keep an empty list to allow local filters to work.
-    this.routeService.getRoutes().subscribe({
+    this.routeService.getRouteSummary().subscribe({
       next: (res: any[]) => {
         // Map backend response to the local Routes model if necessary
         this.routes = res.map(r => ({
           driverName: r.driverName ?? r.userName ?? r.driver ?? '',
-          totalStops: (r.routeStops?.length || 0).toString(),
+          totalStops: (r.routeStops?.length || r.routeStops || 0).toString(),
           shippingDate: r.deliveryDate ? new Date(r.deliveryDate).toISOString().slice(0, 10).split('-').reverse().join('-') : '',
           status: r.status ?? r.routeStatus ?? '',
           routeStops: r.routeStops || [],
@@ -224,7 +224,7 @@ export class RoutesComponent implements OnInit {
   }
 
   viewMap(route: any) {
-    route.routeStops.map((x: any) => x.type = x.followupRequestId == null ? "restockrequest" : "followuprequested" )
+    // route.routeStops.map((x: any) => x.type = x.followupRequestId == null ? "restockrequest" : "followuprequested" )
     // Navigate to route detail page with route data
     this.router.navigate(['/route-detail'], {
       state: { routeData: route },
@@ -233,7 +233,7 @@ export class RoutesComponent implements OnInit {
         totalLocations: route.totalStops,
         selectedDate: route.shippingDate,
         status: route.status,
-        routeStops: (route as any).routeStops || [],
+        // routeStops: (route as any).routeStops || [],
         selectedDriverId: route.driverId || 0,
         startPoint: route.startPoint || "",
         warehouseId: route.warehouseId || 0

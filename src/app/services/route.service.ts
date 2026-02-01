@@ -77,4 +77,16 @@ export class RouteService {
   getPlanDetails(planId: string | number): Observable<any> {
     return this.http.get<any>(`${this.API_URL}/Spoke/plans/${planId}`);
   }
+
+  getRouteSummary(driverId?: number): Observable<any[]> {
+    let url = `${this.API_URL}/Routes/routeSummary`;
+    if (driverId) {
+      url += `?driverId=${driverId}`;
+    }
+    return this.http.get<any[]>(url);
+  }
+
+  getRouteStopsById(routeId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/Routes/routeSummaryById?routeId=${routeId}`);
+  }
 }

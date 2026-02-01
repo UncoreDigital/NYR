@@ -163,29 +163,40 @@ export class RouteDetailComponent implements OnInit {
     const state = history.state;
     this.routeCreationData = state.routeData || {};
     this.routeStatus = this.routeCreationData.status || '';
-    // Check if data comes from create-route (selectedLocations)
-    if (this.routeCreationData['selectedDriver'] || this.routeCreationData.driverName != "") {
-      this.prepareLocationData(state.selectedLocations || state.routeData.routeStops);
-      this.startPoint = this.routeCreationData?.startPoint || '';
-      if (this.selectedLocations.length > 0) {
-        this.totalStops = this.selectedLocations.length;
-      }      
-      // Check if we're coming from a completed route
-      this.isFromCompletedRoute = this.routeStatus.toLowerCase() === 'completed';
-      
-      // Check if we're coming from a not started route
-      this.isFromNotStartedRoute = this.routeStatus.toLowerCase() === 'not started';
-    }
-    this.getWareHouseById(this.routeCreationData?.warehouseId);
-    this.updatePagination();
-    this.driverName = this.routeCreationData.selectedDriver || this.routeCreationData.driverName || '';
-    this.deliveryDate = this.routeCreationData.selectedDate || this.routeCreationData.shippingDate || new Date().toISOString().slice(0, 10).split('-').reverse().join('-');
-    // Initialize button states
-    this.initializeButtonStates();
-    // this.loadLocationsDetails();    
+    this.getRouteStopsById(this.routeCreationData.id || 0);
+    
   }
 
+  async getRouteStopsById(routeId: number) {
+    await this.routeService.getRouteStopsById(routeId).subscribe({
+      next: (res: any) => {
+        const state = history.state;
+        // Check if data comes from create-route (selectedLocations)
+        if (this.routeCreationData['selectedDriver'] || this.routeCreationData.driverName != "") {
+          this.prepareLocationData(state.selectedLocations || res.routeStops || []);
+          // this.prepareLocationData(state.selectedLocations || state.routeData.routeStops || res.routeStops || []);
+          this.startPoint = this.routeCreationData?.startPoint || '';
+          if (this.selectedLocations.length > 0) {
+            this.totalStops = this.selectedLocations.length;
+          }
+          // Check if we're coming from a completed route
+          this.isFromCompletedRoute = this.routeStatus.toLowerCase() === 'completed';
 
+          // Check if we're coming from a not started route
+          this.isFromNotStartedRoute = this.routeStatus.toLowerCase() === 'not started';
+        }
+        this.getWareHouseById(this.routeCreationData?.warehouseId);
+        this.updatePagination();
+        this.driverName = this.routeCreationData.selectedDriver || this.routeCreationData.driverName || '';
+        this.deliveryDate = this.routeCreationData.selectedDate || this.routeCreationData.shippingDate || new Date().toISOString().slice(0, 10).split('-').reverse().join('-');
+        // Initialize button states
+        this.initializeButtonStates();
+        // this.recalculateRoute();
+        this.loadLocationsDetails();    
+      }, error: (err: any) => {
+      }
+    });
+  }
 
   getWareHouseById(warehouseId: number) {
     this.warehouseService.getWarehouseById(warehouseId).subscribe({
@@ -241,7 +252,7 @@ export class RouteDetailComponent implements OnInit {
         });
       }
     });
-    this.selectedLocations = locationData;    
+    this.selectedLocations = locationData;
     //End
   }
 
@@ -706,7 +717,7 @@ export class RouteDetailComponent implements OnInit {
   recalculateRoute() {
     // If we're viewing the map, make sure we sync the latest map stops into the table / route data
     if (this.currentView === 'map' && this.routeMapComponent) {
-      this.syncWithRouteMapData(this.routeMapComponent.routeStops);
+      this.syncWithRouteMapData(this.routeMapComponent.routeStops || this.selectedLocations);
     }
 
     // Disable recalculate button while request is in-flight
