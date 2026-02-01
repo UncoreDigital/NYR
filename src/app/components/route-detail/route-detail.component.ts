@@ -192,7 +192,7 @@ export class RouteDetailComponent implements OnInit {
         // Initialize button states
         this.initializeButtonStates();
         // this.recalculateRoute();
-        this.loadLocationsDetails();    
+        // this.loadLocationsDetails();    
       }, error: (err: any) => {
       }
     });
