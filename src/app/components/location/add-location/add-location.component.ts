@@ -34,7 +34,7 @@ export class AddLocationComponent implements OnInit {
   driverSearchTerm: string = '';
   showDriverDropdown: boolean = false;
   selectedDriver: UserResponse | any = null;
-  drivers: UserResponse[] = [];
+  drivers: any[] = [];
   showValidation = false;
 
   constructor(
@@ -305,7 +305,7 @@ export class AddLocationComponent implements OnInit {
 
   // Driver dropdown methods
   loadDrivers(): void {
-    this.userService.getDrivers().subscribe({
+    this.userService.getDriversAssignedToVans().subscribe({
       next: (drivers) => {
         this.drivers = drivers;
       },

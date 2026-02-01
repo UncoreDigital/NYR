@@ -200,7 +200,8 @@ export class AddScannerComponent implements OnInit {
     this.isLoadingLocations = true;
     this.locationService.getLocations().subscribe({
       next: (locations: LocationResponse[]) => {
-        this.locations = locations;
+        //Showing LOcations who have Drivers assigned only
+        this.locations = locations?.filter(loc => loc.userId != null) || [];
         this.isLoadingLocations = false;
         if (callback) {
           callback();

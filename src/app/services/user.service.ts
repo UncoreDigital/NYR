@@ -47,6 +47,10 @@ export class UserService {
     );
   }
 
+  getDriversAssignedToVans() {
+    return this.http.get<User[]>(`${this.API_URL}/Users/drivers-assigned-to-vans`);
+  }
+
   getUserById(id: number): Observable<UserResponse> {
     return this.http.get<UserResponse>(`${this.API_URL}/Users/${id}`);
   }
