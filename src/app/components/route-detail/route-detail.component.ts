@@ -1000,7 +1000,7 @@ export class RouteDetailComponent implements OnInit {
         this.driverLocations.map(loc => loc.shippingInventoryData = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData : []);
         this.driverLocations.map(loc => loc.shippingInventory = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData.length + ' Items' : '0 Items');
         this.allLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.locationId === loc.id) ? true : false);
-        this.recalculateRoute();
+        // this.recalculateRoute();
         this.isLoading = false;
       },
       error: (error: any) => {

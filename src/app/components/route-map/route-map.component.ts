@@ -64,6 +64,7 @@ export interface ProductDetail {
 export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() showFullLayout: boolean = true; // Default to true for standalone usage
   @Output() routeDataChanged = new EventEmitter<RouteStop[]>();
+  @Output() triggerRecalculate = new EventEmitter<void>();
   @Input() mapRouteData: any[] = [];
   
   routeData: any = null;
@@ -198,6 +199,8 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
       });
       //End
       this.routeStops = locationData;
+      // Trigger recalculation after locations are loaded
+      this.triggerRecalculate.emit();
   }
 
   getInventoryobyLocation(): void {
