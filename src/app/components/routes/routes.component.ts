@@ -65,7 +65,7 @@ export class RoutesComponent implements OnInit {
         this.routes = res.map(r => ({
           driverName: r.driverName ?? r.userName ?? r.driver ?? '',
           totalStops: (r.routeStops?.length || r.routeStops || 0).toString(),
-          shippingDate: r.deliveryDate ? new Date(r.deliveryDate).toISOString().slice(0, 10).split('-').reverse().join('-') : '',
+          shippingDate: r?.deliveryDate ? new Date(r.deliveryDate?.split('T')[0]).toISOString().slice(0, 10).split('-').reverse().join('-') : '',
           status: r.status ?? r.routeStatus ?? '',
           routeStops: r.routeStops || [],
           id: r.id || '',
