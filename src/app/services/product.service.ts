@@ -15,6 +15,10 @@ export class ProductService {
     return this.http.get<ProductApiModel[]>(`${this.API_URL}/Products`);
   }
 
+  getonlyProdcutList(): Observable<ProductApiModel[]> {
+    return this.http.get<ProductApiModel[]>(`${this.API_URL}/Products/onlyProdcutList`);
+  }
+
   getProductsPaged(params: PaginationParams): Observable<PagedResult<ProductApiModel>> {
     let httpParams = new HttpParams()
       .set('pageNumber', params.pageNumber.toString())

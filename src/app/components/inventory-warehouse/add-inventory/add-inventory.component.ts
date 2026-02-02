@@ -129,12 +129,12 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   }
 
   loadProducts(): void {
-    this.productService.getProducts().subscribe({
+    this.productService.getonlyProdcutList().subscribe({
       next: (products) => {
         this.products = products;
         
         // If in edit mode and warehouse is already loaded, load existing inventory
-        this.loadExistingInventory(this?.selectedWarehouse?.id || 0);
+        this.warehouseId && this.warehouseId > 0  && this.loadExistingInventory(this?.selectedWarehouse?.id || 0);
       },
       error: (error) => {
         console.error('Error loading products:', error);
@@ -153,7 +153,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       
       // Load existing inventory if products are already loaded
       if (this.products.length > 0) {
-        this.loadExistingInventory(warehouseId);
+        this.warehouseId && this.warehouseId > 0  && this.loadExistingInventory(warehouseId);
       }
     } else {
       // Fallback: load from API if not found in list
@@ -165,7 +165,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
           
           // Load existing inventory if products are already loaded
           if (this.products.length > 0) {
-            this.loadExistingInventory(warehouseId);
+            this.warehouseId && this.warehouseId > 0  && this.loadExistingInventory(warehouseId);
           }
         },
         error: (error) => {
@@ -432,7 +432,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   selectWarehouse(warehouse: WarehouseResponse) {
     this.warehouseId = warehouse.id;
     this.clearProduct();
-    this.loadExistingInventory(this.warehouseId);
+    this.warehouseId > 0 && this.loadExistingInventory(this.warehouseId);
     this.selectedWarehouse = warehouse;
     this.warehouseSearchTerm = warehouse.name;
     this.inventoryForm.patchValue({ warehouseName: warehouse.id });

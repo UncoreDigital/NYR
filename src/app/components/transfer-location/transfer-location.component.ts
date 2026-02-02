@@ -166,7 +166,7 @@ export class TransferLocationComponent implements OnInit {
   
   loadAllProducts(): void {
     this.isLoadingProducts = true;
-    this.productService.getProducts().subscribe({
+    this.productService.getonlyProdcutList().subscribe({
       next: (products) => {
         this.products = products.map(p => ({
           value: p.id,
