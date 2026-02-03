@@ -232,13 +232,14 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     this.productService.getProductVariantsWithAttributes(product.id).subscribe({
       next: (variants) => {
         this.productVariants = variants;
-        variants.map(x => {
+        variants.map((x: any) => {
           const product = this.warehouseProducts.find(p => p.id === x.productId);
           if (product && product.variants && product.variants.length > 0) {
             const variant = product.variants.find(v => v.id === x.id);
             x.sku = variant ? (variant.barcodeSKU || variant.barcodeSKU2 || variant.barcodeSKU3 || variant.barcodeSKU4 || '') : '';
           } else {
-            x.sku = '';
+            x.sku = x.barcodeSKU || x.barcodeSKU2 || x.barcodeSKU3 || x.barcodeSKU4 || '';
+
           }
         });
         // Convert ProductVariantDto to Variant interface and map existing quantities
