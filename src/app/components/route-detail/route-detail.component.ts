@@ -433,7 +433,10 @@ export class RouteDetailComponent implements OnInit {
         restockIds = route?.type?.toLowerCase() == "followuprequest" ? [route.requestId] : [];
       }
       //
-      
+      // START
+      this.allLocations = this.allLocations?.length == 0 ? this.routeMapComponent.allLocations : this.allLocations;
+      // END
+
       let matchedData: any = this.allLocations.find(loc => route.locationId == loc.id);
       let address = matchedData ? matchedData.addressLine1 + ', ' + matchedData.addressLine2 + ', ' + matchedData.state + ' ' + matchedData.zipCode : '';
       
