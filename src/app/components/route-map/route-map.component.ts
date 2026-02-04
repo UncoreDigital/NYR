@@ -199,8 +199,8 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
       });
       //End
       this.routeStops = locationData;
-      // Trigger recalculation after locations are loaded
-      this.triggerRecalculate.emit();
+      // // Trigger recalculation after locations are loaded
+      // this.triggerRecalculate.emit();
   }
 
   getInventoryobyLocation(): void {
@@ -568,7 +568,8 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnChanges {
         this.allLocations = apiLocations;
         this.driverLocations.map(loc => loc.selected = this.routeStops.find((stop:any) => stop.locationId === loc.id) ? true : false);
         this.allLocations.map(loc => loc.selected = this.routeStops.find((stop:any) => stop.locationId === loc.id) ? true : false);
-
+        // Trigger recalculation after locations are loaded
+        this.triggerRecalculate.emit();
         this.routeStops.forEach((stop: any) => {
           const matchedLocation = apiLocations?.find(loc => loc.id === stop.locationId);
           stop.locationInventory = `${matchedLocation?.locationInventoryData?.length || 0} Items`;

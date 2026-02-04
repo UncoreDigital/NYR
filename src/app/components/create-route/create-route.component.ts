@@ -64,6 +64,7 @@ export class CreateRouteComponent implements OnInit {
   confirmDate: string = '';
   selectedDriverName: any = "";
   confirmErrorMessage: string = '';
+  isLoading: boolean = false;
 
   // Driver data array (populated from API)
   driverOptions: Array<{ id?: number; value: string; name: string; warehouseName?: string; warehouseId?: number }> = [];
@@ -79,9 +80,11 @@ export class CreateRouteComponent implements OnInit {
   }
 
   loadLocations(): void {
+    this.isLoading = true;
     this.transferService.getTransfersByType('RestockRequest').subscribe({
       next: (response: TransferResponse[]) => {
         // Map LocationResponse to CreateRoutes model
+        this.isLoading = false;
         this.createRoutes = response.filter(x => ['restock requested', 'followup requested', 'followup'].includes(x.status?.toLowerCase())).map(loc => ({
           id: loc.locationId || 0,
           shippingDate: loc.requestDate || '',
@@ -103,6 +106,7 @@ export class CreateRouteComponent implements OnInit {
         this.applyFilter();
       },
       error: (error) => {
+        this.isLoading = false;
         console.error('Error loading locations:', error);
         // keep existing data (empty) and pagination
         this.updatePagination();
@@ -143,11 +147,10 @@ export class CreateRouteComponent implements OnInit {
     if (this.selectedDriverName) {
       // Filter by selected driver name (if any) and by the search term across multiple fields
       filteredData = filteredData.filter(x => x.driverName == this.selectedDriverName);
-      if (this.selectedDate != "") {
-        filteredData = filteredData.filter(x => x.shippingDate.split('T')[0] == this.selectedDate);
-      }
     }
-
+    if (this.selectedDate != "") {
+      filteredData = filteredData.filter(x => x.shippingDate.split('T')[0] == this.selectedDate);
+    }
     this.dataSource.data = filteredData;
     this.updatePagination();
   }

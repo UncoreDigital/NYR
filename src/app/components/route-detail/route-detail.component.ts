@@ -163,14 +163,18 @@ export class RouteDetailComponent implements OnInit {
     const state = history.state;
     this.routeCreationData = state.routeData || {};
     this.routeStatus = this.routeCreationData.status || '';
+    this.driverName = this.routeCreationData.selectedDriver || this.routeCreationData.driverName || '';
+    this.deliveryDate = this.routeCreationData.selectedDate || this.routeCreationData.shippingDate || new Date().toISOString().slice(0, 10).split('-').reverse().join('-');
     this.getRouteStopsById(this.routeCreationData.id || 0);
-    
+    this.loadLocationsDetails();
   }
 
   async getRouteStopsById(routeId: number) {
     await this.routeService.getRouteStopsById(routeId).subscribe({
       next: (res: any) => {
         const state = history.state;
+        this.getWareHouseById(this.routeCreationData?.warehouseId);
+        this.updatePagination();
         // Check if data comes from create-route (selectedLocations)
         if (this.routeCreationData['selectedDriver'] || this.routeCreationData.driverName != "") {
           this.prepareLocationData(state.selectedLocations || res.routeStops || []);
@@ -185,10 +189,7 @@ export class RouteDetailComponent implements OnInit {
           // Check if we're coming from a not started route
           this.isFromNotStartedRoute = this.routeStatus.toLowerCase() === 'not started';
         }
-        this.getWareHouseById(this.routeCreationData?.warehouseId);
-        this.updatePagination();
-        this.driverName = this.routeCreationData.selectedDriver || this.routeCreationData.driverName || '';
-        this.deliveryDate = this.routeCreationData.selectedDate || this.routeCreationData.shippingDate || new Date().toISOString().slice(0, 10).split('-').reverse().join('-');
+        
         // Initialize button states
         this.initializeButtonStates();
         // this.recalculateRoute();
@@ -424,6 +425,7 @@ export class RouteDetailComponent implements OnInit {
       this.syncWithRouteMapData(this.routeMapComponent.routeStops);
     }
     let routes: any[] = [];
+    this.showApprovalModal = false;
     this.dataSource.data.forEach((route: any) => {
       // Get distinct restockRequestIds
       let restockIds = [...new Set(route?.shippingInventoryData.map((x: any) => x.restockRequestId))];
@@ -780,6 +782,7 @@ export class RouteDetailComponent implements OnInit {
         }
 
         let routeStops: any[] = [];
+        this.allLocations = this.allLocations.length == 0 ? this.routeMapComponent.allLocations : this.allLocations;
         if (this.startingPointDetails?.fullAddress != "") {
             routeStops.push({
             "address": {
@@ -787,15 +790,18 @@ export class RouteDetailComponent implements OnInit {
             }
           });
         }
-
+        
         routeStops = [
           ...routeStops,
-          ...this.dataSource.data.map((stop: any, idx) => ({
-            "address": {
-              addressLineOne : this.allLocations.find(loc => loc.id === stop.locationId)?.fullAddress || "",
-            }
-          }))
-        ];        
+          ...this.dataSource.data.map((stop: any, idx) => {
+            const tempData = this.allLocations.find(loc => loc.id === stop.locationId);
+            return {
+              "address": {
+                addressLineOne : tempData?.fullAddress || `${tempData?.addressLine1 || ''}, ${tempData?.addressLine2 || ''}, ${tempData?.state || ''} ${tempData?.zipCode || ''}`,
+              }
+            };
+          })
+        ];      
 
         // Step 2: import stops into the created Spoke route
         
@@ -1003,7 +1009,9 @@ export class RouteDetailComponent implements OnInit {
         this.driverLocations.map(loc => loc.shippingInventoryData = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData : []);
         this.driverLocations.map(loc => loc.shippingInventory = apiLocations.find(stop => stop.id === loc.id) ? apiLocations.find(stop => stop.id === loc.id).shippingInventoryData.length + ' Items' : '0 Items');
         this.allLocations.map(loc => loc.selected = this.selectedLocations.find(stop => stop.locationId === loc.id) ? true : false);
-        // this.recalculateRoute();
+        if (this.totalDistance === '0 Miles') {
+          this.recalculateRoute();
+        }
         this.isLoading = false;
       },
       error: (error: any) => {
