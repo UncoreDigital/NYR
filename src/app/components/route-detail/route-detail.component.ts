@@ -621,7 +621,7 @@ export class RouteDetailComponent implements OnInit {
 
     this.dataSource.data = tableData;
     tableData.forEach((route, idx) => {
-      if (this.routeMapComponent.routeStops.filter((x: any) => x.locationId === route.id)) {
+      if (this.routeMapComponent.routeStops.filter((x: any) => x.locationId === route.id).length > 0) {
         this.routeMapComponent.routeStops.filter((x: any) => x.locationId === route.id)[0].distance = route.distance;
       }
     });
@@ -833,7 +833,7 @@ export class RouteDetailComponent implements OnInit {
                     let finalStops: any[] = [];
                     const stopsWithDistances = this.processStopsWithDistances(rawStops);
                     stopsWithDistances?.filter((x: any) => !this.startingPointDetails?.fullAddress.includes(x?.address?.addressLineOne)).forEach((element: any) => {
-                      if (routeStops.filter(x => x?.address?.addressLineOne.includes(element?.address?.addressLineOne)).length > 0) {
+                      if (routeStops.filter(x => x?.address?.addressLineOne.includes(element?.address?.addressLineOne?.split(',')?.[0]?.trim())).length > 0) {
                         finalStops.push(element);
                       }
                     });
@@ -841,7 +841,7 @@ export class RouteDetailComponent implements OnInit {
                     this.mapRouteData = [];
                     /// Stops for getting distance calculation
                     stopsWithDistances?.forEach(element => {
-                      if (routeStops?.map(x => x?.address?.addressLineOne)?.filter(x => x?.includes(element?.address?.addressLineOne)).length > 0) {
+                      if (routeStops?.map(x => x?.address?.addressLineOne)?.filter(x => x?.includes(element?.address?.addressLineOne?.split(',')?.[0]?.trim())).length > 0) {
                         this.mapRouteData.push(element);
                       }                      
                     });
